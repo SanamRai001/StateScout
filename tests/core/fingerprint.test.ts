@@ -4,8 +4,8 @@ import test from "node:test";
 import {
   canonicalizeState,
   fingerprintState,
-} from "../../src/core/fingerprint.js";
-import type { SemanticStateSnapshot } from "../../src/core/model.js";
+} from "../../src/core/fingerprint.ts";
+import type { SemanticStateSnapshot } from "../../src/core/model.ts";
 
 const baseState: SemanticStateSnapshot = {
   origin: "https://example.test",
