@@ -29,7 +29,7 @@ Phase 0 established:
 - graph-not-tree direction;
 - deterministic-core-before-AI direction.
 
-## Changes in Phase 1A so far
+## Changes in Phase 1A
 
 ### Core TypeScript model
 
@@ -59,6 +59,26 @@ Added deterministic canonicalization and SHA-256 fingerprinting based on:
 
 The implementation intentionally remains a research candidate rather than a finalized algorithm.
 
+### In-memory graph
+
+Added a directed state graph with:
+
+- semantic-state deduplication by fingerprint;
+- state lookup;
+- observed transition storage;
+- convergent edges (multiple parents can reach one state);
+- invariant checks for unknown source/destination states.
+
+### BFS frontier
+
+Added an exploration frontier that:
+
+- behaves FIFO;
+- stores state + interaction work;
+- deduplicates `(fromState, interaction)` pairs independently from state deduplication.
+
+This separation is intentional because "have I seen this state?" and "have I tried this action from this state?" are different questions.
+
 ### Policy v1
 
 Added:
@@ -67,6 +87,18 @@ Added:
 - safe/mutating/destructive/unknown risk classes;
 - conservative default execution policy;
 - deterministic keyword-based initial risk classifier.
+
+### Controlled benchmark
+
+Added `benchmarks/basic-state-graph` with:
+
+- five manually defined meaningful UI states;
+- cycles back to Home;
+- multiple states on the same URL;
+- convergent paths to Details;
+- explicit ground-truth transitions.
+
+Ground truth exists before Playwright exploration so future coverage measurements have a known target.
 
 ### Tests
 
@@ -78,19 +110,25 @@ Added lightweight unit coverage for:
 - same-origin boundary;
 - external/non-HTTP blocking;
 - risk classification;
-- conservative default execution policy.
+- conservative default execution policy;
+- graph state deduplication;
+- distinct same-route states;
+- convergent graph transitions;
+- FIFO frontier behavior;
+- frontier work-item deduplication.
 
 ### Learning documentation
 
-Added `docs/CONCEPTS.md` to make the core ideas understandable instead of hiding them behind implementation.
+Added `docs/CONCEPTS.md`.
 
-Key checkpoints:
+Key learning checkpoints:
 
 - page vs state;
 - graph vs tree;
 - state vs snapshot vs fingerprint;
 - false merge vs false split;
 - interaction identity vs DOM identity;
+- state deduplication vs work deduplication;
 - frontier;
 - state restoration;
 - safety limitations;
@@ -120,13 +158,15 @@ Current decisions:
 
 Playwright has intentionally not been added yet.
 
-## Verification performed
+## Verification status
 
-Repository/PR history and Phase 0 decisions were re-read before Phase 1A.
+Repository history, Phase 0 documents, branch diff, and implementation structure were reviewed during Phase 1A.
 
-Implementation files and tests have been created.
+An attempted isolated runtime check could not clone GitHub because the execution environment had no DNS access to GitHub. That environment also exposes Node 22 while this project intentionally targets Node >=24.
 
-Runtime verification is still pending on a local checkout. Do not treat Phase 1A as verified until:
+Therefore runtime verification remains pending on the user's Node 24+ checkout.
+
+Required verification:
 
 ```powershell
 npm install
@@ -134,7 +174,7 @@ npm run typecheck
 npm test
 ```
 
-all pass.
+Do not mark Phase 1A verified or merge it until these commands pass.
 
 ## Risks and open questions
 
@@ -168,39 +208,55 @@ Path replay may become expensive for deep workflows and may fail when data/sessi
 
 Current fingerprint includes normalized query values. Later experiments must determine which query parameters are semantic versus noisy.
 
+### Benchmark bias
+
+Synthetic fixtures can accidentally favor the algorithm being designed. Ground truth must remain fixed unless a benchmark defect is independently justified.
+
 ## Acceptance criteria for Phase 1A
 
-Before closing this phase:
+Completed in code/design:
 
 - core schemas are defined;
-- fingerprint candidate is deterministic;
+- fingerprint candidate is deterministic by design;
 - same-origin and action policies exist;
 - state restoration strategy is documented;
 - minimal benchmark graph and ground truth are implemented;
 - graph/frontier logic exists independently of Playwright;
-- unit tests pass locally;
-- concepts are understandable without reading the implementation.
+- concepts are documented without requiring implementation reading.
 
-## Next implementation step
+Pending:
 
-1. implement the in-memory directed state graph;
-2. implement BFS frontier/deduplication;
-3. implement the first synthetic benchmark fixture and explicit ground truth;
-4. verify core behavior without Playwright;
-5. only then begin Phase 1B Playwright adapter work.
+- local `typecheck`;
+- local unit-test pass.
 
 ## Learning priority
 
 Understanding takes priority over publishing speed.
 
-Before moving into Playwright integration, be able to explain:
+Before Phase 1B, be able to explain:
 
 1. why URL identity is insufficient;
 2. why a graph is required instead of a binary tree;
 3. what information a fingerprint intentionally discards;
 4. the difference between a false merge and a false split;
-5. why the frontier contains state/action pairs rather than URLs;
-6. why a deterministic benchmark needs ground truth written before evaluation.
+5. the difference between state deduplication and frontier/work deduplication;
+6. why the frontier contains state/action pairs rather than URLs;
+7. why a deterministic benchmark needs ground truth written before evaluation.
+
+## Next phase after verification
+
+**Phase 1B — Playwright observation adapter**
+
+Initial scope only:
+
+1. launch benchmark page;
+2. capture a `SemanticStateSnapshot` from the live DOM/accessibility semantics;
+3. discover visible safe buttons/links;
+4. execute one interaction;
+5. feed resulting snapshots/transitions into the existing graph/frontier;
+6. compare discovered graph with benchmark ground truth.
+
+Do not add form filling, AI, visual regression, persistence, or test generation in Phase 1B.
 
 ## Merge status
 
