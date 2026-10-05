@@ -1,4 +1,4 @@
-import type { ActionRisk, Interaction, SemanticTarget } from "./model.js";
+import type { ActionRisk, Interaction, SemanticTarget } from "./model.ts";
 
 export interface CrawlBoundaryPolicy {
   mode: "same-origin";
