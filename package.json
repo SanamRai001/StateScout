@@ -8,7 +8,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts"
+    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",
