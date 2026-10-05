@@ -1,0 +1,17 @@
+{
+  "name": "statescout",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.1",
+    "typescript": "7.0.2"
+  }
+}
