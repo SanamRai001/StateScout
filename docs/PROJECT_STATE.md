@@ -9,91 +9,199 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 0 — Research and architecture foundation**
+**Phase 1A — Deterministic exploration kernel design**
 
 ## Branch
 
-`docs/research-foundation-v0`
+`feat/phase-1a-domain-model`
 
-## Repository state before this phase
+## Phase 0 status
 
-The repository was empty.
+Merged to `main` through PR #1.
 
-## Changes in this phase
+Phase 0 established:
 
-- initialized repository README;
-- documented project vision and non-goals;
-- defined initial research questions and falsifiable hypotheses;
-- defined baseline experiment families;
-- created an initial related-work map;
-- documented reproducibility and threats-to-validity requirements;
-- explicitly avoided claiming novelty before formal literature review.
+- project vision;
+- research questions and hypotheses;
+- experiment families;
+- initial related-work map;
+- reproducibility requirements;
+- graph-not-tree direction;
+- deterministic-core-before-AI direction.
 
-## Major architectural decisions
+## Changes in Phase 1A so far
 
-### Graph, not binary tree
+### Core TypeScript model
 
-UI exploration is represented as a directed graph because a state can expose many actions and multiple paths can converge on the same state.
+Added:
 
-### Component names are not required
+- `StateNode`
+- `SemanticStateSnapshot`
+- `StateFingerprint`
+- `Interaction`
+- `Transition`
+- `StatePath`
+- replay steps
+- locator candidates
+- action-risk types
 
-StateScout will focus on user-visible semantics such as role, accessible name, label, form context, and stable interaction metadata rather than framework-internal component names.
+### Semantic fingerprint v1
 
-### AI is not part of the deterministic core
+Added deterministic canonicalization and SHA-256 fingerprinting based on:
 
-Paper 1 should be possible without requiring an LLM.
+- origin/path/query;
+- title;
+- headings;
+- landmarks;
+- dialogs;
+- semantic controls;
+- selected/expanded/checked/disabled control state.
 
-### Safety is first-class
+The implementation intentionally remains a research candidate rather than a finalized algorithm.
 
-Mutation/destructive-action policies must exist before broad autonomous exploration.
+### Policy v1
+
+Added:
+
+- same-origin crawl boundary;
+- safe/mutating/destructive/unknown risk classes;
+- conservative default execution policy;
+- deterministic keyword-based initial risk classifier.
+
+### Tests
+
+Added lightweight unit coverage for:
+
+- semantically equivalent reordered states;
+- same-route dialog state differences;
+- query-order normalization;
+- same-origin boundary;
+- external/non-HTTP blocking;
+- risk classification;
+- conservative default execution policy.
+
+### Learning documentation
+
+Added `docs/CONCEPTS.md` to make the core ideas understandable instead of hiding them behind implementation.
+
+Key checkpoints:
+
+- page vs state;
+- graph vs tree;
+- state vs snapshot vs fingerprint;
+- false merge vs false split;
+- interaction identity vs DOM identity;
+- frontier;
+- state restoration;
+- safety limitations;
+- research mindset.
+
+### Architecture and benchmark design
+
+Added:
+
+- `docs/ARCHITECTURE.md`;
+- `docs/BENCHMARK_PLAN.md`.
+
+Current decisions:
+
+- BFS first;
+- frontier stores state/action work, not URLs;
+- replay paths verify intermediate fingerprints;
+- Playwright will be an adapter around a browser-independent core;
+- no database yet;
+- controlled benchmark ground truth must be written before evaluation.
+
+## Dependency baseline
+
+- Node: >=24
+- TypeScript: 7.0.2
+- Node type definitions: ^24.19.1
+
+Playwright has intentionally not been added yet.
 
 ## Verification performed
 
-- GitHub repository metadata checked.
-- Repository confirmed empty before initialization.
-- Related technical direction checked against current Playwright locator guidance and Crawljax's state-flow graph model.
+Repository/PR history and Phase 0 decisions were re-read before Phase 1A.
 
-No implementation or runtime tests exist yet.
+Implementation files and tests have been created.
 
-## Risks
+Runtime verification is still pending on a local checkout. Do not treat Phase 1A as verified until:
 
-- semantic state equivalence may still merge distinct states or split equivalent states;
-- benchmark ground truth may be expensive to label;
-- accessibility semantics may be poor on real applications;
-- state replay may become expensive;
-- async UI behavior can make results nondeterministic;
-- novelty is not yet established by a systematic literature review;
-- form mutation/destructive actions require strong safeguards.
+```powershell
+npm install
+npm run typecheck
+npm test
+```
 
-## Acceptance criteria for Phase 0
+all pass.
 
-- project purpose is explicit;
-- research questions are measurable;
-- hypotheses are falsifiable;
-- baselines are documented;
-- initial experiments are defined;
-- novelty is not overstated;
-- implementation has not prematurely locked the research design.
+## Risks and open questions
 
-## Next phase
+### State equivalence
 
-**Phase 1A — Deterministic exploration kernel design**
+Fingerprint v1 can still:
 
-Before implementation:
+- falsely merge distinct states;
+- falsely split equivalent dynamic states;
+- over-weight low-value text/control details;
+- miss visual-only state.
 
-1. define the `State`, `Interaction`, `Transition`, and `Fingerprint` schemas;
-2. define same-origin/domain policy;
-3. define safe/mutating/destructive action policy;
-4. define state restoration/replay strategy;
-5. define minimal synthetic benchmark application;
-6. then implement the smallest crawler capable of:
-   - opening one target;
-   - discovering visible buttons/links;
-   - executing one safe action at a time;
-   - fingerprinting the resulting state;
-   - recording nodes/edges;
-   - terminating on exhausted frontier.
+These are expected research questions, not hidden defects.
+
+### Safety classifier
+
+Keyword-only classification is insufficient for production autonomy.
+
+Examples:
+
+- "Continue" can trigger a payment;
+- "Remove filters" is harmless despite the word "remove".
+
+Unknown actions remain blocked by default.
+
+### Replay
+
+Path replay may become expensive for deep workflows and may fail when data/session state changes.
+
+### Query parameters
+
+Current fingerprint includes normalized query values. Later experiments must determine which query parameters are semantic versus noisy.
+
+## Acceptance criteria for Phase 1A
+
+Before closing this phase:
+
+- core schemas are defined;
+- fingerprint candidate is deterministic;
+- same-origin and action policies exist;
+- state restoration strategy is documented;
+- minimal benchmark graph and ground truth are implemented;
+- graph/frontier logic exists independently of Playwright;
+- unit tests pass locally;
+- concepts are understandable without reading the implementation.
+
+## Next implementation step
+
+1. implement the in-memory directed state graph;
+2. implement BFS frontier/deduplication;
+3. implement the first synthetic benchmark fixture and explicit ground truth;
+4. verify core behavior without Playwright;
+5. only then begin Phase 1B Playwright adapter work.
+
+## Learning priority
+
+Understanding takes priority over publishing speed.
+
+Before moving into Playwright integration, be able to explain:
+
+1. why URL identity is insufficient;
+2. why a graph is required instead of a binary tree;
+3. what information a fingerprint intentionally discards;
+4. the difference between a false merge and a false split;
+5. why the frontier contains state/action pairs rather than URLs;
+6. why a deterministic benchmark needs ground truth written before evaluation.
 
 ## Merge status
 
-Not merged. Review the Phase 0 foundation before merging.
+Phase 1A is not merged.
