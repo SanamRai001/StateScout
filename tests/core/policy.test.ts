@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { Interaction } from "../../src/core/model.js";
+import type { Interaction } from "../../src/core/model.ts";
 import {
   canExecuteInteraction,
   classifyInteractionRisk,
   DEFAULT_ACTION_POLICY,
   isUrlAllowed,
-} from "../../src/core/policy.js";
+} from "../../src/core/policy.ts";
 
 test("same-origin boundary allows internal URLs", () => {
   const policy = {
