@@ -4,7 +4,7 @@ import type {
   SemanticControl,
   SemanticStateSnapshot,
   StateFingerprint,
-} from "./model.js";
+} from "./model.ts";
 
 function normalizeText(value: string | undefined): string | undefined {
   if (value === undefined) {
