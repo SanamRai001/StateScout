@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Boundary Fixture</title>
+  </head>
+  <body>
+    <main id="app">
+      <h1>Boundary Home</h1>
+      <button type="button" id="advance">Advance locally</button>
+      <a href="https://example.com/">External example</a>
+    </main>
+    <script>
+      document.querySelector("#advance").addEventListener("click", () => {
+        document.querySelector("h1").textContent = "Boundary Advanced";
+        document.querySelector("#advance").remove();
+      });
+    </script>
+  </body>
+</html>

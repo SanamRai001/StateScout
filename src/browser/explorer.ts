@@ -11,7 +11,9 @@ import type {
 import {
   DEFAULT_ACTION_POLICY,
   canExecuteInteraction,
+  isUrlAllowed,
   type ActionExecutionPolicy,
+  type CrawlBoundaryPolicy,
 } from "../core/policy.ts";
 import {
   discoverInteractions,
@@ -105,16 +107,50 @@ async function restoreState(
   }
 }
 
+function canNavigateWithinBoundary(
+  interaction: Interaction,
+  boundary: CrawlBoundaryPolicy,
+): boolean {
+  if (
+    interaction.kind !== "navigate" ||
+    !interaction.target.href
+  ) {
+    return true;
+  }
+
+  const start = new URL(boundary.startUrl);
+  const candidate = new URL(
+    interaction.target.href,
+    boundary.startUrl,
+  );
+
+  if (start.protocol === "http:" || start.protocol === "https:") {
+    return isUrlAllowed(candidate.href, boundary);
+  }
+
+  // Local file fixtures are allowed to navigate only to another file URL.
+  // Production/public web exploration remains governed by strict same-origin
+  // HTTP(S) policy through isUrlAllowed().
+  return (
+    start.protocol === "file:" &&
+    candidate.protocol === "file:"
+  );
+}
+
 function enqueueInteractions(
   frontier: BfsFrontier,
   stateId: string,
   path: StatePath,
   interactions: readonly Interaction[],
   policy: ActionExecutionPolicy,
+  boundary: CrawlBoundaryPolicy,
   graph: StateGraph,
 ): void {
   for (const interaction of interactions) {
-    if (!canExecuteInteraction(interaction, policy)) {
+    if (
+      !canExecuteInteraction(interaction, policy) ||
+      !canNavigateWithinBoundary(interaction, boundary)
+    ) {
       graph.addTransition({
         fromStateId: stateId,
         interaction,
@@ -141,6 +177,10 @@ export async function exploreWithPlaywright(
   const graph = new StateGraph(runFingerprinter);
   const frontier = new BfsFrontier();
   const policy = options.actionPolicy ?? DEFAULT_ACTION_POLICY;
+  const boundary: CrawlBoundaryPolicy = {
+    mode: "same-origin",
+    startUrl: options.startUrl,
+  };
   const maxTransitions = options.maxTransitions ?? 1_000;
   const evidenceErrors: string[] = [];
 
@@ -173,6 +213,7 @@ export async function exploreWithPlaywright(
     rootPath,
     await discoverInteractions(page),
     policy,
+    boundary,
     graph,
   );
 
@@ -232,6 +273,7 @@ export async function exploreWithPlaywright(
           nextPath,
           await discoverInteractions(page),
           policy,
+          boundary,
           graph,
         );
       }

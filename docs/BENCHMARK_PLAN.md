@@ -280,3 +280,54 @@ Research rules:
 - preserve per-family and per-case outcomes for later paper tables and threats-to-validity analysis.
 
 The frozen study compares nine strategies: URL-only, v1, v2, v3, v4, v4 without controls, v4 without title, v4 without query, and v4 with targeted visible status/list content.
+
+
+## Phase 19 real-world repeated-run evaluation
+
+Public applications are observational evidence, not controlled ground truth.
+
+Research rules:
+
+- freeze the target list and run protocol before collecting results;
+- use fresh browser contexts for repeated runs;
+- use only the default safe-only action policy;
+- bound attempted transitions;
+- separate external unavailability from StateScout run errors;
+- keep interaction-level failures inside the graph;
+- require at least two successful runs before making a target-level stability statement;
+- measure initial fingerprint stability separately from graph-structure stability;
+- do not require public applications to produce a predetermined state count;
+- normal unit/browser tests must remain network-independent;
+- require at least two evaluable public targets before accepting the phase.
+
+The frozen target set contains TodoMVC React, The Internet Dynamic Controls, and UI Testing Playground Visibility, each measured across three fresh-browser runs.
+
+
+### Phase 19B recovery cohort
+
+The first primary-cohort execution produced only one evaluable target because two public sites were unreachable from the measurement environment.
+
+Research rules for recovery:
+
+- preserve the original three-target cohort and its failed evaluability result;
+- do not relax the minimum-two-target acceptance threshold;
+- add fallback targets before observing their StateScout outcomes;
+- select fallback targets because of external availability need, not because they are known algorithm wins;
+- rerun primary and fallback cohorts together in one self-contained report;
+- require at least two distinct evaluable targets across the combined cohort;
+- retain per-target graph instability as evidence rather than a failure condition.
+
+The pre-registered recovery targets are the W3C ARIA APG Automatic Tabs example and Selenium's official Web Form example.
+
+
+### Phase 19 same-origin enforcement finding
+
+Moving from controlled fixtures to public applications exposed that the browser explorer had not been enforcing the already-defined same-origin boundary before enqueueing discovered links.
+
+The Phase 19 recovery branch therefore adds a browser-level boundary regression:
+
+- internal safe interactions remain explorable;
+- external-origin links are represented as `blocked-by-policy`;
+- external navigation must never become a discovered state.
+
+This is a safety correction to execution policy, not an identity-algorithm optimization.
