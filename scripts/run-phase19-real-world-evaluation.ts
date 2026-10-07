@@ -12,14 +12,20 @@ import {
   PHASE19_REAL_WORLD_TARGETS,
   type RealWorldTarget,
 } from "../benchmarks/real-world-v1/targets.ts";
+import {
+  PHASE19_RECOVERY_PROTOCOL,
+  PHASE19_RECOVERY_TARGETS,
+} from "../benchmarks/real-world-v1/recoveryTargets.ts";
 import { exploreWithPlaywright } from "../src/browser/explorer.ts";
 import { createFingerprintStateV4 } from "../src/core/fingerprintV4.ts";
 import type { TransitionStatus } from "../src/core/model.ts";
 import { createVolatilityProfile } from "../src/core/volatility.ts";
 import {
+  isRealWorldStudyEvaluable,
   summarizeRealWorldRuns,
   summarizeRealWorldStudy,
   type RealWorldRun,
+  type RealWorldTargetSummary,
   type RealWorldTransitionStatusCounts,
 } from "../src/research/realWorldEvaluation.ts";
 
@@ -28,6 +34,15 @@ const outputPath = resolve(
 );
 const summaryPath = outputPath.replace(/\.json$/i, "-summary.txt");
 const EMPTY_PROFILE = createVolatilityProfile([]);
+
+type CohortId = "primary" | "recovery";
+
+interface TargetReport {
+  cohort: CohortId;
+  target: RealWorldTarget;
+  runs: RealWorldRun[];
+  summary: RealWorldTargetSummary;
+}
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -168,44 +183,97 @@ async function runTargetOnce(
   }
 }
 
-const browser = await chromium.launch({ headless: true });
+async function runCohort(
+  browser: Browser,
+  cohort: CohortId,
+  targets: readonly RealWorldTarget[],
+): Promise<TargetReport[]> {
+  const reports: TargetReport[] = [];
 
-try {
-  const targetReports = [];
-
-  for (const target of PHASE19_REAL_WORLD_TARGETS) {
+  for (const target of targets) {
     const runs: RealWorldRun[] = [];
 
     for (let runIndex = 1; runIndex <= target.runs; runIndex += 1) {
       const run = await runTargetOnce(browser, target, runIndex);
       runs.push(run);
       console.log(
-        `[${target.id}] run ${runIndex}/${target.runs}: ${run.status}`,
+        `[${cohort}:${target.id}] run ${runIndex}/${target.runs}: ${run.status}`,
       );
     }
 
-    const summary = summarizeRealWorldRuns(
-      target.id,
-      target.runs,
-      runs,
-      PHASE19_PROTOCOL.minimumSuccessfulRunsForStability,
-    );
-
-    targetReports.push({
+    reports.push({
+      cohort,
       target,
       runs,
-      summary,
+      summary: summarizeRealWorldRuns(
+        target.id,
+        target.runs,
+        runs,
+        PHASE19_PROTOCOL.minimumSuccessfulRunsForStability,
+      ),
     });
   }
 
-  const study = summarizeRealWorldStudy(
+  return reports;
+}
+
+function targetLine(report: TargetReport): string {
+  const { cohort, target, summary } = report;
+  const states = summary.stateCountRange
+    ? `${summary.stateCountRange.min}-${summary.stateCountRange.max}`
+    : "n/a";
+  const transitions = summary.transitionCountRange
+    ? `${summary.transitionCountRange.min}-${summary.transitionCountRange.max}`
+    : "n/a";
+  const attempts = summary.attemptedTransitionRange
+    ? `${summary.attemptedTransitionRange.min}-${summary.attemptedTransitionRange.max}`
+    : "n/a";
+
+  return [
+    `${cohort}:${target.id}: success=${summary.successfulRuns}/${summary.requestedRuns}`,
+    `unavailable=${summary.unavailableRuns}`,
+    `run-errors=${summary.runErrorRuns}`,
+    `evaluable=${summary.evaluable}`,
+    `initial-stable=${summary.stableInitialFingerprint}`,
+    `graph-stable=${summary.stableGraphStructure}`,
+    `states=${states}`,
+    `transitions=${transitions}`,
+    `attempts=${attempts}`,
+    `status(O/B/F/N)=${summary.transitionStatuses.observed}/${summary.transitionStatuses.blockedByPolicy}/${summary.transitionStatuses.failed}/${summary.transitionStatuses.noStateChange}`,
+  ].join(", ");
+}
+
+const browser = await chromium.launch({ headless: true });
+
+try {
+  const primaryReports = await runCohort(
+    browser,
+    "primary",
+    PHASE19_REAL_WORLD_TARGETS,
+  );
+  const recoveryReports = await runCohort(
+    browser,
+    "recovery",
+    PHASE19_RECOVERY_TARGETS,
+  );
+  const targetReports = [...primaryReports, ...recoveryReports];
+
+  const primaryStudy = summarizeRealWorldStudy(
+    primaryReports.map((report) => report.summary),
+  );
+  const recoveryStudy = summarizeRealWorldStudy(
+    recoveryReports.map((report) => report.summary),
+  );
+  const combinedStudy = summarizeRealWorldStudy(
     targetReports.map((report) => report.summary),
   );
-  const studyEvaluable =
-    study.evaluableTargets >= PHASE19_PROTOCOL.minimumEvaluableTargets;
+  const studyEvaluable = isRealWorldStudyEvaluable(
+    targetReports.map((report) => report.summary),
+    PHASE19_RECOVERY_PROTOCOL.minimumCombinedEvaluableTargets,
+  );
 
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     experiment: "phase-19-real-world-evaluation",
     runtime: {
       node: process.version,
@@ -214,8 +282,11 @@ try {
     },
     generatedAt: new Date().toISOString(),
     protocol: PHASE19_PROTOCOL,
+    recoveryProtocol: PHASE19_RECOVERY_PROTOCOL,
     targetReports,
-    study,
+    primaryStudy,
+    recoveryStudy,
+    study: combinedStudy,
     studyEvaluable,
   };
 
@@ -226,40 +297,19 @@ try {
     "utf8",
   );
 
-  const targetLines = targetReports.map(({ target, summary }) => {
-    const states = summary.stateCountRange
-      ? `${summary.stateCountRange.min}-${summary.stateCountRange.max}`
-      : "n/a";
-    const transitions = summary.transitionCountRange
-      ? `${summary.transitionCountRange.min}-${summary.transitionCountRange.max}`
-      : "n/a";
-    const attempts = summary.attemptedTransitionRange
-      ? `${summary.attemptedTransitionRange.min}-${summary.attemptedTransitionRange.max}`
-      : "n/a";
-
-    return [
-      `${target.id}: success=${summary.successfulRuns}/${summary.requestedRuns}`,
-      `unavailable=${summary.unavailableRuns}`,
-      `run-errors=${summary.runErrorRuns}`,
-      `evaluable=${summary.evaluable}`,
-      `initial-stable=${summary.stableInitialFingerprint}`,
-      `graph-stable=${summary.stableGraphStructure}`,
-      `states=${states}`,
-      `transitions=${transitions}`,
-      `attempts=${attempts}`,
-      `status(O/B/F/N)=${summary.transitionStatuses.observed}/${summary.transitionStatuses.blockedByPolicy}/${summary.transitionStatuses.failed}/${summary.transitionStatuses.noStateChange}`,
-    ].join(", ");
-  });
-
   const summary = [
     "Phase 19 real-world-evaluation summary",
-    `Targets/requested runs: ${study.targets}/${study.requestedRuns}`,
-    `Successful/unavailable/run-error runs: ${study.successfulRuns}/${study.unavailableRuns}/${study.runErrorRuns}`,
-    `Evaluable targets: ${study.evaluableTargets}/${study.targets} (minimum ${PHASE19_PROTOCOL.minimumEvaluableTargets})`,
-    `Stable initial targets: ${study.stableInitialTargets}`,
-    `Stable graph targets: ${study.stableGraphTargets}`,
+    `Primary targets/requested runs: ${primaryStudy.targets}/${primaryStudy.requestedRuns}`,
+    `Recovery targets/requested runs: ${recoveryStudy.targets}/${recoveryStudy.requestedRuns}`,
+    `Combined targets/requested runs: ${combinedStudy.targets}/${combinedStudy.requestedRuns}`,
+    `Combined successful/unavailable/run-error runs: ${combinedStudy.successfulRuns}/${combinedStudy.unavailableRuns}/${combinedStudy.runErrorRuns}`,
+    `Primary evaluable targets: ${primaryStudy.evaluableTargets}/${primaryStudy.targets}`,
+    `Recovery evaluable targets: ${recoveryStudy.evaluableTargets}/${recoveryStudy.targets}`,
+    `Combined evaluable targets: ${combinedStudy.evaluableTargets}/${combinedStudy.targets} (minimum ${PHASE19_RECOVERY_PROTOCOL.minimumCombinedEvaluableTargets})`,
+    `Stable initial targets: ${combinedStudy.stableInitialTargets}`,
+    `Stable graph targets: ${combinedStudy.stableGraphTargets}`,
     `Study evaluable: ${studyEvaluable}`,
-    ...targetLines,
+    ...targetReports.map(targetLine),
     `Full JSON: ${outputPath}`,
   ].join("\n") + "\n";
 
