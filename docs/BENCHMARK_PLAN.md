@@ -109,3 +109,14 @@ Research rule:
 - controlled fixtures measure correctness;
 - live-site observations measure stability/generalization signals;
 - live-site observations must never silently become ground truth.
+
+
+## Phase 9 observed volatility
+
+Volatility learning must use a train/holdout split.
+
+Rules are learned only from trusted repeated observations whose protected semantic anchor is unchanged. Evaluation then uses unseen volatile values and separate meaningful-state anchors to test both generalization and leakage.
+
+A learned rule is scoped to the anchor on which it was learned. Global "this field format is always noise" rules are explicitly rejected as the default research direction.
+
+The benchmark must include a meaningful state with the same superficial changing-value pattern so that a volatility rule cannot pass merely by deleting all dynamic text.
