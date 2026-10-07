@@ -27,9 +27,18 @@ export interface RealWorldUnavailableRun {
   error: string;
 }
 
+export interface RealWorldRunError {
+  targetId: string;
+  runIndex: number;
+  status: "run-error";
+  durationMs: number;
+  error: string;
+}
+
 export type RealWorldRun =
   | RealWorldSuccessfulRun
-  | RealWorldUnavailableRun;
+  | RealWorldUnavailableRun
+  | RealWorldRunError;
 
 export interface NumericRange {
   min: number;
@@ -41,6 +50,7 @@ export interface RealWorldTargetSummary {
   requestedRuns: number;
   successfulRuns: number;
   unavailableRuns: number;
+  runErrorRuns: number;
   availabilityRate: number;
   evaluable: boolean;
   initialFingerprintUniqueCount: number;
@@ -53,6 +63,7 @@ export interface RealWorldTargetSummary {
   totalEvidenceErrors: number;
   transitionStatuses: RealWorldTransitionStatusCounts;
   unavailableErrors: readonly string[];
+  runErrors: readonly string[];
 }
 
 function range(values: readonly number[]): NumericRange | null {
@@ -104,6 +115,10 @@ export function summarizeRealWorldRuns(
     (run): run is RealWorldUnavailableRun =>
       run.status === "unavailable",
   );
+  const runErrors = runs.filter(
+    (run): run is RealWorldRunError =>
+      run.status === "run-error",
+  );
 
   const transitionStatuses = successful.reduce(
     (total, run) => ({
@@ -135,7 +150,9 @@ export function summarizeRealWorldRuns(
     requestedRuns,
     successfulRuns: successful.length,
     unavailableRuns: unavailable.length,
-    availabilityRate: successful.length / requestedRuns,
+    runErrorRuns: runErrors.length,
+    availabilityRate:
+      (successful.length + runErrors.length) / requestedRuns,
     evaluable,
     initialFingerprintUniqueCount,
     graphSignatureUniqueCount,
@@ -160,6 +177,7 @@ export function summarizeRealWorldRuns(
     ),
     transitionStatuses,
     unavailableErrors: unavailable.map((run) => run.error),
+    runErrors: runErrors.map((run) => run.error),
   };
 }
 
@@ -168,6 +186,7 @@ export interface RealWorldStudySummary {
   requestedRuns: number;
   successfulRuns: number;
   unavailableRuns: number;
+  runErrorRuns: number;
   evaluableTargets: number;
   stableInitialTargets: number;
   stableGraphTargets: number;
@@ -188,6 +207,10 @@ export function summarizeRealWorldStudy(
     ),
     unavailableRuns: targets.reduce(
       (total, target) => total + target.unavailableRuns,
+      0,
+    ),
+    runErrorRuns: targets.reduce(
+      (total, target) => total + target.runErrorRuns,
       0,
     ),
     evaluableTargets: targets.filter(
