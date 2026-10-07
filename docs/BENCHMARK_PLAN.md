@@ -209,3 +209,20 @@ Research rules:
 - every lifecycle artifact records its immediate parent digest and the evaluated evidence-window digest.
 
 The controlled benchmark freezes a complete trusted -> challenged -> trusted -> challenged -> revoked -> cooldown -> trusted cycle and verifies that the challenged state already restores conservative full coverage before permanent revocation.
+
+
+## Phase 15 multi-rule selective revalidation
+
+A real profile may contain many independent trusted or challenged rules, so revalidation must be budgeted rather than exhaustive.
+
+Research rules:
+
+- lifecycle entries remain independent;
+- revalidation priority is deterministic and explainable;
+- priority considers current lifecycle state, freshness, conflict history, and an explicit estimated coverage impact;
+- missing impact metadata is an error rather than an implicit low-risk default;
+- a fixed budget selects only the highest-ranked rules;
+- evidence for one selected rule must not change unrelated lifecycle entries;
+- the priority heuristic is treated as a candidate policy, not an optimal scheduler.
+
+The frozen benchmark contains four rules with expected scores 150, 84, 80, and 11. A budget of two must select the challenged high-impact rule and the aging trusted rule while skipping the cooldown and fresh low-impact rules for that cycle.

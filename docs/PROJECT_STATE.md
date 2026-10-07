@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 14 — Freshness-aware trust lifecycle**
+**Phase 15 — Multi-rule selective revalidation**
 
 ## Branch
 
-`feat/phase-14-trust-lifecycle-freshness-final`
+`feat/phase-15-multirule-selective-revalidation`
 
 ## Phase 0 status
 
@@ -1582,10 +1582,196 @@ The safety strategy becomes:
 - refuse stale or wrong-version evidence;
 - expire trust that has not been refreshed.
 
+## Phase 15 implementation
+
+Phase 15 moves from a single trusted-rule lifecycle to a multi-rule profile with deterministic selective revalidation under a fixed verification budget.
+
+### Why selective revalidation
+
+A real application may accumulate many volatility rules. Revalidating every rule on every cycle would erase much of the efficiency gained from semantic abstraction.
+
+Phase 15 therefore introduces a deterministic priority heuristic v1.
+
+For each lifecycle rule:
+
+`priority = state urgency + freshness risk + conflict history + estimated coverage impact`
+
+The components are deliberately explicit and inspectable.
+
+State urgency:
+
+- trusted: 0;
+- challenged: 100;
+- cooldown: 40;
+- revoked: 30.
+
+Freshness risk:
+
+- applies only to currently trusted rules;
+- scales linearly from 0 to 60 as the rule approaches `maxTrustAgeMs`;
+- is capped at 60.
+
+Conflict history:
+
+- 10 points per recorded conflict window;
+- capped at 20.
+
+Estimated coverage impact:
+
+- 5 points per estimated affected state;
+- capped at 10 affected states / 50 points.
+
+These weights are a transparent research heuristic, not a claim of optimal scheduling. Later ablation work must test whether the components and weights actually improve outcomes.
+
+### Frozen multi-rule benchmark
+
+The Phase 15 benchmark contains four independent lifecycle entries:
+
+1. high-impact challenged rule:
+   - state: `challenged`;
+   - estimated affected states: 8;
+   - expected score: 150.
+
+2. aging trusted rule:
+   - state: `trusted`;
+   - verified 9/10ths of the trust-age window ago;
+   - estimated affected states: 6;
+   - expected score: 84.
+
+3. medium-impact cooldown rule:
+   - state: `cooldown`;
+   - prior conflict history: 2 windows;
+   - estimated affected states: 4;
+   - expected score: 80.
+
+4. fresh low-impact trusted rule:
+   - state: `trusted`;
+   - recently verified;
+   - estimated affected states: 1;
+   - expected score: 11.
+
+Frozen ranking:
+
+```text
+challenged-critical:150
+>
+trusted-aging:84
+>
+cooldown-medium:80
+>
+trusted-fresh-low:11
+```
+
+### Fixed verification budget
+
+The frozen revalidation budget is 2 rules.
+
+Expected selection:
+
+- `anchor-challenged-critical`;
+- `anchor-trusted-aging`.
+
+Expected work reduction:
+
+- 4 rules exist;
+- 2 are scheduled;
+- selected fraction = 0.5;
+- 2 rule probes are not scheduled in this cycle.
+
+The benchmark does not claim that skipping a rule proves it is safe forever. It only measures whether a deterministic bounded scheduler can focus verification work on the currently higher-priority rules.
+
+### Multi-rule lifecycle isolation
+
+The benchmark then provides a sufficient stable evidence window only for the highest-priority challenged rule.
+
+Expected transition:
+
+- challenged critical rule: `challenged -> trusted` with decision `challenge-cleared`.
+
+All other rules receive no matching evidence and must preserve their lifecycle state:
+
+- aging trusted rule remains `trusted`;
+- cooldown rule remains `cooldown`;
+- fresh low-impact rule remains `trusted`.
+
+Their decisions are expected to remain `insufficient-evidence`.
+
+This verifies that one rule's revalidation does not accidentally mutate unrelated lifecycle entries.
+
+### Determinism and metadata completeness
+
+The scheduler must:
+
+- produce the same ranking regardless of metadata input order;
+- reject incomplete impact metadata rather than silently assigning a default risk;
+- reject invalid negative/non-integer impact estimates;
+- reject invalid verification budgets.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-15-multirule-selective-revalidation
+git pull --ff-only
+npm install
+
+npm run typecheck
+npm test
+npm run experiment:phase14
+npm run experiment:phase15
+```
+
+Expected Phase 15 compact summary:
+
+```text
+Rules ranked: 4
+Revalidation budget: 2
+Ranking: anchor-challenged-critical:150 > anchor-trusted-aging:84 > anchor-cooldown-medium:80 > anchor-trusted-fresh-low:11
+Selected anchors: anchor-challenged-critical, anchor-trusted-aging
+Selected fraction: 0.5
+Saved rule probes: 2
+Selected rule decision: challenge-cleared
+Untouched rule states preserved: true
+```
+
+The experiment writes:
+
+- full report: `results/raw/phase-15-selective-revalidation.json`;
+- compact summary: `results/raw/phase-15-selective-revalidation-summary.txt`.
+
+### Research interpretation
+
+A Phase 15 pass would demonstrate that multiple volatility rules can coexist with independent lifecycle state and that StateScout can schedule a bounded subset for verification using transparent risk signals.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 53/53 passed, 0 failed;
+- frozen Phase 14 lifecycle result remained unchanged;
+- rules ranked: 4;
+- revalidation budget: 2;
+- frozen ranking reproduced exactly: `150 > 84 > 80 > 11`;
+- selected anchors: `anchor-challenged-critical`, `anchor-trusted-aging`;
+- selected fraction: 0.5;
+- saved rule probes: 2;
+- selected challenged rule decision: `challenge-cleared`;
+- unrelated lifecycle entries preserved their previous states;
+- unrelated rule decisions remained `insufficient-evidence`.
+
+The bounded scheduler therefore selected only half of the available rules while still prioritizing the challenged high-impact rule and the aging trusted rule ahead of cooldown and fresh low-impact rules.
+
+The isolation check also confirms that applying evidence for one selected rule does not mutate unrelated lifecycle entries.
+
+Phase 15 verification gate is complete.
+
+It would not establish that the priority formula is optimal. The exact weights remain a candidate policy that should later be challenged through ablation and broader benchmarks.
+
 ## Next phase after verification
 
-If Phase 14 passes, the next research step should move from a single-rule lifecycle to multi-rule profiles and selective revalidation: independent rules may age, drift, or recover at different rates, and StateScout should schedule verification work where the expected coverage risk is highest rather than probing every trusted rule equally.
+If Phase 15 passes, Phase 16 should introduce a reversible raw-observation/equivalence layer. StateScout should preserve the observations that were abstracted together so a later rule revocation can reinterpret old evidence instead of permanently losing the distinctions that were collapsed during earlier exploration.
 
 ## Merge status
 
-Phases 1A through 13 are merged. Phase 14 implementation and whole-phase verification are complete on `feat/phase-14-trust-lifecycle-freshness-final`; PR #16 is ready for merge.
+Phases 1A through 14 are merged. Phase 15 implementation and whole-phase verification are complete on `feat/phase-15-multirule-selective-revalidation`; PR #17 is ready for merge.
