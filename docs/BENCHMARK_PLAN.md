@@ -188,3 +188,24 @@ Research rules:
 - benchmark both stable later evidence and semantic drift so the mechanism is not biased toward revocation.
 
 The controlled evolved-app benchmark requires stale trust to lose meaningful-state coverage and offline revocation to restore that coverage on the next crawl.
+
+
+## Phase 14 freshness-aware trust lifecycle
+
+Trusted rules are no longer modeled as permanently trusted or permanently revoked.
+
+Research rules:
+
+- trust is materialized only for future runs;
+- one sufficiently supported contradictory window immediately challenges a rule and removes it from the next active profile;
+- a second distinct contradictory window is required for permanent revocation;
+- re-importing the same window cannot increment conflict counters;
+- a transient challenge can be cleared by a later stable window;
+- a revoked rule requires two distinct stable recovery windows before restoration;
+- stale evidence cannot mutate lifecycle state;
+- stale trust is excluded from the active profile;
+- evidence and trust are scoped to an explicit application/version identifier;
+- wrong-scope evidence cannot challenge or restore a rule;
+- every lifecycle artifact records its immediate parent digest and the evaluated evidence-window digest.
+
+The controlled benchmark freezes a complete trusted -> challenged -> trusted -> challenged -> revoked -> cooldown -> trusted cycle and verifies that the challenged state already restores conservative full coverage before permanent revocation.

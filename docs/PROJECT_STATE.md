@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 13 — Trusted-profile revalidation and revocation**
+**Phase 14 — Freshness-aware trust lifecycle**
 
 ## Branch
 
-`feat/phase-13-profile-revalidation-revocation`
+`feat/phase-14-trust-lifecycle-freshness-final`
 
 ## Phase 0 status
 
@@ -1413,10 +1413,179 @@ The important safety property is asymmetric: insufficient evidence does not eras
 
 This still does not solve when revalidation should be scheduled in real deployments, how long evidence should remain valid, or how to distinguish temporary experiments/A-B tests from permanent semantic drift.
 
+## Phase 14 implementation
+
+Phase 14 replaces permanent binary trust with a freshness-aware, scope-aware lifecycle for promoted volatility rules.
+
+### Lifecycle states
+
+Each promoted rule now has an offline lifecycle state:
+
+- `trusted`: eligible for the active profile when fresh and scope-matched;
+- `challenged`: one sufficiently replicated contradictory evidence window has appeared; the rule is immediately removed from the next active profile, but is not permanently revoked yet;
+- `revoked`: contradictory behavior persisted across the configured number of distinct challenge windows;
+- `cooldown`: a revoked rule has started producing stable behavior again but has not yet accumulated enough independent stable windows for restoration.
+
+Only `trusted` entries can be materialized into a future crawl profile.
+
+### Challenge-window policy
+
+The frozen Phase 14 policy requires:
+
+- 2 contradictory evidence windows before permanent revocation;
+- 2 stable evidence windows before restoration after revocation;
+- the existing Phase 13 per-window evidence threshold of 4 behavior confirmations, 2 sessions, and 3 distinct values.
+
+A single contradictory window therefore causes safe conservative fallback without permanently destroying trust.
+
+If the next sufficiently supported window is stable, `challenged -> trusted` clears the transient challenge.
+
+### Window idempotency
+
+Every evidence window has a stable `windowId`.
+
+A window already present in `processedWindowIds` cannot increment conflict or recovery counters again. Re-importing the same A/B-test evidence therefore cannot accidentally escalate `challenged -> revoked`.
+
+Duplicate windows are recorded with status `duplicate-window` and leave the trust state unchanged.
+
+### Freshness and application scope
+
+Lifecycle artifacts carry an explicit application/version scope string.
+
+A trusted rule is omitted from the active future profile when:
+
+- the requested application scope differs from the rule's lifecycle scope; or
+- the rule's last successful verification is older than `maxTrustAgeMs`.
+
+Incoming evidence windows are also rejected for lifecycle mutation when:
+
+- their application scope differs; or
+- they are older than `maxEvidenceAgeMs` relative to the offline decision time.
+
+The Phase 14 controlled policy uses a 3-day trust freshness limit and a 1-day evidence-window freshness limit so these behaviors can be exercised deterministically.
+
+### Auditable lifecycle chain
+
+Each lifecycle revision records:
+
+- SHA-256 of its immediate parent artifact;
+- SHA-256 of the evidence window being evaluated when applicable;
+- generated-at timestamp;
+- lifecycle policy;
+- processed window IDs;
+- per-rule transition decisions.
+
+Even duplicate, stale, and wrong-scope evaluation steps point to the immediate parent artifact they evaluated.
+
+### Frozen Phase 14 sequence
+
+The benchmark freezes this sequence for one valid Dashboard title rule:
+
+1. stable window -> `trusted`, active rules = 1;
+2. first transient conflict -> `challenged`, active rules = 0;
+3. duplicate import of that exact conflict window -> still `challenged`, active rules = 0;
+4. stable window -> challenge cleared -> `trusted`, active rules = 1;
+5. first persistent conflict window -> `challenged`, active rules = 0;
+6. second distinct persistent conflict window -> `revoked`, active rules = 0;
+7. first stable recovery window -> `cooldown`, active rules = 0;
+8. second stable recovery window -> restored `trusted`, active rules = 1.
+
+Additional frozen checks:
+
+- stale evidence window status: `stale-evidence`;
+- wrong application-scope evidence status: `scope-mismatch`;
+- expired trusted rule active rules: 0;
+- wrong-scope materialization active rules: 0;
+- lifecycle artifact serialization round-trip: stable.
+
+### System-level challenged-state safety
+
+The first contradictory window does not wait for permanent revocation before protecting coverage.
+
+The challenged lifecycle state materializes an empty volatility profile for the next crawl. On the evolved Phase 13 fixture, that future conservative crawl is expected to recover:
+
+- meaningful Details coverage: 1.0;
+- graph states: 6;
+- graph transitions: 6;
+- attempted transitions: 6;
+- failed transitions: 0.
+
+This separates immediate safety from permanent trust destruction.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-14-trust-lifecycle-freshness-final
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase13
+npm run experiment:phase14
+```
+
+First local Phase 14 gate produced the expected runtime/research results but exposed one strict-TypeScript benchmark typing defect:
+
+- `npm test`: 50/50 passed;
+- frozen Phase 13 result remained unchanged;
+- Phase 14 lifecycle experiment matched every frozen behavioral expectation;
+- strict `tsc --noEmit` failed because the helper parameter `applicationScope` was inferred from the default value as the literal type `"statescout-fixture:v1"`;
+- the intentional wrong-scope case passes `"statescout-fixture:v2"`, so TypeScript rejected the benchmark call even though the runtime behavior was correct;
+- the helper parameter is now explicitly typed as `string`;
+- no lifecycle policy, state transition, benchmark expectation, or experiment logic was changed.
+
+The Phase 14 gate remains incomplete until strict TypeScript is rerun successfully after this type-only fix.
+
+The Phase 14 experiment writes:
+
+- full report: `results/raw/phase-14-trust-lifecycle.json`;
+- compact summary: `results/raw/phase-14-trust-lifecycle-summary.txt`;
+- final restored lifecycle artifact: `results/raw/phase-14-trust-lifecycle-final-artifact.json`.
+
+### Research interpretation
+
+A Phase 14 pass would show that StateScout can keep abstraction trust defeasible without oscillating on one duplicated or transient evidence window.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0 after the type-only benchmark scope fix.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 50/50 passed, 0 failed;
+- frozen Phase 13 result remained unchanged;
+- stable retain: `trusted`, active rules = 1;
+- transient conflict: `challenged`, active rules = 0;
+- duplicate conflict import: `duplicate-window`, state remained `challenged`;
+- challenge-clearing stable window: `trusted`, active rules = 1;
+- persistent conflict sequence: `challenged -> revoked`;
+- recovery sequence: `cooldown -> trusted`;
+- stale evidence status: `stale-evidence`;
+- wrong-scope evidence status: `scope-mismatch`;
+- expired trust active rules: 0;
+- wrong-scope materialization active rules: 0;
+- lifecycle artifact serialization round-trip: stable;
+- challenged evolved-app run: meaningful Details coverage 1.0, 6 states, 6 transitions, 6 attempts, 0 failed transitions.
+
+The first contradictory evidence window therefore disabled the rule for the next crawl before permanent revocation, while duplicate evidence could not escalate the lifecycle. A later stable window cleared the transient challenge. Two distinct contradictory windows were required for revocation, and two stable recovery windows were required for restoration.
+
+Phase 14 verification gate is complete.
+
+The safety strategy becomes:
+
+- challenge quickly;
+- stop using challenged trust on the next run;
+- revoke only after repeated contradiction;
+- restore only after repeated stability;
+- refuse stale or wrong-version evidence;
+- expire trust that has not been refreshed.
+
 ## Next phase after verification
 
-If Phase 13 passes, the next research step should address profile freshness and conflict lifecycle: explicit evidence age, application/version scope, challenge windows, repeated retain/revoke cycles, and possibly a trust state machine rather than permanent binary trusted/untrusted rules.
+If Phase 14 passes, the next research step should move from a single-rule lifecycle to multi-rule profiles and selective revalidation: independent rules may age, drift, or recover at different rates, and StateScout should schedule verification work where the expected coverage risk is highest rather than probing every trusted rule equally.
 
 ## Merge status
 
-Phases 1A through 12 are merged. Phase 13 implementation and whole-phase verification are complete on `feat/phase-13-profile-revalidation-revocation`; PR #15 is ready for merge.
+Phases 1A through 13 are merged. Phase 14 implementation and whole-phase verification are complete on `feat/phase-14-trust-lifecycle-freshness-final`; PR #16 is ready for merge.
