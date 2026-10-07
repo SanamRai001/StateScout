@@ -3,7 +3,11 @@ import type { Page } from "playwright";
 import { BfsFrontier } from "../core/frontier.ts";
 import { StateGraph, type StateFingerprinter } from "../core/graph.ts";
 import { fingerprintState } from "../core/fingerprint.ts";
-import type { Interaction, StatePath } from "../core/model.ts";
+import type {
+  Interaction,
+  SemanticStateSnapshot,
+  StatePath,
+} from "../core/model.ts";
 import {
   DEFAULT_ACTION_POLICY,
   canExecuteInteraction,
@@ -15,17 +19,34 @@ import {
   observePage,
 } from "./playwrightAdapter.ts";
 
+export type ExplorationObservationPhase =
+  | "initial"
+  | "replay-step"
+  | "restored-source"
+  | "after-interaction";
+
+export interface ExplorationObservation {
+  phase: ExplorationObservationPhase;
+  snapshot: SemanticStateSnapshot;
+}
+
+export type ExplorationObservationSink = (
+  observation: ExplorationObservation,
+) => void;
+
 export interface ExplorationOptions {
   startUrl: string;
   actionPolicy?: ActionExecutionPolicy;
   maxTransitions?: number;
   fingerprinter?: StateFingerprinter;
+  observationSink?: ExplorationObservationSink;
 }
 
 export interface ExplorationResult {
   graph: StateGraph;
   rootPath: StatePath;
   attemptedTransitions: number;
+  evidenceErrors: readonly string[];
 }
 
 async function restoreState(
@@ -33,12 +54,15 @@ async function restoreState(
   startUrl: string,
   path: StatePath,
   fingerprinter: StateFingerprinter,
+  observeForRun: (
+    phase: ExplorationObservationPhase,
+  ) => Promise<SemanticStateSnapshot>,
 ): Promise<void> {
   await page.goto(startUrl);
 
   for (const step of path.steps) {
     await executeInteraction(page, step.interaction);
-    const snapshot = await observePage(page);
+    const snapshot = await observeForRun("replay-step");
     const actual = fingerprinter(snapshot).hash;
 
     if (actual !== step.expectedStateHash) {
@@ -79,14 +103,35 @@ export async function exploreWithPlaywright(
   page: Page,
   options: ExplorationOptions,
 ): Promise<ExplorationResult> {
-  const fingerprinter = options.fingerprinter ?? fingerprintState;
-  const graph = new StateGraph(fingerprinter);
+  // Identity is frozen for the entire run. Evidence collection is observation-only
+  // and has no API to replace or mutate this run's fingerprinter.
+  const runFingerprinter = options.fingerprinter ?? fingerprintState;
+  const graph = new StateGraph(runFingerprinter);
   const frontier = new BfsFrontier();
   const policy = options.actionPolicy ?? DEFAULT_ACTION_POLICY;
   const maxTransitions = options.maxTransitions ?? 1_000;
+  const evidenceErrors: string[] = [];
+
+  const observeForRun = async (
+    phase: ExplorationObservationPhase,
+  ): Promise<SemanticStateSnapshot> => {
+    const snapshot = await observePage(page);
+
+    if (options.observationSink) {
+      try {
+        options.observationSink({ phase, snapshot });
+      } catch (error) {
+        evidenceErrors.push(
+          error instanceof Error ? error.message : String(error),
+        );
+      }
+    }
+
+    return snapshot;
+  };
 
   await page.goto(options.startUrl);
-  const initialSnapshot = await observePage(page);
+  const initialSnapshot = await observeForRun("initial");
   const initial = graph.upsertState(initialSnapshot);
   const rootPath: StatePath = { stateId: initial.node.id, steps: [] };
 
@@ -108,8 +153,16 @@ export async function exploreWithPlaywright(
     attemptedTransitions += 1;
 
     try {
-      await restoreState(page, options.startUrl, work.replayPath, fingerprinter);
-      const restored = graph.upsertState(await observePage(page));
+      await restoreState(
+        page,
+        options.startUrl,
+        work.replayPath,
+        runFingerprinter,
+        observeForRun,
+      );
+      const restored = graph.upsertState(
+        await observeForRun("restored-source"),
+      );
 
       if (restored.node.id !== work.fromStateId) {
         throw new Error(
@@ -118,7 +171,7 @@ export async function exploreWithPlaywright(
       }
 
       await executeInteraction(page, work.interaction);
-      const nextSnapshot = await observePage(page);
+      const nextSnapshot = await observeForRun("after-interaction");
       const next = graph.upsertState(nextSnapshot);
 
       graph.addTransition({
@@ -160,5 +213,5 @@ export async function exploreWithPlaywright(
     }
   }
 
-  return { graph, rootPath, attemptedTransitions };
+  return { graph, rootPath, attemptedTransitions, evidenceErrors };
 }

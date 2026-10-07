@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Dashboard — refresh 1</title></head>
+<body>
+<main id="app"></main>
+<script>
+const app = document.querySelector("#app");
+let refresh = 1;
+
+function render() {
+  document.title = `Dashboard — refresh ${refresh}`;
+  app.innerHTML = '<h1>Dashboard</h1><button type="button" data-action="refresh">Refresh view</button>';
+}
+
+app.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action=refresh]");
+  if (!target) return;
+  refresh += 1;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
