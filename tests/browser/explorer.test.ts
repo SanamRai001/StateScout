@@ -25,3 +25,43 @@ test("deterministic Playwright explorer covers the controlled benchmark", async 
   assert.deepEqual(coverage.missingTransitions, []);
   assert.equal(result.attemptedTransitions, 9);
 });
+
+
+test("explorer blocks external navigation and stays inside the start origin", async (t) => {
+  const browser = await chromium.launch({ headless: true });
+  t.after(() => browser.close());
+
+  const page = await browser.newPage();
+  const startUrl = pathToFileURL(
+    resolve("benchmarks/external-boundary/index.html"),
+  ).href;
+
+  const exploration = await exploreWithPlaywright(page, {
+    startUrl,
+    maxTransitions: 2,
+  });
+
+  const blockedExternal = exploration.graph
+    .listTransitions()
+    .filter(
+      (transition) =>
+        transition.status === "blocked-by-policy" &&
+        transition.interaction.kind === "navigate" &&
+        transition.interaction.target.href === "https://example.com/",
+    );
+
+  assert.equal(blockedExternal.length >= 1, true);
+  assert.equal(
+    exploration.graph
+      .listStates()
+      .some((state) => state.snapshot.headings.includes("Boundary Advanced")),
+    true,
+  );
+  assert.equal(new URL(page.url()).protocol, "file:");
+  assert.equal(
+    exploration.graph
+      .listStates()
+      .some((state) => state.snapshot.origin === "https://example.com"),
+    false,
+  );
+});
