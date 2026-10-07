@@ -1046,6 +1046,32 @@ The Phase 11 experiment writes:
 
 A Phase 11 pass would show that StateScout can gather and persist candidate evidence during ordinary exploration without changing the graph being explored.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 39/39 passed, 0 failed;
+- the frozen Phase 10 candidate-promotion result remained unchanged;
+- baseline graph signature equaled session A graph signature;
+- baseline graph signature equaled session B graph signature;
+- graph remained 5 states, 4 transitions, and 4 attempted transitions in all compared runs;
+- evidence errors were 0 for baseline, session A, and session B;
+- session A evidence store contained 5 unique records;
+- session B evidence store contained 5 unique records;
+- merged evidence store contained 10 unique records across 2 session IDs;
+- JSON persistence round-trip was stable;
+- merging the already merged store with session A again was idempotent;
+- exactly 1 quarantined candidate was discovered;
+- the candidate field was `title`;
+- the candidate contained 2 sessions and 5 distinct values;
+- candidate status remained `quarantined`;
+- the fault-injection test confirmed that evidence-sink failures do not alter graph state count, transition count, or attempted-transition count.
+
+The persisted merged evidence contains the same protected title anchor across both session IDs and the five observed Dashboard refresh values. Phase 11 therefore demonstrates that candidate evidence can be accumulated across serialized runs while the identity function that produced each graph remains frozen and unaffected.
+
+Phase 11 verification gate is complete.
+
 It would not yet mean candidates can be promoted automatically from normal crawls. Phase 11 intentionally persists observation evidence only; behavioral verification and promotion remain outside the active crawl.
 
 ## Next phase after verification
@@ -1054,4 +1080,4 @@ If Phase 11 passes, the next step should be an offline between-run decision pipe
 
 ## Merge status
 
-Phases 1A through 10 are merged. Phase 11 implementation is complete on `feat/phase-11-explorer-evidence-store` and awaits its single whole-phase verification gate.
+Phases 1A through 10 are merged. Phase 11 implementation and whole-phase verification are complete on `feat/phase-11-explorer-evidence-store`; PR #13 is ready for merge.
