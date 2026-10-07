@@ -1549,6 +1549,30 @@ The Phase 14 experiment writes:
 
 A Phase 14 pass would show that StateScout can keep abstraction trust defeasible without oscillating on one duplicated or transient evidence window.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0 after the type-only benchmark scope fix.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 50/50 passed, 0 failed;
+- frozen Phase 13 result remained unchanged;
+- stable retain: `trusted`, active rules = 1;
+- transient conflict: `challenged`, active rules = 0;
+- duplicate conflict import: `duplicate-window`, state remained `challenged`;
+- challenge-clearing stable window: `trusted`, active rules = 1;
+- persistent conflict sequence: `challenged -> revoked`;
+- recovery sequence: `cooldown -> trusted`;
+- stale evidence status: `stale-evidence`;
+- wrong-scope evidence status: `scope-mismatch`;
+- expired trust active rules: 0;
+- wrong-scope materialization active rules: 0;
+- lifecycle artifact serialization round-trip: stable;
+- challenged evolved-app run: meaningful Details coverage 1.0, 6 states, 6 transitions, 6 attempts, 0 failed transitions.
+
+The first contradictory evidence window therefore disabled the rule for the next crawl before permanent revocation, while duplicate evidence could not escalate the lifecycle. A later stable window cleared the transient challenge. Two distinct contradictory windows were required for revocation, and two stable recovery windows were required for restoration.
+
+Phase 14 verification gate is complete.
+
 The safety strategy becomes:
 
 - challenge quickly;
@@ -1564,4 +1588,4 @@ If Phase 14 passes, the next research step should move from a single-rule lifecy
 
 ## Merge status
 
-Phases 1A through 13 are merged. Phase 14 implementation is complete on `feat/phase-14-trust-lifecycle-freshness-final` and awaits its single whole-phase verification gate.
+Phases 1A through 13 are merged. Phase 14 implementation and whole-phase verification are complete on `feat/phase-14-trust-lifecycle-freshness-final`; PR #16 is ready for merge.
