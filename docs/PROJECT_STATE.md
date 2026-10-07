@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 17 — Broader frozen benchmark corpus**
+**Phase 18 — Baselines and ablations**
 
 ## Branch
 
-`feat/phase-17-broader-benchmark-corpus`
+`feat/phase-18-baselines-ablations`
 
 ## Phase 0 status
 
@@ -2107,10 +2107,206 @@ A passing result would show that the current semantic identity stack generalizes
 
 The two expected failures are scientifically useful because they identify a limitation in what StateScout observes, rather than another regex/fingerprint normalization problem.
 
+## Phase 18 implementation
+
+Phase 18 evaluates multiple identity strategies and feature ablations against the exact frozen Phase 17 corpus.
+
+No Phase 17 labels or fixtures are changed.
+
+### One observed corpus, many strategies
+
+Phase 18 observes the 16 frozen browser pairs once and evaluates multiple strategies over those same observations.
+
+Strategies:
+
+1. `url-only`;
+2. fingerprint v1;
+3. fingerprint v2;
+4. fingerprint v3;
+5. fingerprint v4 with an empty volatility profile;
+6. v4 without controls;
+7. v4 without title;
+8. v4 without query;
+9. v4 plus an experimental targeted visible-content observer augmentation.
+
+The production Playwright observer and fingerprint v4 remain unchanged.
+
+### Frozen expected comparison
+
+The expected aggregate metrics were committed before the Phase 18 evaluator.
+
+| Strategy | Correct | Accuracy | False merges | False splits |
+| --- | ---: | ---: | ---: | ---: |
+| URL-only | 5/16 | 0.3125 | 10 | 1 |
+| v1 | 13/16 | 0.8125 | 2 | 1 |
+| v2 | 13/16 | 0.8125 | 3 | 0 |
+| v3 | 13/16 | 0.8125 | 3 | 0 |
+| v4 | 14/16 | 0.875 | 2 | 0 |
+| v4 without controls | 9/16 | 0.5625 | 7 | 0 |
+| v4 without title | 13/16 | 0.8125 | 3 | 0 |
+| v4 without query | 13/16 | 0.8125 | 3 | 0 |
+| v4 + targeted content | 16/16 | 1.0 | 0 | 0 |
+
+The test suite also freezes the exact failed case IDs for every strategy so aggregate scores cannot hide a changed error distribution.
+
+### URL-only baseline
+
+The URL-only baseline uses:
+
+- origin;
+- path;
+- normalized query key/value ordering.
+
+It intentionally does not use semantic UI state.
+
+Frozen expectation:
+
+- 5/16 correct;
+- 10 false merges;
+- 1 false split.
+
+This baseline demonstrates why URL identity alone is insufficient for modern UI state exploration.
+
+### Historical fingerprint comparison
+
+On the same corpus:
+
+- v1 retains meaningful second-resolution titles but false-splits tracking noise;
+- v2 removes tracking noise but falsely merges the meaningful auction timer;
+- v3 keeps the same measured corpus outcome as v2 because the corpus retains the known meaningful second-resolution hazard;
+- v4 restores that temporal distinction while preserving tracking-noise handling.
+
+This provides a single-corpus summary of the earlier Phase 2-8 research history.
+
+### Feature-removal ablations
+
+#### Controls removed
+
+Expected:
+
+- 9/16 correct;
+- 7 false merges.
+
+Failures include:
+
+- selected tab;
+- expanded state;
+- checkbox state;
+- disabled state;
+- input value;
+- both content-coverage cases.
+
+This is the largest measured ablation drop and demonstrates that semantic control state carries substantial identity information in this corpus.
+
+#### Title removed
+
+Expected:
+
+- 13/16 correct;
+- 3 false merges.
+
+The newly lost case is the meaningful second-resolution auction title.
+
+#### Query removed
+
+Expected:
+
+- 13/16 correct;
+- 3 false merges.
+
+The newly lost case is the semantic record-query distinction.
+
+### Experimental targeted-content augmentation
+
+Phase 17 showed that the current observer does not represent arbitrary meaningful paragraph/list content.
+
+Phase 18 adds an evaluation-only observer augmentation that captures visible text from:
+
+- `p`;
+- `li`;
+- `[role=status]`;
+- `[role=alert]`.
+
+Those tokens are normalized, sorted, and combined with the existing v4 canonical state only for the ablation experiment.
+
+Frozen expectation:
+
+- 16/16 correct;
+- 0 false merges;
+- 0 false splits.
+
+The experiment must also show that the augmentation changes predictions for exactly two cases:
+
+- `plain-status-text-state`;
+- `list-content-state`.
+
+It must not change any other Phase 17 prediction.
+
+### Research boundary
+
+The targeted-content result is evidence that observer coverage matters.
+
+It is not yet a production observer change and it is not fingerprint v5.
+
+A 16/16 score on this controlled corpus is not evidence that arbitrary body text should simply be added globally. Larger real-world pages may contain noisy timestamps, ads, counters, feeds, user-generated text, and other high-volatility content.
+
+That trade-off must be evaluated before production adoption.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-18-baselines-ablations
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase17
+npm run experiment:phase18
+```
+
+Expected suite size: 60 tests.
+
+Expected compact Phase 18 results:
+
+```text
+url-only: 5/16, FM=10, FS=1
+v1: 13/16, FM=2, FS=1
+v2: 13/16, FM=3, FS=0
+v3: 13/16, FM=3, FS=0
+v4: 14/16, FM=2, FS=0
+v4-no-controls: 9/16, FM=7, FS=0
+v4-no-title: 13/16, FM=3, FS=0
+v4-no-query: 13/16, FM=3, FS=0
+v4-targeted-content: 16/16, FM=0, FS=0
+```
+
+The experiment writes:
+
+- full report: `results/raw/phase-18-baselines-ablations.json`;
+- compact summary: `results/raw/phase-18-baselines-ablations-summary.txt`.
+
+### Research interpretation
+
+A Phase 18 pass would establish a controlled comparative result rather than another isolated algorithm win.
+
+It would show:
+
+- URL-only identity is severely insufficient on this corpus;
+- controls are a major contributor to current semantic-state correctness;
+- title and query each protect concrete semantic distinctions;
+- v4 is the strongest existing fingerprint generation in the frozen comparison;
+- observer coverage, not only canonicalization, is now a measured source of false merges;
+- a narrowly targeted content observation can repair the two Phase 17 misses on this corpus without introducing a measured false split.
+
+The exact targeted-content strategy remains experimental until broader and real-world evaluation.
+
 ## Next phase after verification
 
-If Phase 17 passes, Phase 18 should run the frozen corpus as a baseline and ablation study. It should compare multiple identity strategies and observer feature sets on exactly the same labels, including URL-only identity, strict semantic identity, v1-v4 fingerprints, trusted-profile abstraction, and targeted observer-content additions. Any improvement should be evaluated against both false-merge and false-split risk rather than optimized for total accuracy alone.
+If Phase 18 passes, Phase 19 should evaluate StateScout on real/open-source applications under safe/read-only constraints. Controlled corpus labels should remain separate from real-app observations: the real-world phase should measure stability, repeated-run consistency, state-space size, replay failures, action attempts, and qualitative coverage rather than pretending externally changing applications have perfect ground truth.
 
 ## Merge status
 
-Phases 1A through 16 are merged. Phase 17 implementation and whole-phase verification are complete on `feat/phase-17-broader-benchmark-corpus`; PR #19 is ready for merge.
+Phases 1A through 17 are merged. Phase 18 implementation is complete on `feat/phase-18-baselines-ablations` and awaits its single whole-phase verification gate.
