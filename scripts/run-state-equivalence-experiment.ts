@@ -18,5 +18,5 @@ const report = {
 
 await mkdir(resolve(outputPath, ".."), { recursive: true });
 await writeFile(outputPath, JSON.stringify(report, null, 2) + "\n", "utf8");
-console.log(JSON.stringify(report, null, 2));
-console.log(`Wrote ${outputPath}`);
+console.log(`Phase 2: ${metrics.correct}/${metrics.total} correct, false merges=${metrics.falseMergeCount}, false splits=${metrics.falseSplitCount}`);
+console.log(`Full result: ${outputPath}`);
