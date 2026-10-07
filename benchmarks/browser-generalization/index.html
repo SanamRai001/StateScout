@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>StateScout Noise Fixture — 10:00:01</title></head>
+<body>
+<main id="app"></main>
+<script>
+const variant = location.hash.slice(1) || "base";
+const app = document.querySelector("#app");
+const meaningful = {
+  "page-two": '<h1>Dashboard</h1><button>Order 42</button>',
+  "dialog": '<h1>Dashboard</h1><div role="dialog" aria-label="Confirm order"><button>Cancel</button></div>',
+  "disabled": '<h1>Dashboard</h1><button disabled>Continue</button>',
+};
+if (meaningful[variant]) {
+  app.innerHTML = meaningful[variant];
+} else if (variant === "noise-b") {
+  document.title = "StateScout Noise Fixture — 10:00:02";
+  app.innerHTML = '<div class="generated-x91" id="random-928"><section><h1> Dashboard </h1><div><button data-testid="generated-2">Open menu</button></div><a href="?variant=reports">Reports</a></section></div>';
+} else {
+  app.innerHTML = '<h1>Dashboard</h1><a href="?variant=reports">Reports</a><button data-testid="generated-1">Open menu</button>';
+}
+</script>
+</body>
+</html>

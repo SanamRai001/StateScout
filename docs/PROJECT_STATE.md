@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 3 — Evidence-driven fingerprint v2 comparison**
+**Phase 4 — Browser-level fingerprint generalization**
 
 ## Branch
 
-`feat/phase-3-fingerprint-v2`
+`feat/phase-4-browser-generalization`
 
 ## Phase 0 status
 
@@ -385,10 +385,79 @@ The single-run fingerprint timing values are recorded as raw observations only. 
 
 Phase 3 verification gate is complete. Fingerprint v2 remains an experimental candidate rather than the explorer default until broader browser-fixture validation.
 
+## Phase 4 implementation
+
+Phase 4 is complete in code and tests fingerprint v2 through actual Playwright observations rather than hand-constructed snapshots.
+
+A frozen browser fixture now combines:
+
+- irrelevant wrapper nesting;
+- generated CSS classes and element IDs;
+- generated test IDs;
+- control reordering;
+- tracking-query noise;
+- volatile title clock time;
+- a meaningful query-driven state;
+- an open-dialog state;
+- a disabled-affordance state.
+
+The semantic observer should naturally discard DOM-only wrapper/class/id noise. Fingerprint v2 is specifically expected to remove the tracking/time false split while retaining all meaningful differences.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-4-browser-generalization
+git pull --ff-only
+npm install
+npx playwright install chromium
+npm run typecheck
+npm test
+npm run experiment:equivalence
+npm run experiment:fingerprint-comparison
+npm run experiment:browser-generalization
+```
+
+Expected Phase 4 hypothesis:
+
+- v1 produces one false split on the browser fixture and zero false merges;
+- v2 classifies all 4 browser pairs correctly;
+- v2 produces zero false splits and zero false merges;
+- all earlier frozen v1/v2 research baselines remain unchanged.
+
+First local Phase 4 gate exposed a benchmark-design defect before acceptance:
+
+- TypeScript correctly rejected implicit evaluator types; the evaluator is now explicitly typed.
+- The first browser run reported v2 as 3/4 with one false split.
+- Root cause: the fixture used `?variant=base` vs `?variant=noise-b` to select test variants. Because `variant` is a non-tracking query parameter, v2 correctly treated it as semantic state.
+- This was not evidence of a v2 regression; the benchmark had leaked its own fixture-control variable into the fingerprint input.
+- Fixture selection now uses the URL fragment, which is intentionally outside the current semantic fingerprint, while real query parameters remain available for tracking/noise and meaningful-query cases.
+- No fingerprint-v2 logic was changed in response to this failure.
+- The corrected fixture then exposed a second harness issue: hash-only `page.goto` navigation is same-document navigation, so the fixture script did not rerun for the dialog/disabled variants. Both algorithms therefore received stale base DOM and falsely appeared to merge those states.
+- Browser-fixture observation now explicitly reloads after navigation so the script renders from the complete target URL/fragment before each snapshot.
+- Again, no fingerprint implementation was changed; the measurement harness was corrected instead.
+
+Corrected whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 22/22 passed, 0 failed;
+- Phase 2 frozen v1 baseline remained 7/9 with 0 false merges and 2 false splits;
+- Phase 3 frozen comparison remained v2 9/9 with 0 false merges and 0 false splits;
+- Phase 4 browser v1: 3/4, 0 false merges, 1 false split;
+- Phase 4 browser v2: 4/4, 0 false merges, 0 false splits;
+- meaningful query, dialog, and disabled-affordance browser states all remained distinct under v2;
+- wrapper/class/id/test-id, tracking-query, and volatile-title noise was successfully treated as equivalent in the intended browser pair.
+
+Phase 4 therefore supports the original hypothesis after correcting two independently documented harness defects. Fingerprint v2 itself was not changed to obtain the passing browser result.
+
+Phase 4 verification gate is complete. v2 remains non-default until an end-to-end explorer strategy comparison is completed.
+
 ## Next phase after verification
 
-If Phase 3 confirms the hypothesis, the next phase can evaluate v2 as an explorer state-identity strategy on broader/noisier browser fixtures before considering promotion to the default.
+If Phase 4 passes, v2 has evidence at both snapshot and browser-observation levels. The next phase can introduce an injectable fingerprint strategy into the graph/explorer and compare end-to-end exploration behavior before any default promotion.
 
 ## Merge status
 
-Phases 1A, 1B, and 2 are merged. Phase 3 implementation and its whole-phase verification gate are complete on `feat/phase-3-fingerprint-v2`; PR #5 is ready for merge.
+Phases 1A, 1B, 2, and 3 are merged. Phase 4 implementation and corrected whole-phase verification are complete on `feat/phase-4-browser-generalization`; PR #6 is ready for merge.
