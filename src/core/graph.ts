@@ -3,12 +3,15 @@ import { createHash } from "node:crypto";
 import { fingerprintState } from "./fingerprint.ts";
 import type {
   Interaction,
+  StateFingerprint,
   SemanticStateSnapshot,
   StateId,
   StateNode,
   Transition,
   TransitionStatus,
 } from "./model.ts";
+
+export type StateFingerprinter = (snapshot: SemanticStateSnapshot) => StateFingerprint;
 
 export interface UpsertStateOptions {
   capturedAt?: string;
@@ -45,11 +48,13 @@ export class StateGraph {
   private readonly stateIdsByHash = new Map<string, StateId>();
   private readonly transitionsById = new Map<string, Transition>();
 
+  constructor(private readonly fingerprinter: StateFingerprinter = fingerprintState) {}
+
   upsertState(
     snapshot: SemanticStateSnapshot,
     options: UpsertStateOptions = {},
   ): UpsertStateResult {
-    const fingerprint = fingerprintState(snapshot);
+    const fingerprint = this.fingerprinter(snapshot);
     const existingId = this.stateIdsByHash.get(fingerprint.hash);
 
     if (existingId !== undefined) {
