@@ -8,6 +8,7 @@ import {
 } from "./volatilityCandidates.ts";
 import {
   createVolatilityProfile,
+  type ScopedVolatilityRule,
   type VolatilityProfile,
 } from "./volatility.ts";
 import type { VolatilityBehaviorEvidenceStore } from "./volatilityBehaviorEvidenceStore.ts";
@@ -49,7 +50,7 @@ export function buildOfflineVolatilityProfile(
 ): FrozenVolatilityProfileArtifact {
   const candidates = discoverQuarantinedCandidates(observationStore);
   const decisions: OfflinePromotionDecision[] = [];
-  const promotedRules = [];
+  const promotedRules: ScopedVolatilityRule[] = [];
 
   for (const candidate of candidates) {
     const relevantBehavior = behaviorStore.records.filter(
