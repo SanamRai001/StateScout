@@ -32,6 +32,10 @@ test("Playwright adapter observes semantic state and a same-URL transition", asy
   const after = fingerprintState(afterState);
 
   assert.notEqual(after.hash, before.hash);
-  assert.deepEqual(afterState.dialogs, ["Example dialog Cancel Details"]);
+  assert.deepEqual(afterState.dialogs, ["Example dialog"]);
+  assert.deepEqual(
+    afterState.controls.map((control) => control.name),
+    ["Cancel", "Details"],
+  );
   assert.equal(page.url(), benchmarkUrl);
 });
