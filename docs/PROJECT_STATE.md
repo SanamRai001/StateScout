@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 15 — Multi-rule selective revalidation**
+**Phase 16 — Reversible raw observations and equivalence aliases**
 
 ## Branch
 
-`feat/phase-15-multirule-selective-revalidation`
+`feat/phase-16-reversible-equivalence-archive`
 
 ## Phase 0 status
 
@@ -1768,10 +1768,171 @@ Phase 15 verification gate is complete.
 
 It would not establish that the priority formula is optimal. The exact weights remain a candidate policy that should later be challenged through ablation and broader benchmarks.
 
+## Phase 16 implementation
+
+Phase 16 separates immutable historical evidence from the currently active abstraction.
+
+### Raw observation archive
+
+A new `RawStateArchive` stores immutable semantic history:
+
+- raw observation ID;
+- session ID;
+- observed timestamp;
+- full semantic snapshot;
+- strict semantic fingerprint;
+- raw transitions between observation IDs;
+- full interaction metadata;
+- transition status and error when present.
+
+Raw archive construction is deterministic:
+
+- duplicate identical IDs are deduplicated;
+- conflicting observation IDs are rejected;
+- conflicting transition IDs are rejected;
+- transitions referencing unknown raw observations are rejected;
+- serialization is stable;
+- the archive has a reproducible SHA-256 digest.
+
+The archive uses strict fingerprint v1 only as immutable observation provenance. It does not use that strict fingerprint as the active equivalence policy.
+
+### Alias / projection layer
+
+`projectRawStateArchive()` applies any supplied `StateFingerprinter` to the stored raw snapshots and produces a derived projected graph.
+
+Projected states contain:
+
+- current alias state ID;
+- current projected fingerprint;
+- all raw observation IDs represented by that alias.
+
+Projected transitions contain:
+
+- projected source state;
+- projected destination state;
+- interaction identity;
+- transition status;
+- every raw transition ID represented by that derived edge.
+
+The projection never edits the raw archive.
+
+### Frozen historical benchmark
+
+The frozen history contains:
+
+- 6 raw semantic observations;
+- 7 raw transitions;
+- 4 Dashboard observations whose titles are `refresh 1` through `refresh 4`;
+- 1 standard Details observation;
+- 1 priority Details observation.
+
+A trusted title-volatility rule initially aliases the four Dashboard observations.
+
+Expected trusted projection:
+
+- projected states: 3;
+- projected transitions: 6;
+- Dashboard alias members: 4;
+- raw transitions `raw-transition-4` and `raw-transition-5` merge into one projected transition while both provenance IDs remain attached.
+
+### Historical reinterpretation after revocation
+
+The same raw archive is then projected with the title rule removed.
+
+Expected revoked projection:
+
+- projected states: 6;
+- projected transitions: 7;
+- recovered Dashboard states: 4.
+
+No browser crawl is performed between trusted and revoked projections.
+
+The four historical Dashboard distinctions are recovered only because their original raw snapshots were preserved.
+
+### Restoration check
+
+The same immutable archive is projected again with the original trusted rule restored.
+
+Expected restored projection:
+
+- projected states: 3;
+- projected transitions: 6.
+
+The raw archive SHA-256 digest must remain identical before and after every projection.
+
+### Research boundary
+
+Phase 16 establishes the reversible archive and alias semantics in the browser-independent core.
+
+It does not yet claim that every normal Playwright exploration automatically persists its entire raw execution history into this archive. Existing browser observation and evidence mechanisms can feed this layer, but full crawl-to-archive integration is intentionally left separate from the core reversibility proof so the historical model can be evaluated independently.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-16-reversible-equivalence-archive
+git pull --ff-only
+npm install
+
+npm run typecheck
+npm test
+npm run experiment:phase15
+npm run experiment:phase16
+```
+
+Expected Phase 16 compact summary:
+
+```text
+Raw observations/transitions: 6/7
+Raw archive round-trip stable: true
+Trusted projection states/transitions: 3/6
+Trusted Dashboard alias members: 4
+Merged projected edge raw transition ids: raw-transition-4, raw-transition-5
+Revoked projection states/transitions: 6/7
+Revoked Dashboard states recovered: 4
+Restored projection states/transitions: 3/6
+Raw archive digest unchanged across reprojection: true
+```
+
+The experiment writes:
+
+- full report: `results/raw/phase-16-reversible-equivalence.json`;
+- compact summary: `results/raw/phase-16-reversible-equivalence-summary.txt`.
+
+### Research interpretation
+
+A Phase 16 pass would demonstrate that semantic abstraction no longer has to destroy historical distinctions.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 56/56 passed, 0 failed;
+- frozen Phase 15 selective-revalidation result remained unchanged;
+- raw observations: 6;
+- raw transitions: 7;
+- raw archive serialization round-trip: stable;
+- trusted projection: 3 states, 6 transitions;
+- trusted Dashboard alias members: 4;
+- merged projected edge preserved raw transition provenance for `raw-transition-4` and `raw-transition-5`;
+- revoked projection: 6 states, 7 transitions;
+- historical Dashboard states recovered after removing the rule: 4;
+- restored trusted projection: 3 states, 6 transitions;
+- raw archive SHA-256 digest remained unchanged across trusted, revoked, and restored reprojections.
+
+Phase 16 therefore demonstrates reversible historical abstraction in the core model: StateScout can preserve raw observations and transitions once, compress them through a trusted equivalence projection, later remove that abstraction, and recover the historical distinctions without re-crawling or mutating the source archive.
+
+Phase 16 verification gate is complete.
+
+StateScout can preserve raw observations and transitions once, project them through a trusted abstraction for efficiency, later remove that abstraction, and recover the historical distinctions without re-crawling.
+
+This is important because a later challenge or revocation can reinterpret old evidence rather than discovering that the earlier abstraction permanently erased it.
+
 ## Next phase after verification
 
-If Phase 15 passes, Phase 16 should introduce a reversible raw-observation/equivalence layer. StateScout should preserve the observations that were abstracted together so a later rule revocation can reinterpret old evidence instead of permanently losing the distinctions that were collapsed during earlier exploration.
+If Phase 16 passes, Phase 17 should build a broader frozen benchmark corpus across multiple interaction patterns and application structures. The reversible archive can then be used to compare abstraction behavior over a larger set of workflows rather than only one controlled history.
 
 ## Merge status
 
-Phases 1A through 14 are merged. Phase 15 implementation and whole-phase verification are complete on `feat/phase-15-multirule-selective-revalidation`; PR #17 is ready for merge.
+Phases 1A through 15 are merged. Phase 16 implementation and whole-phase verification are complete on `feat/phase-16-reversible-equivalence-archive`; PR #18 is ready for merge.

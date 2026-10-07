@@ -226,3 +226,21 @@ Research rules:
 - the priority heuristic is treated as a candidate policy, not an optimal scheduler.
 
 The frozen benchmark contains four rules with expected scores 150, 84, 80, and 11. A budget of two must select the challenged high-impact rule and the aging trusted rule while skipping the cooldown and fresh low-impact rules for that cycle.
+
+
+## Phase 16 reversible raw observations
+
+Semantic abstraction must not permanently destroy the historical evidence it compresses.
+
+Research rules:
+
+- raw semantic observations are immutable historical evidence;
+- raw transitions reference raw observation IDs, not projected state IDs;
+- strict raw fingerprints are provenance, not the active abstraction policy;
+- projected state aliases are derived views over the archive;
+- projected transitions preserve every raw transition ID they represent;
+- changing the active fingerprinter/profile may change aliases but must never mutate the raw archive;
+- revocation must be able to recover previously aliased historical distinctions without a new browser crawl;
+- restoring the previous profile must reproduce the previous projection.
+
+The frozen benchmark stores six observations and seven transitions. A trusted title rule projects them to three states and six transitions. Removing that rule must recover six states and seven transitions from the same archive while leaving the archive digest unchanged.

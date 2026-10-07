@@ -8,7 +8,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/core/volatility.test.ts tests/core/volatilityCandidates.test.ts tests/core/offlineVolatilityRevalidation.test.ts tests/core/volatilityTrustLifecycle.test.ts tests/core/selectiveRevalidationScheduler.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts tests/browser/explorerStrategy.test.ts tests/browser/replayRobustness.test.ts tests/browser/fingerprintGeneralization.test.ts tests/browser/adversarialIdentity.test.ts tests/browser/broaderGeneralization.test.ts tests/browser/observedVolatility.test.ts tests/browser/volatilityCandidatePromotion.test.ts tests/browser/explorerEvidenceStore.test.ts tests/browser/offlineProfilePromotion.test.ts tests/browser/profileRevalidation.test.ts tests/browser/trustLifecycle.test.ts tests/research/stateEquivalence.test.ts tests/research/fingerprintV2.test.ts tests/research/fingerprintV3.test.ts",
+    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/core/volatility.test.ts tests/core/volatilityCandidates.test.ts tests/core/offlineVolatilityRevalidation.test.ts tests/core/volatilityTrustLifecycle.test.ts tests/core/selectiveRevalidationScheduler.test.ts tests/core/reversibleStateArchive.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts tests/browser/explorerStrategy.test.ts tests/browser/replayRobustness.test.ts tests/browser/fingerprintGeneralization.test.ts tests/browser/adversarialIdentity.test.ts tests/browser/broaderGeneralization.test.ts tests/browser/observedVolatility.test.ts tests/browser/volatilityCandidatePromotion.test.ts tests/browser/explorerEvidenceStore.test.ts tests/browser/offlineProfilePromotion.test.ts tests/browser/profileRevalidation.test.ts tests/browser/trustLifecycle.test.ts tests/research/stateEquivalence.test.ts tests/research/fingerprintV2.test.ts tests/research/fingerprintV3.test.ts",
     "test:core": "node --experimental-strip-types --test tests/core/*.test.ts",
     "test:browser": "node --experimental-strip-types --test tests/browser/playwrightAdapter.test.ts",
     "experiment:equivalence": "node --experimental-strip-types scripts/run-state-equivalence-experiment.ts",
@@ -24,7 +24,8 @@
     "experiment:phase12": "node --experimental-strip-types scripts/run-phase12-offline-profile-promotion.ts",
     "experiment:phase13": "node --experimental-strip-types scripts/run-phase13-profile-revalidation.ts",
     "experiment:phase14": "node --experimental-strip-types scripts/run-phase14-trust-lifecycle.ts",
-    "experiment:phase15": "node --experimental-strip-types scripts/run-phase15-selective-revalidation.ts"
+    "experiment:phase15": "node --experimental-strip-types scripts/run-phase15-selective-revalidation.ts",
+    "experiment:phase16": "node --experimental-strip-types scripts/run-phase16-reversible-equivalence.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",
