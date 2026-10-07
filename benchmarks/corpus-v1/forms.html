@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Profile</title></head>
+<body><main id="app"></main><script>
+const variant=location.hash.slice(1);
+const value=variant==="bob"?"Bob":"Alice";
+document.querySelector("#app").innerHTML='<h1>Profile</h1><input aria-label="Name" value="'+value+'">';
+</script></body></html>
