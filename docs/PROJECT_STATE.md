@@ -842,6 +842,7 @@ A new candidate pipeline introduces:
 - candidate status starts as `quarantined`;
 - default promotion policy requires at least 4 observations, at least 2 independent sessions, at least 3 distinct field values, and at least 4 behavior confirmations;
 - behavior confirmation is collected through a safe probe and summarized as a downstream semantic signature;
+- every behavior-evidence record is bound back to the candidate's source anchor and must reference a value actually observed by that candidate;
 - any divergent downstream behavior blocks promotion;
 - only eligible candidates can be converted into trusted `ScopedVolatilityRule` entries with provenance `verified-candidate-promotion`.
 
