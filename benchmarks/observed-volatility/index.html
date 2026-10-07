@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>StateScout Observed Volatility</title></head>
+<body>
+<main id="app"></main>
+<script>
+const variant = location.hash.slice(1) || "dashboard";
+const app = document.querySelector("#app");
+
+function dashboard(title = "Dashboard") {
+  document.title = title;
+  app.innerHTML = '<h1>Dashboard</h1><button>Open menu</button><a href="?page=reports">Reports</a>';
+}
+
+const views = {
+  "title-train-a": () => dashboard("Dashboard — refresh A17"),
+  "title-train-b": () => dashboard("Dashboard — refresh B29"),
+  "title-eval-a": () => dashboard("Dashboard — refresh C31"),
+  "title-eval-b": () => dashboard("Dashboard — refresh D44"),
+  "query-dashboard": () => dashboard("Dashboard"),
+  "auction-a": () => {
+    document.title = "Auction closes — 10:00:01";
+    app.innerHTML = '<h1>Auction</h1><button>Place bid</button>';
+  },
+  "auction-b": () => {
+    document.title = "Auction closes — 10:00:02";
+    app.innerHTML = '<h1>Auction</h1><button>Place bid</button>';
+  },
+  "invoice": () => {
+    document.title = "Invoice";
+    app.innerHTML = '<h1>Invoice</h1><button>Open invoice</button>';
+  },
+};
+
+(views[variant] || views["query-dashboard"])();
+</script>
+</body>
+</html>
