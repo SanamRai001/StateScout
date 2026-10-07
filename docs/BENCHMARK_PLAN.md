@@ -262,3 +262,21 @@ Research rules:
 - keep browser observation separate from fingerprinter evaluation so Phase 18 can reuse the same observed corpus for baselines and ablations.
 
 The frozen corpus contains 16 pairs across 7 families. The current v4-empty-profile hypothesis is 14/16 correct with two false merges in the content-coverage family and zero false splits.
+
+
+## Phase 18 baselines and ablations
+
+Comparisons must use the exact frozen Phase 17 corpus and one browser observation set per run.
+
+Research rules:
+
+- compare URL-only and historical semantic fingerprints on identical observations;
+- freeze aggregate metrics and exact failure IDs before implementing the comparison evaluator;
+- remove individual semantic feature groups to measure contribution rather than only comparing final versions;
+- report false merges and false splits separately;
+- treat false merges as especially important because they can hide reachable state-space branches;
+- keep targeted visible-content augmentation experimental and outside the production observer;
+- do not define fingerprint v5 merely because the controlled corpus can be made perfect;
+- preserve per-family and per-case outcomes for later paper tables and threats-to-validity analysis.
+
+The frozen study compares nine strategies: URL-only, v1, v2, v3, v4, v4 without controls, v4 without title, v4 without query, and v4 with targeted visible status/list content.
