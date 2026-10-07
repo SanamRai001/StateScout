@@ -31,6 +31,9 @@ export interface BrowserAlgorithmMetrics {
 
 async function snapshot(page: Page, baseUrl: string, suffix: string): Promise<SemanticStateSnapshot> {
   await page.goto(baseUrl + suffix);
+  // Hash-only navigation is same-document navigation and does not rerun the fixture
+  // script. Reload so every observation is rendered from its complete target URL.
+  await page.reload();
   return observePage(page);
 }
 
