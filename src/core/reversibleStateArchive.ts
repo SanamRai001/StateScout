@@ -101,6 +101,28 @@ export function createRawStateArchive(
   const observationById = new Map<string, RawObservationRecord>();
 
   for (const observation of observations) {
+    if (observation.id.trim().length === 0) {
+      throw new Error("Raw observation id must not be empty.");
+    }
+    if (observation.sessionId.trim().length === 0) {
+      throw new Error("Raw observation sessionId must not be empty.");
+    }
+
+    const expectedStrictFingerprint = fingerprintState(
+      observation.snapshot,
+    );
+    if (
+      observation.strictFingerprint.hash !==
+        expectedStrictFingerprint.hash ||
+      observation.strictFingerprint.canonical !==
+        expectedStrictFingerprint.canonical ||
+      observation.strictFingerprint.version !== 1
+    ) {
+      throw new Error(
+        `Raw observation fingerprint mismatch: ${observation.id}`,
+      );
+    }
+
     const existing = observationById.get(observation.id);
     if (existing !== undefined) {
       if (
@@ -118,6 +140,9 @@ export function createRawStateArchive(
   const transitionById = new Map<string, RawTransitionRecord>();
 
   for (const transition of transitions) {
+    if (transition.id.trim().length === 0) {
+      throw new Error("Raw transition id must not be empty.");
+    }
     if (!observationById.has(transition.fromObservationId)) {
       throw new Error(
         `Unknown raw transition source: ${transition.fromObservationId}`,
