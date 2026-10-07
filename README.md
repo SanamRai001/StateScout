@@ -11,11 +11,13 @@ StateScout is being developed as both:
 1. a practical developer/QA tool for automatically mapping reachable UI workflows and detecting regressions; and
 2. a reproducible research artifact for studying semantic web state abstraction and automated GUI exploration.
 
-## Initial research direction
+## Research direction
 
-The current working hypothesis is that semantic state abstraction based on user-visible structure — such as routes, headings, dialogs, forms, accessible roles, names, labels, and other stable UI semantics — can reduce duplicate exploration and improve workflow discovery compared with simpler URL- or raw-DOM-based state representations.
+StateScout studies how a web explorer can identify meaningful UI states without relying on URL identity alone and without over-splitting equivalent states because of dynamic noise.
 
-This is a hypothesis to test, not a claimed result.
+The frozen research artifact combines semantic state graphs, evidence-backed contextual volatility abstraction, defeasible trust, reversible historical equivalence, conservative same-origin exploration, deterministic replay, and checkpoint/resume.
+
+The repository preserves both successful and negative experimental results; claims are limited to the measured benchmarks and real-world observations.
 
 ## Planned capabilities
 
@@ -42,12 +44,37 @@ See:
 - `docs/RELATED_WORK.md`
 - `docs/EXPERIMENT_DESIGN.md`
 - `docs/PROJECT_STATE.md`
+- `docs/RESULTS_SUMMARY.md`
+- `docs/THREATS_TO_VALIDITY.md`
+- `docs/REPRODUCIBILITY.md`
+- `docs/PAPER_OUTLINE.md`
+- `docs/RESEARCH_FREEZE.md`
 
 ## Status
 
-**Phase 0 — research and architecture foundation**
+**Phase 21 — research freeze and paper artifact**
 
-No production crawler has been implemented yet.
+Phases 0-20 are complete and merged. The research implementation is frozen at Phase 20 while the paper/reproducibility artifact is assembled.
+
+Reference freeze commit:
+
+```text
+d4aa27d4e2516555a30741f9829785b0db12316e
+```
+
+Verify the frozen research trees with:
+
+```bash
+npm run experiment:phase21
+```
+
+Run the deterministic controlled reproduction suite with:
+
+```bash
+npm run research:reproduce-controlled
+```
+
+The public-site Phase 19 study is intentionally rerun separately because external availability can change.
 
 ## License
 
