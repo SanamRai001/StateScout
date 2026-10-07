@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>StateScout Adversarial Identity</title></head>
+<body>
+<main id="app"></main>
+<script>
+const variant = location.hash.slice(1) || "base";
+const app = document.querySelector("#app");
+
+const views = {
+  base: () => {
+    document.title = "Dashboard";
+    app.innerHTML = "<h1>Dashboard</h1><button>Continue</button>";
+  },
+  "appointment-10": () => {
+    document.title = "Appointment — 10:00";
+    app.innerHTML = "<h1>Appointment</h1><button>Continue</button>";
+  },
+  "appointment-11": () => {
+    document.title = "Appointment — 11:00";
+    app.innerHTML = "<h1>Appointment</h1><button>Continue</button>";
+  },
+  invoice: () => {
+    document.title = "Invoice";
+    app.innerHTML = "<h1>Invoice</h1><button>Open invoice</button>";
+  },
+  "heading-10": () => {
+    document.title = "Schedule";
+    app.innerHTML = "<h1>Appointment 10:00</h1><button>Continue</button>";
+  },
+  "heading-11": () => {
+    document.title = "Schedule";
+    app.innerHTML = "<h1>Appointment 11:00</h1><button>Continue</button>";
+  },
+  "control-10": () => {
+    document.title = "Schedule";
+    app.innerHTML = "<h1>Schedule</h1><button>Book 10:00</button>";
+  },
+  "control-11": () => {
+    document.title = "Schedule";
+    app.innerHTML = "<h1>Schedule</h1><button>Book 11:00</button>";
+  },
+};
+
+(views[variant] || views.base)();
+</script>
+</body>
+</html>

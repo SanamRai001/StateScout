@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 5 — End-to-end explorer identity strategy**
+**Phase 6 — Adversarial false-merge challenge**
 
 ## Branch
 
-`feat/phase-5-explorer-strategy`
+`feat/phase-6-adversarial-identity`
 
 ## Phase 0 status
 
@@ -513,10 +513,89 @@ First local Phase 5 gate exposed a runtime-compatibility defect before the exper
 
 This is an implementation/runtime defect, not evidence for or against the Phase 5 hypothesis.
 
+Corrected Phase 5 whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed Phase 5 results:
+
+- TypeScript typecheck: passed;
+- tests: 23/23 passed, 0 failed;
+- v1 explorer: 15 graph states, 20 graph transitions, 20 attempted transitions, 13 excess states, 100% meaningful-state coverage, 0 failed transitions;
+- v2 explorer: 2 graph states, 3 graph transitions, 3 attempted transitions, 0 excess states, 100% meaningful-state coverage, 0 failed transitions;
+- v2 reduced graph states by 13, graph transitions by 17, attempted transitions by 17, and excess states by 13 while preserving complete meaningful-state coverage.
+
+Phase 5 therefore demonstrated a system-level reduction in state-space inflation and redundant BFS work on the controlled volatile-state fixture.
+
+## Phase 6 implementation
+
+Phase 6 deliberately attempts to falsify fingerprint v2 before any default promotion.
+
+No fingerprint algorithm is changed in this phase. Instead, a frozen Playwright-observed adversarial benchmark defines six cases before measurement:
+
+1. meaningful appointment time represented only in the page title;
+2. a semantic `ref` query parameter identifying different invoices;
+3. harmless UTM tracking noise;
+4. a meaningful ordinary query ID;
+5. meaningful clock time in a visible heading;
+6. meaningful clock time in an interactive control name.
+
+The first two cases directly challenge v2's current unconditional normalization rules:
+
+- all clock-time tokens in titles are replaced with `<time>`;
+- `ref` is always discarded as a tracking query key.
+
+The expected adversarial result is therefore intentionally not "v2 gets everything right":
+
+- v1: 5/6, 0 false merges, 1 false split;
+- v2: 4/6, 2 false merges, 0 false splits;
+- the exact v2 false merges should be `meaningful-title-time` and `semantic-ref-query`;
+- heading time, control time, and ordinary non-tracking query IDs must remain distinct.
+
+A Phase 6 pass means the experiment reproducibly exposes these risks without modifying v2 to fit the benchmark. That evidence will determine the design requirements for a future v3.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-6-adversarial-identity
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+
+npm run experiment:equivalence
+npm run experiment:fingerprint-comparison
+npm run experiment:browser-generalization
+npm run experiment:explorer-strategy
+npm run experiment:adversarial-identity
+```
+
+All Phase 2-5 frozen results must remain unchanged. Fingerprint v2 remains non-default regardless of its earlier Phase 5 efficiency win until this adversarial risk is resolved.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 24/24 passed, 0 failed;
+- Phase 2 frozen v1 baseline remained 7/9 with 0 false merges and 2 false splits;
+- Phase 3 frozen comparison remained v2 9/9 with 0 false merges and 0 false splits;
+- Phase 4 browser comparison remained v1 3/4 and v2 4/4;
+- Phase 5 explorer comparison remained v1 15 states / 20 attempts versus v2 2 states / 3 attempts, with 100% meaningful-state coverage for both;
+- Phase 6 v1: 5/6 correct, 0 false merges, 1 false split;
+- Phase 6 v2: 4/6 correct, 2 false merges, 0 false splits;
+- the exact v2 false merges were `meaningful-title-time` and `semantic-ref-query`;
+- `tracking-utm-query`, `ordinary-query-id`, `meaningful-heading-time`, and `meaningful-control-time` behaved as expected.
+
+Phase 6 therefore confirms that v2's efficiency gain comes with two measured false-merge hazards caused by unconditional normalization. v2 must not become the default identity strategy in its current form.
+
+Phase 6 verification gate is complete.
+
 ## Next phase after verification
 
-If Phase 5 passes, evaluate the remaining adversarial assumptions—especially semantically meaningful clock times and ambiguous tracking keys such as `ref`—before promoting v2 as the default. This guards against reducing false splits by introducing hidden false merges.
+If Phase 6 confirms the predicted false merges, design fingerprint v3 from the measured failure modes rather than guessing. The likely direction is narrower/context-aware normalization: remove ambiguous `ref` from unconditional tracking suppression and avoid unconditional title-time stripping unless volatility is supported by stronger evidence.
 
 ## Merge status
 
-Phases 1A, 1B, 2, 3, and 4 are merged. Phase 5 implementation and whole-phase verification are complete on `feat/phase-5-explorer-strategy`; PR #7 is ready for merge.
+Phases 1A, 1B, 2, 3, 4, and 5 are merged. Phase 6 implementation and whole-phase verification are complete on `feat/phase-6-adversarial-identity`; PR #8 is ready for merge.
