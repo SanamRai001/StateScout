@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 10 — Quarantined volatility candidate promotion**
+**Phase 11 — Run-frozen explorer evidence store**
 
 ## Branch
 
-`feat/phase-10-volatility-candidate-promotion`
+`feat/phase-11-explorer-evidence-store`
 
 ## Phase 0 status
 
@@ -938,10 +938,120 @@ The Phase 10 experiment writes:
 - full report: `results/raw/phase-10-volatility-candidate-promotion.json`;
 - compact shareable summary: `results/raw/phase-10-volatility-candidate-promotion-summary.txt`.
 
+## Phase 11 implementation
+
+Phase 11 integrates volatility evidence collection into the normal Playwright explorer while preserving a strict run-frozen identity boundary.
+
+### Run-frozen identity
+
+At exploration start, StateScout captures one `runFingerprinter` and uses that same function for:
+
+- initial state insertion;
+- replay verification;
+- restored-source verification;
+- destination-state insertion.
+
+The new observation sidecar has no API to replace the run fingerprinter. Candidates discovered during a crawl therefore cannot change state identity mid-run.
+
+### Observation-only explorer sink
+
+`exploreWithPlaywright()` now accepts an optional synchronous `observationSink`.
+
+The sink receives semantic snapshots from:
+
+- the initial observation;
+- replay steps;
+- restored source states;
+- post-interaction observations.
+
+Sink exceptions are caught and returned as `evidenceErrors`; they do not abort or alter the graph. A dedicated fault-injection test requires graph state count, transition count, and attempted-transition count to remain identical when the evidence sink throws.
+
+### Persistent evidence store
+
+A new deterministic `VolatilityEvidenceStore` records unique:
+
+`(sessionId, field, semantic anchor, observed value)`
+
+tuples.
+
+Design properties:
+
+- evidence is collected for title and non-tracking query fields;
+- duplicate observations within one session do not inflate evidence;
+- merging the same store twice is idempotent;
+- JSON serialization is stable;
+- persisted stores can be parsed and merged in a later run;
+- candidate discovery from the store produces only quarantined candidates;
+- no evidence-store API promotes candidates or modifies fingerprint identity.
+
+### Phase 11 controlled explorer benchmark
+
+The Phase 11 fixture contains one meaningful Dashboard state whose title changes on every safe `Refresh view` interaction.
+
+With empty-profile v4, the frozen identity intentionally treats each title as distinct during the run.
+
+Expected baseline graph:
+
+- 5 graph states;
+- 4 graph transitions;
+- 4 attempted transitions.
+
+The experiment runs:
+
+1. a baseline crawl without evidence collection;
+2. session A with an evidence collector;
+3. session B with an evidence collector.
+
+Expected evidence:
+
+- baseline graph signature equals session A graph signature;
+- baseline graph signature equals session B graph signature;
+- evidence errors are 0 for all three runs;
+- session A store: 5 unique evidence records;
+- session B store: 5 unique evidence records;
+- merged store: 10 records across 2 session IDs;
+- JSON round-trip is stable;
+- merging the merged store with session A again is unchanged;
+- exactly 1 quarantined candidate is discovered;
+- candidate field: `title`;
+- candidate sessions: 2;
+- candidate distinct values: 5.
+
+The experiment writes the two per-session evidence files and then reloads them from disk before creating the merged evidence artifact. This makes cross-run persistence an actual serialized handoff rather than an in-memory-only demonstration.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-11-explorer-evidence-store
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase10
+npm run experiment:phase11
+```
+
+The Phase 11 experiment writes:
+
+- full report: `results/raw/phase-11-explorer-evidence-store.json`;
+- compact summary: `results/raw/phase-11-explorer-evidence-store-summary.txt`;
+- session A evidence: `results/raw/phase-11-explorer-evidence-store-session-a-evidence.json`;
+- session B evidence: `results/raw/phase-11-explorer-evidence-store-session-b-evidence.json`;
+- merged evidence: `results/raw/phase-11-explorer-evidence-store-merged-evidence.json`.
+
+### Research interpretation
+
+A Phase 11 pass would show that StateScout can gather and persist candidate evidence during ordinary exploration without changing the graph being explored.
+
+It would not yet mean candidates can be promoted automatically from normal crawls. Phase 11 intentionally persists observation evidence only; behavioral verification and promotion remain outside the active crawl.
+
 ## Next phase after verification
 
-If Phase 10 passes, the next step is to integrate candidate discovery with the explorer itself in observation-only mode: collect quarantined candidates during normal replay/exploration, persist evidence across runs, and test whether promotion decisions stay reproducible without letting candidate rules change identity mid-run.
+If Phase 11 passes, the next step should be an offline between-run decision pipeline: consume persisted quarantined evidence plus separately collected safe behavior evidence, assess promotion after a run has ended, freeze the resulting trusted profile, and only then allow that profile to affect the identity function of a future run.
 
 ## Merge status
 
-Phases 1A through 9 are merged. Phase 10 implementation and whole-phase verification are complete on `feat/phase-10-volatility-candidate-promotion`; PR #12 is ready for merge.
+Phases 1A through 10 are merged. Phase 11 implementation is complete on `feat/phase-11-explorer-evidence-store` and awaits its single whole-phase verification gate.
