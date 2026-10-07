@@ -155,3 +155,19 @@ Research rules:
 - defer promotion until after the run and require a future run to start with any newly trusted profile.
 
 The controlled benchmark compares the exact graph signature with and without evidence collection and then merges two independently labeled evidence stores.
+
+
+## Phase 12 offline between-run promotion
+
+Promotion must happen after a crawl has ended and before a future crawl begins.
+
+Research rules:
+
+- observation evidence and behavior evidence are persisted separately;
+- offline promotion consumes only persisted evidence;
+- the frozen profile artifact records evidence digests and promotion decisions;
+- a profile artifact never mutates a graph that already exists;
+- the future explorer receives the profile before its first observation;
+- pre-promotion and post-promotion explorer metrics are both frozen before measurement.
+
+The controlled benchmark requires the future empty-profile run to retain volatile-state inflation while the future promoted-profile run collapses only the verified Dashboard volatility.

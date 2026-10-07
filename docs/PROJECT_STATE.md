@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 11 — Run-frozen explorer evidence store**
+**Phase 12 — Offline between-run profile promotion**
 
 ## Branch
 
-`feat/phase-11-explorer-evidence-store`
+`feat/phase-12-offline-profile-promotion`
 
 ## Phase 0 status
 
@@ -1074,10 +1074,167 @@ Phase 11 verification gate is complete.
 
 It would not yet mean candidates can be promoted automatically from normal crawls. Phase 11 intentionally persists observation evidence only; behavioral verification and promotion remain outside the active crawl.
 
+## Phase 12 implementation
+
+Phase 12 closes the evidence loop without allowing any mid-run identity mutation.
+
+### Between-run lifecycle
+
+The intended lifecycle is now explicit:
+
+1. Run N starts with a frozen identity profile.
+2. Run N collects observation evidence only.
+3. The run ends.
+4. Separately collected safe behavior evidence is persisted.
+5. An offline promotion step assesses quarantined candidates.
+6. Eligible candidates are promoted into a new frozen profile artifact.
+7. Run N+1 may load that artifact before exploration starts.
+8. Run N+1 again freezes its identity for the entire crawl.
+
+No promotion API is called from inside the explorer.
+
+### Persistent behavior evidence
+
+A new deterministic `VolatilityBehaviorEvidenceStore` persists:
+
+- behavior session ID;
+- source semantic anchor;
+- observed candidate field value;
+- downstream behavior signature.
+
+The store supports deterministic serialization, parsing, deduplication, and idempotent merging.
+
+### Offline promotion artifact
+
+`buildOfflineVolatilityProfile()` consumes:
+
+- a persisted observation evidence store;
+- a separately persisted behavior evidence store.
+
+It discovers quarantined candidates, applies the Phase 10 promotion policy, promotes only eligible candidates, and produces a frozen profile artifact containing:
+
+- promoted v4 volatility rules;
+- every promotion decision and assessment;
+- SHA-256 digest of the observation evidence;
+- SHA-256 digest of the behavior evidence;
+- explicit provenance `offline-between-run-promotion`.
+
+The artifact is serialized independently and can be loaded by a future process.
+
+### Phase 12 controlled benchmark
+
+The fixture contains:
+
+- a Dashboard state with a volatile title;
+- a safe `Refresh view` interaction;
+- a safe `Inspect dashboard` probe whose downstream result is invariant across title values;
+- a stable Details state.
+
+Two normal crawls collect observation evidence with empty-profile v4.
+
+Frozen observation expectations:
+
+- exactly 1 quarantined candidate;
+- candidate field: `title`;
+- candidate observation sessions: 2;
+- candidate distinct values: 4.
+
+Separate behavior verification covers the same four title values across two behavior sessions.
+
+Expected offline decision:
+
+- behavior evidence records: 4;
+- promotion decision: true;
+- promoted trusted rules: 1;
+- promoted rule provenance: `verified-candidate-promotion`;
+- frozen profile serialization round-trip: stable;
+- both observation and behavior evidence digests are present.
+
+### Future-run system effect
+
+The benchmark freezes both sides of the between-run comparison.
+
+Future run without the promoted profile:
+
+- 5 graph states;
+- 6 graph transitions;
+- 6 attempted transitions;
+- 0 failed transitions.
+
+Fresh future run started from the persisted promoted profile:
+
+- 2 graph states;
+- 3 graph transitions;
+- 3 attempted transitions;
+- 0 failed transitions.
+
+The experiment writes the profile to disk, reads it back, opens a new browser page, and starts the future crawl from the parsed profile. The improved identity therefore enters only at the next run boundary.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-12-offline-profile-promotion
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase11
+npm run experiment:phase12
+```
+
+The Phase 12 experiment writes:
+
+- full report: `results/raw/phase-12-offline-profile-promotion.json`;
+- compact summary: `results/raw/phase-12-offline-profile-promotion-summary.txt`;
+- crawl A observation evidence;
+- crawl B observation evidence;
+- merged observation evidence;
+- behavior evidence;
+- frozen volatility profile artifact.
+
+### Research interpretation
+
+A Phase 12 pass would demonstrate a complete safe learning loop across run boundaries: evidence gathered during ordinary exploration can be verified offline, converted into a provenance-bearing profile artifact, and applied only to a fresh future crawl.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 40/40 passed, 0 failed;
+- Phase 11 frozen explorer-evidence result remained unchanged;
+- quarantined candidates discovered: 1;
+- candidate field: `title`;
+- candidate observation sessions: 2;
+- candidate distinct values: 4;
+- behavior evidence records: 4;
+- promotion decision: true;
+- promoted trusted rules: 1;
+- promoted rule provenance: `verified-candidate-promotion`;
+- frozen profile serialization round-trip: stable;
+- observation evidence SHA-256 digest present;
+- behavior evidence SHA-256 digest present;
+- future run without profile: 5 states, 6 transitions, 6 attempts, 0 failed transitions;
+- future run using the in-memory promoted profile: 2 states, 3 transitions, 3 attempts, 0 failed transitions;
+- fresh future run using the profile reloaded from disk: 2 states, 3 transitions, 3 attempts, 0 failed transitions.
+
+The candidate was supported by 8 observation records across two crawl sessions and four distinct Dashboard title values. The four behavior-evidence records across two separate behavior sessions all produced the same downstream semantic signature.
+
+The frozen profile artifact recorded the exact observation-evidence and behavior-evidence digests used for the decision, making the promotion provenance auditable.
+
+Phase 12 therefore demonstrates the intended between-run boundary: Run N collects evidence without changing identity; offline verification promotes an eligible candidate only after the run ends; Run N+1 can then start from the frozen profile and achieve the measured state-space reduction.
+
+Phase 12 verification gate is complete.
+
+It would still not establish that the current single-probe promotion policy is sufficient for arbitrary real applications. Broader probe sets, conflict handling, profile revocation, and stale-evidence detection remain open research problems.
+
 ## Next phase after verification
 
-If Phase 11 passes, the next step should be an offline between-run decision pipeline: consume persisted quarantined evidence plus separately collected safe behavior evidence, assess promotion after a run has ended, freeze the resulting trusted profile, and only then allow that profile to affect the identity function of a future run.
+If Phase 12 passes, the next phase should challenge profile safety over time: stale profiles, changed application behavior, conflicting later evidence, and rule revocation. A trusted rule should not remain trusted forever if the application evolves underneath it.
 
 ## Merge status
 
-Phases 1A through 10 are merged. Phase 11 implementation and whole-phase verification are complete on `feat/phase-11-explorer-evidence-store`; PR #13 is ready for merge.
+Phases 1A through 11 are merged. Phase 12 implementation and whole-phase verification are complete on `feat/phase-12-offline-profile-promotion`; PR #14 is ready for merge.

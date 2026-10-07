@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Dashboard — refresh 1</title></head>
+<body>
+<main id="app"></main>
+<script>
+const app = document.querySelector("#app");
+const seedMatch = location.hash.match(/^#seed-(\d+)$/);
+let refresh = seedMatch ? Number(seedMatch[1]) : 1;
+let state = "dashboard";
+
+function button(label, action) {
+  return `<button type="button" data-action="${action}">${label}</button>`;
+}
+
+function render() {
+  if (state === "details") {
+    document.title = "Dashboard details";
+    app.innerHTML = `<h1>Dashboard details</h1>${button("Back", "back")}`;
+    return;
+  }
+
+  document.title = `Dashboard — refresh ${refresh}`;
+  app.innerHTML =
+    `<h1>Dashboard</h1>${button("Refresh view", "refresh")}${button("Inspect dashboard", "inspect")}`;
+}
+
+app.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action]");
+  if (!target) return;
+
+  const action = target.dataset.action;
+  if (action === "refresh") {
+    refresh += 1;
+  } else if (action === "inspect") {
+    state = "details";
+  } else if (action === "back") {
+    state = "dashboard";
+  }
+
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
