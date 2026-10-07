@@ -425,7 +425,16 @@ Expected Phase 4 hypothesis:
 - v2 produces zero false splits and zero false merges;
 - all earlier frozen v1/v2 research baselines remain unchanged.
 
-Do not promote v2 as the default explorer identity until this complete gate passes.
+First local Phase 4 gate exposed a benchmark-design defect before acceptance:
+
+- TypeScript correctly rejected implicit evaluator types; the evaluator is now explicitly typed.
+- The first browser run reported v2 as 3/4 with one false split.
+- Root cause: the fixture used `?variant=base` vs `?variant=noise-b` to select test variants. Because `variant` is a non-tracking query parameter, v2 correctly treated it as semantic state.
+- This was not evidence of a v2 regression; the benchmark had leaked its own fixture-control variable into the fingerprint input.
+- Fixture selection now uses the URL fragment, which is intentionally outside the current semantic fingerprint, while real query parameters remain available for tracking/noise and meaningful-query cases.
+- No fingerprint-v2 logic was changed in response to this failure.
+
+Do not promote v2 as the default explorer identity until the corrected complete gate passes.
 
 ## Next phase after verification
 
