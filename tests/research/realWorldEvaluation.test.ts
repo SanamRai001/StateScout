@@ -45,15 +45,11 @@ test("real-world summary separates availability from stability", () => {
     },
   ];
 
-  const summary = summarizeRealWorldRuns(
-    "target-a",
-    3,
-    runs,
-    2,
-  );
+  const summary = summarizeRealWorldRuns("target-a", 3, runs, 2);
 
   assert.equal(summary.successfulRuns, 2);
   assert.equal(summary.unavailableRuns, 1);
+  assert.equal(summary.runErrorRuns, 0);
   assert.equal(summary.availabilityRate, 2 / 3);
   assert.equal(summary.evaluable, true);
   assert.equal(summary.stableInitialFingerprint, true);
@@ -67,9 +63,40 @@ test("real-world summary separates availability from stability", () => {
     failed: 0,
     noStateChange: 2,
   });
-  assert.deepEqual(summary.unavailableErrors, [
-    "navigation timeout",
-  ]);
+  assert.deepEqual(summary.unavailableErrors, ["navigation timeout"]);
+  assert.deepEqual(summary.runErrors, []);
+});
+
+test("reachable run errors are separated from external unavailability", () => {
+  const summary = summarizeRealWorldRuns(
+    "target-a",
+    3,
+    [
+      success(1),
+      {
+        targetId: "target-a",
+        runIndex: 2,
+        status: "run-error",
+        durationMs: 250,
+        error: "observer crashed",
+      },
+      {
+        targetId: "target-a",
+        runIndex: 3,
+        status: "unavailable",
+        durationMs: 15_000,
+        error: "dns",
+      },
+    ],
+    2,
+  );
+
+  assert.equal(summary.successfulRuns, 1);
+  assert.equal(summary.runErrorRuns, 1);
+  assert.equal(summary.unavailableRuns, 1);
+  assert.equal(summary.availabilityRate, 2 / 3);
+  assert.deepEqual(summary.runErrors, ["observer crashed"]);
+  assert.equal(summary.evaluable, false);
 });
 
 test("real-world summary detects graph instability independently of initial identity", () => {
@@ -178,6 +205,7 @@ test("study summary aggregates only explicit evaluable and stable targets", () =
       requestedRuns: 9,
       successfulRuns: 6,
       unavailableRuns: 3,
+      runErrorRuns: 0,
       evaluableTargets: 2,
       stableInitialTargets: 2,
       stableGraphTargets: 1,
