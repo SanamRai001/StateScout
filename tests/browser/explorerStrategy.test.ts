@@ -21,4 +21,10 @@ test("v2 reduces noisy explorer states without losing meaningful coverage", asyn
   assert.equal(result.v2.failedTransitions, 0);
   assert.ok(result.v1.excessStates > result.v2.excessStates);
   assert.ok(result.v1.attemptedTransitions > result.v2.attemptedTransitions);
+
+  assert.equal(result.v3.meaningfulStateCoverage, 1);
+  assert.equal(result.v3.graphStates, 2);
+  assert.equal(result.v3.excessStates, 0);
+  assert.equal(result.v3.failedTransitions, 0);
+  assert.equal(result.v3.attemptedTransitions, result.v2.attemptedTransitions);
 });
