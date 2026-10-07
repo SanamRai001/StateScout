@@ -1383,6 +1383,32 @@ The experiment reloads the persisted stale parent profile and persisted revoked 
 
 A Phase 13 pass would show that StateScout can reverse a previously beneficial abstraction when later behavior demonstrates that the application has changed.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0 after correcting the same-document replay-reset defect.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 46/46 passed, 0 failed;
+- the new same-document replay reset regression passed;
+- the frozen Phase 12 offline-promotion result remained unchanged;
+- parent trusted rules: 1;
+- stable revalidation: `retained`, 1 behavior signature, 1 resulting trusted rule;
+- evolved revalidation: `revoked`, 2 behavior signatures, 0 resulting trusted rules;
+- both stable and evolved profile revisions survived serialization round-trip;
+- parent-profile SHA-256 digest present;
+- challenge-evidence SHA-256 digest present;
+- evolved run with stale profile: meaningful Details coverage 0.5, 2 states, 3 transitions, 3 attempts;
+- evolved run after revocation: meaningful Details coverage 1.0, 6 states, 6 transitions, 6 attempts;
+- failed transitions after revocation: 0.
+
+The stable later evidence therefore preserved a still-valid abstraction, while the evolved later evidence revoked the stale abstraction after replicated safe probes produced divergent downstream behavior.
+
+The stale profile hid one of the two reachable meaningful Details outcomes. Removing the revoked rule in the next profile restored both outcomes on the next crawl.
+
+Phase 13 therefore demonstrates a defeasible abstraction lifecycle: trusted rules can remain trusted under stable evidence, but can be withdrawn when sufficiently replicated later behavior contradicts the original equivalence assumption.
+
+Phase 13 verification gate is complete.
+
 The important safety property is asymmetric: insufficient evidence does not erase trust, but sufficiently replicated contradictory behavior can revoke it before a future crawl begins.
 
 This still does not solve when revalidation should be scheduled in real deployments, how long evidence should remain valid, or how to distinguish temporary experiments/A-B tests from permanent semantic drift.
@@ -1393,4 +1419,4 @@ If Phase 13 passes, the next research step should address profile freshness and 
 
 ## Merge status
 
-Phases 1A through 12 are merged. Phase 13 implementation is complete on `feat/phase-13-profile-revalidation-revocation` and awaits its single whole-phase verification gate.
+Phases 1A through 12 are merged. Phase 13 implementation and whole-phase verification are complete on `feat/phase-13-profile-revalidation-revocation`; PR #15 is ready for merge.
