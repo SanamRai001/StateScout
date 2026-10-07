@@ -883,6 +883,30 @@ Expected results:
 
 This phase does not claim that repeated stability alone proves semantic irrelevance. Promotion requires a separate safe behavioral probe and cross-session evidence.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0 after correcting the earlier parse-only syntax defect.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 37/37 passed, 0 failed;
+- Phase 9 frozen result remained v4 6/6 with 0 false merges and 0 false splits;
+- Dashboard candidate: eligible = true;
+- Dashboard behavior signature count: 1;
+- Auction candidate: eligible = false;
+- Auction behavior signature count: 2;
+- Auction rejection reason: `safe probe produced divergent downstream behavior`;
+- promoted trusted rules: 1;
+- promoted rule provenance: `verified-candidate-promotion`;
+- v3 held-out result: 0/2, 1 false merge, 1 false split;
+- v4 without profile: 1/2, 0 false merges, 1 false split;
+- v4 with verified promoted profile: 2/2, 0 false merges, 0 false splits.
+
+The Dashboard candidate satisfied the full promotion policy across two sessions and four observed values while producing one stable downstream behavior signature. The Auction candidate satisfied the repetition/session/value thresholds but remained quarantined because its safe probe produced two downstream behavior signatures.
+
+Phase 10 therefore supports the quarantine architecture: automatic candidate discovery can proceed independently from identity, and promotion can require independent behavioral evidence before a rule is allowed to affect fingerprinting.
+
+Phase 10 verification gate is complete.
+
 The behavioral verifier is still a controlled abstraction: real applications may need multiple probes, deeper transition signatures, time-delayed observations, or additional invariants before automatic promotion is safe enough for production use.
 
 ### Whole-phase verification gate
@@ -920,4 +944,4 @@ If Phase 10 passes, the next step is to integrate candidate discovery with the e
 
 ## Merge status
 
-Phases 1A through 9 are merged. Phase 10 implementation is complete on `feat/phase-10-volatility-candidate-promotion` and awaits its single whole-phase verification gate.
+Phases 1A through 9 are merged. Phase 10 implementation and whole-phase verification are complete on `feat/phase-10-volatility-candidate-promotion`; PR #12 is ready for merge.
