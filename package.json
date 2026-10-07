@@ -8,11 +8,12 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts tests/browser/replayRobustness.test.ts tests/research/stateEquivalence.test.ts tests/research/fingerprintV2.test.ts",
+    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts tests/browser/replayRobustness.test.ts tests/browser/fingerprintGeneralization.test.ts tests/research/stateEquivalence.test.ts tests/research/fingerprintV2.test.ts",
     "test:core": "node --experimental-strip-types --test tests/core/*.test.ts",
     "test:browser": "node --experimental-strip-types --test tests/browser/playwrightAdapter.test.ts",
     "experiment:equivalence": "node --experimental-strip-types scripts/run-state-equivalence-experiment.ts",
-    "experiment:fingerprint-comparison": "node --experimental-strip-types scripts/run-fingerprint-comparison.ts"
+    "experiment:fingerprint-comparison": "node --experimental-strip-types scripts/run-fingerprint-comparison.ts",
+    "experiment:browser-generalization": "node --experimental-strip-types scripts/run-browser-generalization.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",
