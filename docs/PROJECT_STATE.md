@@ -1743,6 +1743,29 @@ The experiment writes:
 
 A Phase 15 pass would demonstrate that multiple volatility rules can coexist with independent lifecycle state and that StateScout can schedule a bounded subset for verification using transparent risk signals.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 53/53 passed, 0 failed;
+- frozen Phase 14 lifecycle result remained unchanged;
+- rules ranked: 4;
+- revalidation budget: 2;
+- frozen ranking reproduced exactly: `150 > 84 > 80 > 11`;
+- selected anchors: `anchor-challenged-critical`, `anchor-trusted-aging`;
+- selected fraction: 0.5;
+- saved rule probes: 2;
+- selected challenged rule decision: `challenge-cleared`;
+- unrelated lifecycle entries preserved their previous states;
+- unrelated rule decisions remained `insufficient-evidence`.
+
+The bounded scheduler therefore selected only half of the available rules while still prioritizing the challenged high-impact rule and the aging trusted rule ahead of cooldown and fresh low-impact rules.
+
+The isolation check also confirms that applying evidence for one selected rule does not mutate unrelated lifecycle entries.
+
+Phase 15 verification gate is complete.
+
 It would not establish that the priority formula is optimal. The exact weights remain a candidate policy that should later be challenged through ablation and broader benchmarks.
 
 ## Next phase after verification
@@ -1751,4 +1774,4 @@ If Phase 15 passes, Phase 16 should introduce a reversible raw-observation/equiv
 
 ## Merge status
 
-Phases 1A through 14 are merged. Phase 15 implementation is complete on `feat/phase-15-multirule-selective-revalidation` and awaits its single whole-phase verification gate.
+Phases 1A through 14 are merged. Phase 15 implementation and whole-phase verification are complete on `feat/phase-15-multirule-selective-revalidation`; PR #17 is ready for merge.
