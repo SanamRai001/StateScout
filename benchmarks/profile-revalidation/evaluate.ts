@@ -124,7 +124,7 @@ async function collectRevalidationEvidence(
   return createRuleRevalidationEvidenceStore(records);
 }
 
-async function runEvolvedFutureCrawl(
+export async function runEvolvedFutureCrawl(
   page: Page,
   startUrl: string,
   profile: VolatilityProfile,
