@@ -8,6 +8,8 @@ export const PHASE20_GROUND_TRUTH = {
     restoredSourceObservations: 32,
     afterInteractionObservations: 32,
     failedTransitions: 0,
+    checkpointInterruptAfterAttempts: 10,
+    resumedMatchesUninterrupted: true,
   },
   syntheticScale: [
     {
