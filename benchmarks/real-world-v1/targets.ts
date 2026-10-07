@@ -5,7 +5,9 @@ export interface RealWorldTarget {
   category:
     | "spa-local-state"
     | "async-controls"
-    | "visibility-mutation";
+    | "visibility-mutation"
+    | "accessible-tabs"
+    | "form-policy";
   runs: number;
   maxTransitions: number;
   rationale: string;
