@@ -49,13 +49,13 @@ test("Phase 12 promotes offline and only changes identity in a future run", asyn
   );
   assert.equal(result.artifactRoundTripStable, true);
 
-  assert.ok(
-    result.emptyProfileRun.states >
-      OFFLINE_PROMOTION_GROUND_TRUTH.futureRun.states,
-  );
+  assert.deepEqual(result.emptyProfileRun, {
+    ...OFFLINE_PROMOTION_GROUND_TRUTH.emptyProfileFutureRun,
+    evidenceErrors: 0,
+  });
 
   assert.deepEqual(result.promotedProfileRun, {
-    ...OFFLINE_PROMOTION_GROUND_TRUTH.futureRun,
+    ...OFFLINE_PROMOTION_GROUND_TRUTH.promotedProfileFutureRun,
     evidenceErrors: 0,
   });
 });
