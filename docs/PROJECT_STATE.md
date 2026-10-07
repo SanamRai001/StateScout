@@ -1342,6 +1342,31 @@ npm run experiment:phase12
 npm run experiment:phase13
 ```
 
+First local Phase 13 gate exposed a replay-reset defect before the system-level revocation result could be accepted:
+
+- TypeScript passed;
+- 44/45 tests passed;
+- all core revalidation policy tests passed;
+- stable later evidence correctly produced `retained` with 1 behavior signature and 1 resulting rule;
+- evolved later evidence correctly produced `revoked` with 2 behavior signatures and 0 resulting rules;
+- the frozen Phase 12 experiment remained unchanged;
+- the browser integration test failed because the observation crawl accumulated 7 Dashboard title values instead of the frozen 4;
+- the evolved crawl after revocation produced replay failures and 0 meaningful Details coverage instead of the frozen full-coverage result.
+
+Root cause was not the revalidation policy. The explorer used `page.goto(startUrl)` as its reset operation. When the benchmark start URL was a same-document hash URL, Playwright could change or revisit the fragment without recreating the document, leaving JavaScript state such as the refresh counter alive across replay attempts.
+
+This is the same browser semantic previously encountered in Phase 4, but here it exposed a real explorer replay-reset weakness.
+
+The explorer now uses an explicit start-state navigation helper:
+
+- if the current and target URLs refer to the same document (same origin, path, and query), it sets the requested URL when needed and then forces `page.reload()`;
+- otherwise it performs the normal full `page.goto()`;
+- the same reset path is used for both the initial exploration observation and every replay restoration.
+
+A dedicated regression fixture primes `#seed-99`, mutates its in-memory state, then explores from `#seed-1`. The frozen expectation is 4 states, 3 transitions, 3 attempts, titles Counter 1 through Counter 4, and 0 failed transitions.
+
+The Phase 13 scientific criteria remain unchanged. The gate must be rerun after this replay fix.
+
 The Phase 13 experiment writes:
 
 - full report: `results/raw/phase-13-profile-revalidation.json`;
