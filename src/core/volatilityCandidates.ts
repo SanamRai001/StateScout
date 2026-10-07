@@ -109,7 +109,7 @@ export function discoverVolatilityCandidate(
     field,
     anchorHash: anchors[0]!,
     observationCount: observations.length,
-    sessionIds: [...new Set(observations.map(({ sessionId }) => sessionId)].sort(),
+    sessionIds: [...new Set(observations.map(({ sessionId }) => sessionId))].sort(),
     distinctValues,
     status: "quarantined",
   };
