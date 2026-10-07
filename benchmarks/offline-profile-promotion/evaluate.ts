@@ -24,7 +24,10 @@ import {
   mergeVolatilityEvidenceStores,
   type VolatilityEvidenceStore,
 } from "../../src/core/volatilityEvidenceStore.ts";
-import { volatilityFieldValue } from "../../src/core/volatilityCandidates.ts";
+import {
+  volatilityFieldValue,
+  type CandidateBehaviorEvidence,
+} from "../../src/core/volatilityCandidates.ts";
 import { observePage } from "../../src/browser/playwrightAdapter.ts";
 import { OFFLINE_PROMOTION_GROUND_TRUTH } from "./groundTruth.ts";
 
@@ -52,7 +55,7 @@ export async function collectBehaviorEvidence(
   page: Page,
   startUrl: string,
 ): Promise<VolatilityBehaviorEvidenceStore> {
-  const records = [];
+  const records: CandidateBehaviorEvidence[] = [];
 
   for (const seed of [1, 2, 3, 4]) {
     const sessionId = seed <= 2 ? "behavior-session-a" : "behavior-session-b";
