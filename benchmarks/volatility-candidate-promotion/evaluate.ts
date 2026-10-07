@@ -13,7 +13,10 @@ import {
   type CandidateBehaviorEvidence,
   type CandidateObservation,
 } from "../../src/core/volatilityCandidates.ts";
-import { createVolatilityProfile } from "../../src/core/volatility.ts";
+import {
+  createVolatilityProfile,
+  volatilityAnchorHash,
+} from "../../src/core/volatility.ts";
 import { CANDIDATE_PROMOTION_EVALUATION_CASES } from "./groundTruth.ts";
 
 type ExpectedRelation = "same" | "different";
@@ -60,6 +63,7 @@ async function collectCandidateEvidence(
 
     behaviorEvidence.push({
       sessionId: variant.sessionId,
+      sourceAnchorHash: volatilityAnchorHash(before, "title"),
       fieldValue: volatilityFieldValue(before, "title"),
       behaviorSignature: fingerprintState(after).hash,
     });
