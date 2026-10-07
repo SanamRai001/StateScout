@@ -734,8 +734,28 @@ The terminal remains compact.
 
 If Phase 8 confirms the predicted v3 second-resolution false merge, v3 must remain non-default. The next phase should design v4 around a stronger notion of observed volatility rather than treating any clock format as automatically noisy. Repeated-observation stability or evidence-backed field volatility is a more defensible direction than another broader regex.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 30/30 passed, 0 failed;
+- Phase 7 frozen v3 cross-benchmark results remained unchanged;
+- Phase 8 local v1: 8/10, 0 false merges, 2 false splits;
+- Phase 8 local v2: 7/10, 3 false merges, 0 false splits;
+- Phase 8 local v3: 9/10, 1 false merge, 0 false splits;
+- the exact v3 failure was `meaningful-second-title`, as predicted;
+- the Playwright TodoMVC target was observed successfully three times and remained stable with one unique hash for v1, v2, and v3;
+- both The Internet targets timed out before observation and therefore contribute no correctness or stability evidence.
+
+Phase 8 confirms that v3 is the strongest measured candidate so far but is still unsafe to promote as the default because unconditional second-resolution title normalization can hide meaningful state.
+
+The read-only real-site result is intentionally interpreted separately from controlled correctness: one stable observed target is positive but insufficient external-validity evidence, while unavailable targets are treated as missing data rather than failures of the fingerprint.
+
+Phase 8 verification gate is complete.
+
 If the broader fixture unexpectedly contradicts the prediction, inspect the snapshots and measurement harness before changing any fingerprint algorithm.
 
 ## Merge status
 
-Phases 1A through 7 are merged. Phase 8 implementation is complete on `feat/phase-8-broader-generalization` and awaits its single whole-phase verification gate.
+Phases 1A through 7 are merged. Phase 8 implementation and whole-phase verification are complete on `feat/phase-8-broader-generalization`; PR #10 is ready for merge.
