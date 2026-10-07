@@ -16,6 +16,12 @@ type ExpectedRelation = "same" | "different";
 type Fingerprinter = (snapshot: SemanticStateSnapshot) => StateFingerprint;
 type GroundTruthCase = (typeof OBSERVED_VOLATILITY_EVALUATION_CASES)[number];
 
+interface ObservedPair {
+  candidate: GroundTruthCase;
+  left: SemanticStateSnapshot;
+  right: SemanticStateSnapshot;
+}
+
 async function snapshot(
   page: Page,
   baseUrl: string,
@@ -49,7 +55,7 @@ export async function evaluateObservedVolatility(
   const profile = await learnProfile(page, baseUrl);
   const v4 = createFingerprintStateV4(profile);
 
-  const pairs = [];
+  const pairs: ObservedPair[] = [];
   for (const candidate of OBSERVED_VOLATILITY_EVALUATION_CASES) {
     pairs.push({
       candidate,
