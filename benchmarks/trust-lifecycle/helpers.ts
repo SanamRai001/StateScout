@@ -51,7 +51,7 @@ export async function collectLifecycleWindow(
   seeds: readonly number[],
   windowId: string,
   observedAt: string,
-  applicationScope = TRUST_LIFECYCLE_GROUND_TRUTH.applicationScope,
+  applicationScope: string = TRUST_LIFECYCLE_GROUND_TRUTH.applicationScope,
 ): Promise<RuleEvidenceWindow> {
   const records: RuleRevalidationEvidenceRecord[] = [];
   for (const [index, seed] of seeds.entries()) {
