@@ -361,7 +361,29 @@ Expected comparison hypothesis:
 - false splits decrease by 2;
 - non-tracking query changes and meaningful numeric controls remain distinct.
 
-Do not promote v2 as the explorer default during this phase. The comparison must pass first.
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 21/21 passed, 0 failed;
+- frozen v1 baseline remained 7/9;
+- v1 false merges: 0;
+- v1 false splits: 2;
+- v2 result: 9/9;
+- v2 accuracy: 1.0;
+- v2 same-state precision/recall/F1: 1.0 / 1.0 / 1.0;
+- v2 false merges: 0;
+- v2 false splits: 0;
+- accuracy delta: +0.2222222222222222;
+- same-state F1 delta: +0.25;
+- false-split delta: -2;
+- non-tracking query and meaningful numeric-control guard tests passed;
+- comparison output was written to `results/raw/phase-3-fingerprint-comparison.json`.
+
+The single-run fingerprint timing values are recorded as raw observations only. They are not evidence that v2 is faster because this micro-benchmark is susceptible to startup/JIT/warm-up effects and needs repeated measurements before performance claims.
+
+Phase 3 verification gate is complete. Fingerprint v2 remains an experimental candidate rather than the explorer default until broader browser-fixture validation.
 
 ## Next phase after verification
 
@@ -369,4 +391,4 @@ If Phase 3 confirms the hypothesis, the next phase can evaluate v2 as an explore
 
 ## Merge status
 
-Phases 1A, 1B, and 2 are merged. Phase 3 implementation is complete on `feat/phase-3-fingerprint-v2` and awaits its single whole-phase verification gate.
+Phases 1A, 1B, and 2 are merged. Phase 3 implementation and its whole-phase verification gate are complete on `feat/phase-3-fingerprint-v2`; PR #5 is ready for merge.
