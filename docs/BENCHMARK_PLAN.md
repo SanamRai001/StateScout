@@ -138,3 +138,20 @@ Promotion requires independent evidence:
 If behavior diverges, the candidate must remain quarantined even when its immediate snapshots differ only in the candidate field.
 
 This phase deliberately includes a Dashboard candidate that should promote and an Auction countdown candidate that should not.
+
+
+## Phase 11 explorer evidence persistence
+
+Evidence collection must not change the identity function of the crawl that produced the evidence.
+
+Research rules:
+
+- freeze the fingerprinter at run start;
+- collect evidence only as an observation sidecar;
+- sidecar failures must not alter graph execution;
+- persist evidence under explicit run/session IDs;
+- make store merging idempotent so replaying an import cannot inflate confidence;
+- discover candidates from persisted evidence only as quarantined candidates;
+- defer promotion until after the run and require a future run to start with any newly trusted profile.
+
+The controlled benchmark compares the exact graph signature with and without evidence collection and then merges two independently labeled evidence stores.
