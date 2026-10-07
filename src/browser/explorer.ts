@@ -49,6 +49,38 @@ export interface ExplorationResult {
   evidenceErrors: readonly string[];
 }
 
+function sameDocumentTarget(currentUrl: string, targetUrl: string): boolean {
+  try {
+    const current = new URL(currentUrl);
+    const target = new URL(targetUrl);
+
+    return (
+      current.origin === target.origin &&
+      current.pathname === target.pathname &&
+      current.search === target.search
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function navigateToStartState(
+  page: Page,
+  startUrl: string,
+): Promise<void> {
+  const currentUrl = page.url();
+
+  if (sameDocumentTarget(currentUrl, startUrl)) {
+    if (currentUrl !== startUrl) {
+      await page.goto(startUrl);
+    }
+    await page.reload();
+    return;
+  }
+
+  await page.goto(startUrl);
+}
+
 async function restoreState(
   page: Page,
   startUrl: string,
@@ -58,7 +90,7 @@ async function restoreState(
     phase: ExplorationObservationPhase,
   ) => Promise<SemanticStateSnapshot>,
 ): Promise<void> {
-  await page.goto(startUrl);
+  await navigateToStartState(page, startUrl);
 
   for (const step of path.steps) {
     await executeInteraction(page, step.interaction);
@@ -130,7 +162,7 @@ export async function exploreWithPlaywright(
     return snapshot;
   };
 
-  await page.goto(options.startUrl);
+  await navigateToStartState(page, options.startUrl);
   const initialSnapshot = await observeForRun("initial");
   const initial = graph.upsertState(initialSnapshot);
   const rootPath: StatePath = { stateId: initial.node.id, steps: [] };
