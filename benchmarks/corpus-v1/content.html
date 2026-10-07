@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Operations</title></head>
+<body><main id="app"></main><script>
+const variant=location.hash.slice(1);
+const app=document.querySelector("#app");
+const prefix='<h1>Operations</h1><button>Refresh</button>';
+if(variant==="status-ready"){
+  app.innerHTML=prefix+'<p>Import ready</p>';
+}else if(variant==="status-failed"){
+  app.innerHTML=prefix+'<p>Import failed</p>';
+}else if(variant==="list-a"){
+  app.innerHTML=prefix+'<ul><li>Order 101</li><li>Order 102</li></ul>';
+}else if(variant==="list-b"){
+  app.innerHTML=prefix+'<ul><li>Order 201</li><li>Order 202</li></ul>';
+}else{
+  app.innerHTML=prefix;
+}
+</script></body></html>

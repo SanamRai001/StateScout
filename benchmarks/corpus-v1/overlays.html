@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Documents</title></head>
+<body><main id="app"></main><script>
+const variant=location.hash.slice(1);
+const app=document.querySelector("#app");
+const base='<h1>Documents</h1><button>Open actions</button>';
+if(variant==="dialog-confirm"){
+  app.innerHTML=base+'<div role="dialog" aria-label="Confirmation"><button>Cancel</button></div>';
+}else if(variant==="dialog-delete"){
+  app.innerHTML=base+'<div role="dialog" aria-label="Delete document"><button>Cancel</button></div>';
+}else if(variant==="dialog-publish"){
+  app.innerHTML=base+'<div role="dialog" aria-label="Publish document"><button>Cancel</button></div>';
+}else{
+  app.innerHTML=base;
+}
+</script></body></html>
