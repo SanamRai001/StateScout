@@ -114,4 +114,30 @@ test("selective scheduler is deterministic and validates complete impact metadat
       ),
     /Missing revalidation impact/,
   );
+
+  assert.throws(
+    () =>
+      scheduleSelectiveRevalidation(
+        artifact,
+        impacts.map((impact, index) =>
+          index === 0
+            ? { ...impact, estimatedAffectedStates: -1 }
+            : impact,
+        ),
+        SELECTIVE_REVALIDATION_GROUND_TRUTH.referenceTime,
+        2,
+      ),
+    /estimatedAffectedStates must be a non-negative integer/,
+  );
+
+  assert.throws(
+    () =>
+      scheduleSelectiveRevalidation(
+        artifact,
+        impacts,
+        SELECTIVE_REVALIDATION_GROUND_TRUTH.referenceTime,
+        -1,
+      ),
+    /budget must be a non-negative integer/i,
+  );
 });
