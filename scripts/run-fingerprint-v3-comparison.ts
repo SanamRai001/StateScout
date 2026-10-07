@@ -15,6 +15,7 @@ import { fingerprintStateV3 } from "../src/core/fingerprintV3.ts";
 const outputPath = resolve(
   process.argv[2] ?? "results/raw/phase-7-fingerprint-v3-comparison.json",
 );
+const summaryPath = outputPath.replace(/\.json$/i, "-summary.txt");
 
 const browserGeneralizationUrl = pathToFileURL(
   resolve("benchmarks/browser-generalization/index.html"),
@@ -67,12 +68,19 @@ try {
   const phase5 = report.phase5ExplorerStrategy.v3;
   const phase6 = report.phase6AdversarialIdentity.v3;
 
-  console.log("Phase 7 fingerprint-v3 summary");
-  console.log(`  Phase 2: ${phase2.correct}/${phase2.total}, false merges=${phase2.falseMergeCount}, false splits=${phase2.falseSplitCount}`);
-  console.log(`  Phase 4: ${phase4.correct}/${phase4.total}, false merges=${phase4.falseMerges}, false splits=${phase4.falseSplits}`);
-  console.log(`  Phase 5: states=${phase5.graphStates}, attempts=${phase5.attemptedTransitions}, coverage=${phase5.meaningfulStateCoverage}, excess=${phase5.excessStates}, failed=${phase5.failedTransitions}`);
-  console.log(`  Phase 6: ${phase6.correct}/${phase6.total}, false merges=${phase6.falseMerges}, false splits=${phase6.falseSplits}`);
-  console.log(`Full result: ${outputPath}`);
+  const summary = [
+    "Phase 7 fingerprint-v3 summary",
+    `Phase 2: ${phase2.correct}/${phase2.total}, false merges=${phase2.falseMergeCount}, false splits=${phase2.falseSplitCount}`,
+    `Phase 4: ${phase4.correct}/${phase4.total}, false merges=${phase4.falseMerges}, false splits=${phase4.falseSplits}`,
+    `Phase 5: states=${phase5.graphStates}, attempts=${phase5.attemptedTransitions}, coverage=${phase5.meaningfulStateCoverage}, excess=${phase5.excessStates}, failed=${phase5.failedTransitions}`,
+    `Phase 6: ${phase6.correct}/${phase6.total}, false merges=${phase6.falseMerges}, false splits=${phase6.falseSplits}`,
+    `Full JSON: ${outputPath}`,
+  ].join("\n") + "\n";
+
+  await writeFile(summaryPath, summary, "utf8");
+
+  console.log(summary.trim());
+  console.log(`Summary file: ${summaryPath}`);
 } finally {
   await browser.close();
 }
