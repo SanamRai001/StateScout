@@ -4,8 +4,7 @@
 <body>
 <main id="app"></main>
 <script>
-const params = new URLSearchParams(location.search);
-const variant = params.get("variant") || "base";
+const variant = location.hash.slice(1) || "base";
 const app = document.querySelector("#app");
 const meaningful = {
   "page-two": '<h1>Dashboard</h1><button>Order 42</button>',
