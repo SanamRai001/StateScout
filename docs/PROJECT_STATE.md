@@ -437,7 +437,22 @@ First local Phase 4 gate exposed a benchmark-design defect before acceptance:
 - Browser-fixture observation now explicitly reloads after navigation so the script renders from the complete target URL/fragment before each snapshot.
 - Again, no fingerprint implementation was changed; the measurement harness was corrected instead.
 
-Do not promote v2 as the default explorer identity until the corrected complete gate passes.
+Corrected whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 22/22 passed, 0 failed;
+- Phase 2 frozen v1 baseline remained 7/9 with 0 false merges and 2 false splits;
+- Phase 3 frozen comparison remained v2 9/9 with 0 false merges and 0 false splits;
+- Phase 4 browser v1: 3/4, 0 false merges, 1 false split;
+- Phase 4 browser v2: 4/4, 0 false merges, 0 false splits;
+- meaningful query, dialog, and disabled-affordance browser states all remained distinct under v2;
+- wrapper/class/id/test-id, tracking-query, and volatile-title noise was successfully treated as equivalent in the intended browser pair.
+
+Phase 4 therefore supports the original hypothesis after correcting two independently documented harness defects. Fingerprint v2 itself was not changed to obtain the passing browser result.
+
+Phase 4 verification gate is complete. v2 remains non-default until an end-to-end explorer strategy comparison is completed.
 
 ## Next phase after verification
 
@@ -445,4 +460,4 @@ If Phase 4 passes, v2 has evidence at both snapshot and browser-observation leve
 
 ## Merge status
 
-Phases 1A, 1B, 2, and 3 are merged. Phase 4 implementation is complete on `feat/phase-4-browser-generalization` and awaits its single whole-phase verification gate.
+Phases 1A, 1B, 2, and 3 are merged. Phase 4 implementation and corrected whole-phase verification are complete on `feat/phase-4-browser-generalization`; PR #6 is ready for merge.
