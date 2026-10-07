@@ -2842,6 +2842,46 @@ The experiment writes:
 
 ### Research interpretation
 
+Phase 20 whole-phase verification passed on Windows x64 with Node v24.19.0 after one TypeScript immutability fix in graph snapshot sorting.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 75/75 passed, 0 failed;
+- Phase 20 browser deep-replay test passed;
+- Phase 20 browser checkpoint-resume test passed;
+- Phase 20 synthetic 64/128/256-state correctness tests passed;
+- checkpoint corruption detection passed.
+
+Measured synthetic results:
+
+- 64 states: 67 transitions, 67 attempts, 4 injected failures, 17.699 ms, heap delta 914176 bytes;
+- 128 states: 135 transitions, 135 attempts, 8 injected failures, 4.761 ms, heap delta 1737152 bytes;
+- 256 states: 271 transitions, 271 attempts, 16 injected failures, 9.397 ms, heap delta 3910544 bytes.
+
+Synthetic checkpoint recovery:
+
+- interrupted after 100 attempts;
+- resumed to 271 attempts;
+- final states/transitions/failed: 256/271/16;
+- checkpoint size: 260141 bytes;
+- resumed graph matched uninterrupted graph: true;
+- corrupted checkpoint rejected: true.
+
+Browser deep-replay measurement:
+
+- states/transitions/attempts: 33/32/32;
+- replay-step/restored-source/after-interaction observations: 496/32/32;
+- duration: 22655.856 ms;
+- heap delta: 30665168 bytes;
+- checkpoint interrupted after 10 attempts and resumed to 32;
+- browser checkpoint size: 34747 bytes;
+- resumed graph matched uninterrupted graph: true.
+
+The synthetic timings are intentionally treated as noisy single-run measurements rather than monotonic scaling evidence. The correctness counts and resume equivalence are the frozen acceptance criteria.
+
+Phase 20 verification gate is complete.
+
 A Phase 20 pass would establish that:
 
 - StateScout can serialize and validate its logical exploration state;
@@ -2859,4 +2899,4 @@ If Phase 20 passes, Phase 21 should be the research freeze and paper-artifact ph
 
 ## Merge status
 
-Phases 1A through 19 are merged. Phase 20 implementation is complete on `feat/phase-20-scalability-recovery` and awaits its single whole-phase verification gate.
+Phases 1A through 19 are merged. Phase 20 implementation and whole-phase verification are complete on `feat/phase-20-scalability-recovery`; PR #22 is ready for merge.
