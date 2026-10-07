@@ -179,17 +179,6 @@ export function createReversibleArchiveFixture(): {
   };
 }
 
-function largestAliasMemberCount(
-  projection: ReturnType<typeof projectRawStateArchive>,
-): number {
-  return Math.max(
-    0,
-    ...projection.states.map(
-      (state) => state.memberObservationIds.length,
-    ),
-  );
-}
-
 export function evaluateReversibleEquivalence() {
   const { archive, trustedRule } =
     createReversibleArchiveFixture();
