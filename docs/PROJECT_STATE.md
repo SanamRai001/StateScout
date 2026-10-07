@@ -2467,7 +2467,7 @@ npm run experiment:phase18
 npm run experiment:phase19
 ```
 
-Expected offline suite size: 67 tests.
+Expected offline suite size: 68 tests.
 
 There are intentionally no frozen exact graph counts for the live targets.
 
@@ -2509,6 +2509,34 @@ The primary public cohort produced:
 This result is retained as a failed research gate rather than hidden, reclassified, or used to relax the threshold.
 
 The TodoMVC result remains useful empirical evidence: its initial semantic identity was stable while its bounded graph was not fully reproducible.
+
+### Same-origin enforcement defect exposed by Phase 19
+
+Reviewing the live-target surface exposed a safety defect before the recovery crawl:
+
+- StateScout already had a tested core `isUrlAllowed()` same-origin policy;
+- discovered links were classified through the action-risk policy;
+- however, `exploreWithPlaywright()` did not consult the crawl-boundary policy before enqueueing a safe link;
+- a public documentation page could therefore have caused StateScout to follow an external-origin link.
+
+The explorer now freezes a same-origin boundary from `startUrl` at run start.
+
+For HTTP(S) crawls:
+
+- same-origin navigation can be enqueued;
+- external-origin navigation is recorded as `blocked-by-policy`;
+- non-HTTP(S) external navigation remains blocked by the existing core boundary helper.
+
+Local `file:` benchmark fixtures may navigate only to other `file:` URLs.
+
+A browser regression fixture contains both:
+
+- a safe local state-changing button;
+- an external `https://example.com/` link.
+
+The regression requires the local state to remain explorable while the external link is blocked and never appears as a discovered state.
+
+This is treated as a Phase 19 safety finding, not as a change to the identity hypothesis.
 
 ### Phase 19B pre-registered recovery cohort
 
