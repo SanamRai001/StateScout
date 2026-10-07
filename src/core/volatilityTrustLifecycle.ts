@@ -356,9 +356,12 @@ export function advanceTrustLifecycle(
   parseTimestamp(referenceTime, "reference");
   parseTimestamp(window.observedAt, "observed");
 
+  const parentDigest = sha256(serializeTrustLifecycleArtifact(parent));
+
   if (parent.processedWindowIds.includes(window.windowId)) {
     return {
       ...parent,
+      parentArtifactSha256: parentDigest,
       generatedAt: referenceTime,
       decisions: parent.entries.map((entry) =>
         unchangedDecision(
@@ -387,6 +390,7 @@ export function advanceTrustLifecycle(
   if (window.applicationScope !== parent.applicationScope) {
     return {
       ...parent,
+      parentArtifactSha256: parentDigest,
       generatedAt: referenceTime,
       evidenceWindowSha256: windowDigest,
       processedWindowIds: [...parent.processedWindowIds, window.windowId].sort(),
@@ -404,6 +408,7 @@ export function advanceTrustLifecycle(
   if (ageMs(referenceTime, window.observedAt) > parent.policy.maxEvidenceAgeMs) {
     return {
       ...parent,
+      parentArtifactSha256: parentDigest,
       generatedAt: referenceTime,
       evidenceWindowSha256: windowDigest,
       processedWindowIds: [...parent.processedWindowIds, window.windowId].sort(),
@@ -455,7 +460,7 @@ export function advanceTrustLifecycle(
     kind: "statescout-volatility-trust-lifecycle",
     source: "offline-between-run-lifecycle",
     applicationScope: parent.applicationScope,
-    parentArtifactSha256: sha256(serializeTrustLifecycleArtifact(parent)),
+    parentArtifactSha256: parentDigest,
     evidenceWindowSha256: windowDigest,
     generatedAt: referenceTime,
     policy: parent.policy,
