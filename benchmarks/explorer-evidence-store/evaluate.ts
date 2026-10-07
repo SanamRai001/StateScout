@@ -114,5 +114,10 @@ export async function evaluateExplorerEvidenceStore(
         serializeVolatilityEvidenceStore(idempotentMerge) === serialized,
     },
     candidates,
+    evidenceStores: {
+      sessionA: storeA,
+      sessionB: storeB,
+      merged,
+    },
   };
 }
