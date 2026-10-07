@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>StateScout Explorer Strategy — 10:00:01</title></head>
+<body>
+<main id="app"></main>
+<script>
+const app = document.querySelector("#app");
+let state = "home";
+let noiseTick = 1;
+
+function button(label, action) {
+  return `<button type="button" data-action="${action}">${label}</button>`;
+}
+
+function render() {
+  if (state === "home") {
+    app.innerHTML = `<h1>Home</h1>${button("Refresh view", "noise")}${button("Open details", "details")}`;
+    return;
+  }
+  app.innerHTML = `<h1>Details</h1>${button("Home", "home")}`;
+}
+
+app.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action]");
+  if (!target) return;
+  const action = target.dataset.action;
+  if (action === "noise") {
+    noiseTick += 1;
+    document.title = `StateScout Explorer Strategy — 10:00:0${noiseTick}`;
+    history.replaceState(null, "", `?utm_source=refresh-${noiseTick}`);
+    app.innerHTML = `<div class="generated-${noiseTick}" id="volatile-${noiseTick}"><h1> Home </h1>${button("Open details", "details")}${button("Refresh view", "noise")}</div>`;
+    return;
+  }
+  if (action === "details") state = "details";
+  if (action === "home") {
+    state = "home";
+    document.title = "StateScout Explorer Strategy — 10:00:01";
+    history.replaceState(null, "", location.pathname);
+  }
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
