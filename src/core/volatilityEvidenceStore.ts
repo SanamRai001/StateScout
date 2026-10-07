@@ -52,7 +52,7 @@ export function createVolatilityEvidenceStore(
 }
 
 export function mergeVolatilityEvidenceStores(
-  ...stores: readonly VolatilityEvidenceStore[]
+  ...stores: VolatilityEvidenceStore[]
 ): VolatilityEvidenceStore {
   return createVolatilityEvidenceStore(
     stores.flatMap((store) => store.records),
