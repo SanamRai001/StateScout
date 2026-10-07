@@ -519,4 +519,4 @@ If Phase 5 passes, evaluate the remaining adversarial assumptions—especially s
 
 ## Merge status
 
-Phases 1A, 1B, 2, 3, and 4 are merged. Phase 5 implementation is complete on `feat/phase-5-explorer-strategy` and awaits its single whole-phase verification gate.
+Phases 1A, 1B, 2, 3, and 4 are merged. Phase 5 implementation and whole-phase verification are complete on `feat/phase-5-explorer-strategy`; PR #7 is ready for merge.
