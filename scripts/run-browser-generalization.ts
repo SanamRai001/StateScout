@@ -20,8 +20,8 @@ try {
   };
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, JSON.stringify(report, null, 2) + "\n", "utf8");
-  console.log(JSON.stringify(report, null, 2));
-  console.log(`Wrote ${outputPath}`);
+  console.log(`Phase 4: v1=${comparison.v1.correct}/${comparison.v1.total}, v2=${comparison.v2.correct}/${comparison.v2.total}, v3=${comparison.v3.correct}/${comparison.v3.total}`);
+  console.log(`Full result: ${outputPath}`);
 } finally {
   await browser.close();
 }
