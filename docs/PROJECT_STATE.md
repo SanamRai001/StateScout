@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 16 — Reversible raw observations and equivalence aliases**
+**Phase 17 — Broader frozen benchmark corpus**
 
 ## Branch
 
-`feat/phase-16-reversible-equivalence-archive`
+`feat/phase-17-broader-benchmark-corpus`
 
 ## Phase 0 status
 
@@ -1929,10 +1929,161 @@ StateScout can preserve raw observations and transitions once, project them thro
 
 This is important because a later challenge or revocation can reinterpret old evidence rather than discovering that the earlier abstraction permanently erased it.
 
+## Phase 17 implementation
+
+Phase 17 broadens the controlled evaluation surface before any new fingerprint or observer changes are allowed.
+
+### Frozen corpus
+
+A new `benchmarks/corpus-v1` corpus defines 16 labeled browser-observed pairs across 7 semantic families.
+
+Frozen label counts:
+
+- total pairs: 16;
+- expected same: 4;
+- expected different: 12;
+- families: 7.
+
+Families:
+
+1. structural noise;
+2. control state;
+3. form state;
+4. navigation;
+5. overlay/dialog state;
+6. temporal state;
+7. content coverage.
+
+Ground truth was committed before the corpus evaluator and before any Phase 17 measurement code.
+
+### Structural-noise cases
+
+The corpus includes:
+
+- generated wrapper/class/ID/test-ID and whitespace noise;
+- equivalent control-order changes;
+- known tracking-query noise.
+
+All three are expected to remain semantically equivalent.
+
+### Control-state cases
+
+The corpus freezes meaningful differences for:
+
+- selected tab state;
+- expanded/collapsed state;
+- checkbox checked state;
+- disabled affordance state.
+
+### Form and navigation cases
+
+The corpus includes:
+
+- different visible input values;
+- different semantic record query values;
+- query-key order noise;
+- two different application paths with otherwise matching visible semantics.
+
+### Overlay and temporal cases
+
+The corpus includes:
+
+- base page versus open dialog;
+- two dialogs with different accessible identities;
+- second-resolution auction title values that remain meaningful.
+
+The temporal case deliberately protects the Phase 8 lesson that a clock-like token is not globally safe to normalize.
+
+### Content-coverage challenge cases
+
+Two cases intentionally exercise user-visible state outside the current observer feature set:
+
+- different ordinary paragraph status text with identical title/headings/controls;
+- different visible list contents with identical title/headings/controls.
+
+The current observer does not include arbitrary body text or list-item content in `SemanticStateSnapshot`.
+
+These cases are therefore expected to expose false merges in the current v4-empty-profile baseline.
+
+Phase 17 must not change the observer or fingerprint implementation to make these cases pass.
+
+### Reusable evaluator
+
+The corpus evaluator is separated into:
+
+- browser observation of the frozen corpus;
+- generic evaluation of already-observed pairs with any `StateFingerprinter`;
+- the Phase 17 current-baseline evaluation using v4 with an empty volatility profile.
+
+This makes the same frozen observed corpus reusable for Phase 18 baseline and ablation experiments without rewriting ground truth.
+
+### Frozen current-v4 hypothesis
+
+Before local execution, the Phase 17 current-v4 expectation is:
+
+- total: 16;
+- correct: 14;
+- accuracy: 0.875;
+- false merges: 2;
+- false splits: 0.
+
+Expected failures:
+
+- `plain-status-text-state`;
+- `list-content-state`.
+
+Expected family behavior:
+
+- all non-content-coverage families classify every pair correctly;
+- content-coverage: 0/2 correct, 2 false merges, 0 false splits.
+
+A Phase 17 pass means the benchmark reproduces these known limitations without changing the identity algorithm to fit the corpus.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-17-broader-benchmark-corpus
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase16
+npm run experiment:phase17
+```
+
+Expected Phase 17 compact summary:
+
+```text
+Cases/families: 16/7
+Correct/accuracy: 14/0.875
+False merges: 2
+False splits: 0
+Failures: plain-status-text-state, list-content-state
+
+content-coverage: 0/2, FM=2, FS=0
+all other families: complete correctness
+```
+
+The experiment writes:
+
+- full report: `results/raw/phase-17-broader-corpus.json`;
+- compact summary: `results/raw/phase-17-broader-corpus-summary.txt`.
+
+### Research interpretation
+
+Phase 17 is a generalization benchmark phase, not an optimization phase.
+
+A passing result would show that the current semantic identity stack generalizes across a broader set of structural, control, form, navigation, overlay, and temporal patterns while also exposing a specific observer-level blind spot for meaningful non-interactive content.
+
+The two expected failures are scientifically useful because they identify a limitation in what StateScout observes, rather than another regex/fingerprint normalization problem.
+
 ## Next phase after verification
 
-If Phase 16 passes, Phase 17 should build a broader frozen benchmark corpus across multiple interaction patterns and application structures. The reversible archive can then be used to compare abstraction behavior over a larger set of workflows rather than only one controlled history.
+If Phase 17 passes, Phase 18 should run the frozen corpus as a baseline and ablation study. It should compare multiple identity strategies and observer feature sets on exactly the same labels, including URL-only identity, strict semantic identity, v1-v4 fingerprints, trusted-profile abstraction, and targeted observer-content additions. Any improvement should be evaluated against both false-merge and false-split risk rather than optimized for total accuracy alone.
 
 ## Merge status
 
-Phases 1A through 15 are merged. Phase 16 implementation and whole-phase verification are complete on `feat/phase-16-reversible-equivalence-archive`; PR #18 is ready for merge.
+Phases 1A through 16 are merged. Phase 17 implementation is complete on `feat/phase-17-broader-benchmark-corpus` and awaits its single whole-phase verification gate.
