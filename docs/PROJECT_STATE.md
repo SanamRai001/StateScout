@@ -2809,7 +2809,7 @@ npx playwright install chromium
 
 npm run typecheck
 npm test
-npm run experiment:phase19
+npm run experiment:phase18
 npm run experiment:phase20
 ```
 
