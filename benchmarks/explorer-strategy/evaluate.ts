@@ -3,6 +3,7 @@ import type { Page } from "playwright";
 import { exploreWithPlaywright } from "../../src/browser/explorer.ts";
 import { fingerprintState } from "../../src/core/fingerprint.ts";
 import { fingerprintStateV2 } from "../../src/core/fingerprintV2.ts";
+import { fingerprintStateV3 } from "../../src/core/fingerprintV3.ts";
 import type { StateFingerprinter } from "../../src/core/graph.ts";
 import { EXPLORER_STRATEGY_GROUND_TRUTH } from "./groundTruth.ts";
 
@@ -27,14 +28,28 @@ async function run(page: Page, startUrl: string, fingerprinter: StateFingerprint
 export async function compareExplorerStrategies(page: Page, startUrl: string) {
   const v1 = await run(page, startUrl, fingerprintState);
   const v2 = await run(page, startUrl, fingerprintStateV2);
+  const v3 = await run(page, startUrl, fingerprintStateV3);
   return {
     v1,
     v2,
+    v3,
     delta: {
       graphStates: v2.graphStates - v1.graphStates,
       graphTransitions: v2.graphTransitions - v1.graphTransitions,
       attemptedTransitions: v2.attemptedTransitions - v1.attemptedTransitions,
       excessStates: v2.excessStates - v1.excessStates,
+    },
+    deltaV3VsV1: {
+      graphStates: v3.graphStates - v1.graphStates,
+      graphTransitions: v3.graphTransitions - v1.graphTransitions,
+      attemptedTransitions: v3.attemptedTransitions - v1.attemptedTransitions,
+      excessStates: v3.excessStates - v1.excessStates,
+    },
+    deltaV3VsV2: {
+      graphStates: v3.graphStates - v2.graphStates,
+      graphTransitions: v3.graphTransitions - v2.graphTransitions,
+      attemptedTransitions: v3.attemptedTransitions - v2.attemptedTransitions,
+      excessStates: v3.excessStates - v2.excessStates,
     },
   };
 }
