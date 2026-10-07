@@ -47,8 +47,11 @@ export class StateGraph {
   private readonly statesById = new Map<StateId, StateNode>();
   private readonly stateIdsByHash = new Map<string, StateId>();
   private readonly transitionsById = new Map<string, Transition>();
+  private readonly fingerprinter: StateFingerprinter;
 
-  constructor(private readonly fingerprinter: StateFingerprinter = fingerprintState) {}
+  constructor(fingerprinter: StateFingerprinter = fingerprintState) {
+    this.fingerprinter = fingerprinter;
+  }
 
   upsertState(
     snapshot: SemanticStateSnapshot,
