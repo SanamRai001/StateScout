@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 7 — Evidence-driven fingerprint v3**
+**Phase 8 — Broader generalization and real-site observation**
 
 ## Branch
 
-`feat/phase-7-fingerprint-v3`
+`feat/phase-8-broader-generalization`
 
 ## Phase 0 status
 
@@ -662,10 +662,80 @@ The Phase 7 experiment writes:
 
 Experiment runners now keep terminal output compact instead of printing their entire JSON reports.
 
+## Phase 8 implementation
+
+Phase 8 broadens validation before any default-fingerprint promotion.
+
+It has two deliberately separate evidence layers.
+
+### Layer A — frozen broader browser benchmark
+
+A new 10-pair Playwright-observed benchmark expands the state-identity challenge beyond the earlier focused fixtures.
+
+The frozen cases include:
+
+- wrapper/generated-ID/test-ID/control-order noise;
+- multiple known tracking query parameters;
+- volatile second-resolution dashboard title clocks;
+- semantic `ref` query values;
+- meaningful minute-resolution title times;
+- meaningful second-resolution title times;
+- `aria-expanded` affordance changes;
+- user-visible input value changes;
+- ordinary semantic query values;
+- dialog state.
+
+The meaningful second-resolution title case is intentionally adversarial to v3. It represents an auction deadline where `10:00:01` and `10:00:02` are different meaningful states.
+
+Expected frozen results:
+
+- v1: 8/10, 0 false merges, 2 false splits;
+- v2: 7/10, 3 false merges, 0 false splits;
+- v3: 9/10, 1 false merge, 0 false splits;
+- the exact expected v3 failure is `meaningful-second-title`.
+
+A passing Phase 8 benchmark therefore does **not** mean v3 is perfect. It means broader validation reproducibly exposes its remaining unconditional second-resolution title normalization hazard.
+
+### Layer B — read-only real-site observation
+
+Phase 8 also observes three public browser-testing/demo targets without clicking, typing, submitting, or mutating state:
+
+- Playwright's public TodoMVC demo;
+- The Internet `challenging_dom` page;
+- The Internet `dynamic_content` page.
+
+Each target is loaded three times. StateScout records semantic snapshot summaries plus the number of unique v1/v2/v3 hashes across reloads.
+
+These observations are external-validity evidence only. They have no manual same/different labels, do not define correctness, and do not fail the core phase merely because a live site is unreachable. This prevents network availability or third-party site changes from becoming fake algorithm evidence.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-8-broader-generalization
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:fingerprint-v3
+npm run experiment:phase8
+```
+
+The Phase 8 experiment writes:
+
+- full report: `results/raw/phase-8-broader-generalization.json`;
+- compact shareable summary: `results/raw/phase-8-broader-generalization-summary.txt`.
+
+The terminal remains compact.
+
 ## Next phase after verification
 
-If Phase 7 passes, v3 becomes the strongest identity candidate so far, but promotion should still be a separate decision. The next phase should validate v3 on a broader fixture set or realistic applications with naturally occurring volatility before changing the default explorer identity from v1.
+If Phase 8 confirms the predicted v3 second-resolution false merge, v3 must remain non-default. The next phase should design v4 around a stronger notion of observed volatility rather than treating any clock format as automatically noisy. Repeated-observation stability or evidence-backed field volatility is a more defensible direction than another broader regex.
+
+If the broader fixture unexpectedly contradicts the prediction, inspect the snapshots and measurement harness before changing any fingerprint algorithm.
 
 ## Merge status
 
-Phases 1A through 6 are merged. Phase 7 implementation and whole-phase verification are complete on `feat/phase-7-fingerprint-v3`; PR #9 is ready for merge.
+Phases 1A through 7 are merged. Phase 8 implementation is complete on `feat/phase-8-broader-generalization` and awaits its single whole-phase verification gate.
