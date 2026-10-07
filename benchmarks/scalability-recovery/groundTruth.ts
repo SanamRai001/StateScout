@@ -1,0 +1,45 @@
+export const PHASE20_GROUND_TRUTH = {
+  browserDeepReplay: {
+    depth: 32,
+    states: 33,
+    transitions: 32,
+    attempts: 32,
+    replayStepObservations: 496,
+    restoredSourceObservations: 32,
+    afterInteractionObservations: 32,
+    failedTransitions: 0,
+  },
+  syntheticScale: [
+    {
+      states: 64,
+      observedTransitions: 63,
+      injectedFailedTransitions: 4,
+      totalTransitions: 67,
+      attempts: 67,
+    },
+    {
+      states: 128,
+      observedTransitions: 127,
+      injectedFailedTransitions: 8,
+      totalTransitions: 135,
+      attempts: 135,
+    },
+    {
+      states: 256,
+      observedTransitions: 255,
+      injectedFailedTransitions: 16,
+      totalTransitions: 271,
+      attempts: 271,
+    },
+  ],
+  checkpointRecovery: {
+    states: 256,
+    interruptAfterAttempts: 100,
+    finalAttempts: 271,
+    finalStates: 256,
+    finalTransitions: 271,
+    finalFailedTransitions: 16,
+    resumedMatchesUninterrupted: true,
+    corruptedCheckpointRejected: true,
+  },
+} as const;
