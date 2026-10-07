@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Auction</title></head>
+<body><main id="app"></main><script>
+const variant=location.hash.slice(1);
+document.title=variant==="auction-2"?"Auction closes — 10:00:02":"Auction closes — 10:00:01";
+document.querySelector("#app").innerHTML='<h1>Auction</h1><button>Place bid</button>';
+</script></body></html>
