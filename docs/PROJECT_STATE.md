@@ -2076,6 +2076,33 @@ The experiment writes:
 
 Phase 17 is a generalization benchmark phase, not an optimization phase.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 57/57 passed, 0 failed;
+- frozen Phase 16 reversible-equivalence result remained unchanged;
+- corpus cases/families: 16/7;
+- correct: 14/16;
+- accuracy: 0.875;
+- false merges: 2;
+- false splits: 0;
+- failures: `plain-status-text-state`, `list-content-state`;
+- content-coverage family: 0/2 correct, 2 false merges, 0 false splits;
+- control-state: 4/4;
+- form-state: 1/1;
+- navigation: 3/3;
+- overlay: 2/2;
+- structural-noise: 3/3;
+- temporal: 1/1.
+
+The frozen corpus therefore reproduced the expected observer-level limitation without changing the observer or fingerprint to fit the benchmark.
+
+All non-content-coverage families classified correctly. Both observed failures are cases where meaningful user-visible information exists only in ordinary status/list content that is not represented in the current semantic snapshot.
+
+Phase 17 verification gate is complete.
+
 A passing result would show that the current semantic identity stack generalizes across a broader set of structural, control, form, navigation, overlay, and temporal patterns while also exposing a specific observer-level blind spot for meaningful non-interactive content.
 
 The two expected failures are scientifically useful because they identify a limitation in what StateScout observes, rather than another regex/fingerprint normalization problem.
@@ -2086,4 +2113,4 @@ If Phase 17 passes, Phase 18 should run the frozen corpus as a baseline and abla
 
 ## Merge status
 
-Phases 1A through 16 are merged. Phase 17 implementation is complete on `feat/phase-17-broader-benchmark-corpus` and awaits its single whole-phase verification gate.
+Phases 1A through 16 are merged. Phase 17 implementation and whole-phase verification are complete on `feat/phase-17-broader-benchmark-corpus`; PR #19 is ready for merge.
