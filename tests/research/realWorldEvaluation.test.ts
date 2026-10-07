@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  isRealWorldStudyEvaluable,
   summarizeRealWorldRuns,
   summarizeRealWorldStudy,
   type RealWorldRun,
@@ -210,5 +211,108 @@ test("study summary aggregates only explicit evaluable and stable targets", () =
       stableInitialTargets: 2,
       stableGraphTargets: 1,
     },
+  );
+});
+
+
+test("Phase 19 recovery target manifest is distinct and pre-registered", async () => {
+  const {
+    PHASE19_REAL_WORLD_TARGETS,
+  } = await import("../../benchmarks/real-world-v1/targets.ts");
+  const {
+    PHASE19_RECOVERY_TARGETS,
+    PHASE19_RECOVERY_PROTOCOL,
+  } = await import("../../benchmarks/real-world-v1/recoveryTargets.ts");
+
+  assert.equal(PHASE19_REAL_WORLD_TARGETS.length, 3);
+  assert.equal(PHASE19_RECOVERY_TARGETS.length, 2);
+
+  const combined = [
+    ...PHASE19_REAL_WORLD_TARGETS,
+    ...PHASE19_RECOVERY_TARGETS,
+  ];
+
+  assert.equal(
+    new Set(combined.map((target) => target.id)).size,
+    5,
+  );
+  assert.equal(
+    new Set(combined.map((target) => target.url)).size,
+    5,
+  );
+  assert.equal(
+    PHASE19_RECOVERY_PROTOCOL.minimumCombinedEvaluableTargets,
+    2,
+  );
+  assert.equal(
+    PHASE19_RECOVERY_PROTOCOL.fallbackTargetsChosenBeforeFallbackOutcomes,
+    true,
+  );
+});
+
+test("combined Phase 19 acceptance can be satisfied across primary and recovery cohorts", () => {
+  const primaryEvaluable = summarizeRealWorldRuns(
+    "primary-a",
+    3,
+    [
+      { ...success(1), targetId: "primary-a" },
+      { ...success(2), targetId: "primary-a" },
+      { ...success(3), targetId: "primary-a" },
+    ],
+  );
+  const primaryUnavailable = summarizeRealWorldRuns(
+    "primary-b",
+    3,
+    [
+      {
+        targetId: "primary-b",
+        runIndex: 1,
+        status: "unavailable",
+        durationMs: 1,
+        error: "offline",
+      },
+      {
+        targetId: "primary-b",
+        runIndex: 2,
+        status: "unavailable",
+        durationMs: 1,
+        error: "offline",
+      },
+      {
+        targetId: "primary-b",
+        runIndex: 3,
+        status: "unavailable",
+        durationMs: 1,
+        error: "offline",
+      },
+    ],
+  );
+  const recoveryEvaluable = summarizeRealWorldRuns(
+    "recovery-a",
+    3,
+    [
+      { ...success(1), targetId: "recovery-a" },
+      { ...success(2), targetId: "recovery-a" },
+      { ...success(3), targetId: "recovery-a" },
+    ],
+  );
+
+  assert.equal(
+    isRealWorldStudyEvaluable(
+      [primaryEvaluable, primaryUnavailable],
+      2,
+    ),
+    false,
+  );
+  assert.equal(
+    isRealWorldStudyEvaluable(
+      [
+        primaryEvaluable,
+        primaryUnavailable,
+        recoveryEvaluable,
+      ],
+      2,
+    ),
+    true,
   );
 });
