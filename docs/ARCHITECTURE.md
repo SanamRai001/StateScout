@@ -223,3 +223,79 @@ adapters/
 ```
 
 This separation lets research experiments test algorithms without coupling every experiment to browser execution.
+
+
+## Checkpoint and recovery architecture
+
+Phase 20 adds durable-in-shape logical checkpoints without coupling the core to a database.
+
+A checkpoint is composed of:
+
+```text
+ExplorationCheckpointArtifact
+├── payloadSha256
+└── payload
+    ├── startUrl
+    ├── attemptedTransitions
+    ├── rootPath
+    ├── StateGraphSnapshot
+    ├── BfsFrontierSnapshot
+    └── evidenceErrors
+```
+
+### StateGraph snapshot
+
+The graph snapshot preserves all semantic states and transitions.
+
+On restore, every stored state is re-fingerprinted using the fingerprinter supplied to the resumed run.
+
+If the state ID, fingerprint hash, canonical representation, version, or algorithm no longer matches, restore fails.
+
+This prevents silently resuming an old graph under a different identity policy.
+
+### BFS frontier snapshot
+
+The frontier snapshot preserves two separate concepts:
+
+- pending FIFO work;
+- every `(fromState, interaction)` key that has already been seen.
+
+The full seen set must survive resume even when a work item has already been dequeued.
+
+Otherwise a resumed crawl could execute previously consumed work again and change both cost and graph evidence.
+
+### Checkpoint integrity
+
+The checkpoint payload is SHA-256 hashed before serialization.
+
+Parsing recomputes the digest and rejects modified payloads.
+
+This protects against accidental file corruption or manual modification; it is not intended as an authenticated or adversarial cryptographic signature.
+
+### Browser process is not checkpointed
+
+StateScout does not serialize Chromium memory, DOM objects, JavaScript heaps, cookies, or an OS process snapshot.
+
+Instead, after resume:
+
+1. logical graph/frontier state is restored;
+2. the next frontier item supplies its replay path;
+3. Playwright navigates back to the configured start URL;
+4. replay reconstructs the source semantic state;
+5. intermediate state hashes are verified;
+6. exploration continues.
+
+This keeps checkpoints browser-independent in structure and makes browser recovery depend on the same replay correctness already used by normal BFS exploration.
+
+### Current storage boundary
+
+Checkpoint artifacts are JSON-compatible and can be written by callers.
+
+Phase 20 does not introduce:
+
+- SQLite;
+- atomic filesystem checkpoint rotation;
+- remote/object storage;
+- distributed worker coordination.
+
+Those become justified only after the checkpoint semantics themselves are experimentally verified.
