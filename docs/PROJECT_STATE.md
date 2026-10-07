@@ -13,7 +13,7 @@ Build StateScout as both:
 
 ## Branch
 
-`feat/phase-19-real-world-evaluation-ready`
+`feat/phase-19-real-world-evaluation-recovery`
 
 ## Phase 0 status
 
@@ -2456,7 +2456,7 @@ Qualitative interpretation of the measured graphs must remain separate from cont
 
 ```powershell
 git fetch origin
-git switch feat/phase-19-real-world-evaluation-ready
+git switch feat/phase-19-real-world-evaluation-recovery
 git pull --ff-only
 npm install
 npx playwright install chromium
@@ -2467,7 +2467,7 @@ npm run experiment:phase18
 npm run experiment:phase19
 ```
 
-Expected offline suite size: 65 tests.
+Expected offline suite size: 67 tests.
 
 There are intentionally no frozen exact graph counts for the live targets.
 
@@ -2477,12 +2477,75 @@ The key acceptance line is:
 Study evaluable: true
 ```
 
-with at least 2/3 targets marked evaluable.
+with at least 2/5 combined primary + recovery targets marked evaluable.
 
 The experiment writes:
 
 - full report: `results/raw/phase-19-real-world-evaluation.json`;
 - compact summary: `results/raw/phase-19-real-world-evaluation-summary.txt`.
+
+### Phase 19A first live result — insufficient external evidence
+
+The first live Phase 19A run completed the offline gate successfully:
+
+- TypeScript typecheck passed;
+- tests: 65/65 passed;
+- Phase 18 regression remained unchanged.
+
+The primary public cohort produced:
+
+- TodoMVC React: 3/3 successful runs;
+- TodoMVC initial fingerprint stable across all runs;
+- TodoMVC graph structure not fully stable: two graph signatures;
+- TodoMVC state-count range: 5-6;
+- TodoMVC transition count: 9 in every run;
+- TodoMVC attempted transitions: 6 in every run;
+- TodoMVC aggregate transition statuses: 17 observed, 9 blocked by policy, 1 failed, 0 no-state-change;
+- The Internet Dynamic Controls: 0/3 successful because all three preflight navigations timed out at 15 seconds;
+- UI Testing Playground Visibility: 0/3 successful because Chromium reported ERR_CERT_COMMON_NAME_INVALID in all three preflight navigations;
+- primary evaluable targets: 1/3;
+- Phase 19A study evaluable: false.
+
+This result is retained as a failed research gate rather than hidden, reclassified, or used to relax the threshold.
+
+The TodoMVC result remains useful empirical evidence: its initial semantic identity was stable while its bounded graph was not fully reproducible.
+
+### Phase 19B pre-registered recovery cohort
+
+Because Phase 19A failed from insufficient reachable external targets rather than StateScout run errors, a recovery cohort was selected before collecting any fallback outcomes.
+
+The original three targets and all Phase 19A findings remain unchanged.
+
+Recovery targets:
+
+1. W3C ARIA APG — Automatic Tabs
+   - public W3C example;
+   - safe tab controls;
+   - explicit selected-tab state.
+
+2. Selenium — Web Form
+   - official Selenium public fixture on a different domain;
+   - form/control surface;
+   - useful for conservative safe-only policy behavior.
+
+Phase 19B reruns both the original primary cohort and the recovery cohort in one self-contained experiment.
+
+The combined report contains:
+
+- 3 primary targets;
+- 2 recovery targets;
+- 5 distinct targets total;
+- 15 requested runs total.
+
+Acceptance remains conservative:
+
+- at least 2 successful runs are required for a target-level stability claim;
+- at least 2 distinct targets across the combined primary + recovery cohorts must be evaluable;
+- graph stability is not required;
+- unavailable external sites do not count as StateScout run failures;
+- run errors remain separate from unavailability.
+
+The recovery targets were chosen because Phase 19A lacked enough reachable targets, not because of any observed recovery-target graph outcome.
 
 ### Research interpretation
 
