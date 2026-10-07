@@ -224,3 +224,23 @@ export function summarizeRealWorldStudy(
     ).length,
   };
 }
+
+
+export function isRealWorldStudyEvaluable(
+  targets: readonly RealWorldTargetSummary[],
+  minimumEvaluableTargets: number,
+): boolean {
+  if (
+    !Number.isInteger(minimumEvaluableTargets) ||
+    minimumEvaluableTargets < 1
+  ) {
+    throw new Error(
+      "minimumEvaluableTargets must be a positive integer.",
+    );
+  }
+
+  return (
+    targets.filter((target) => target.evaluable).length >=
+    minimumEvaluableTargets
+  );
+}
