@@ -503,6 +503,16 @@ Phase 5 acceptance hypothesis:
 
 v2 must remain non-default until this gate passes. A passing result would support promotion based on system-level exploration behavior rather than pairwise classification alone.
 
+First local Phase 5 gate exposed a runtime-compatibility defect before the experiment could run:
+
+- TypeScript typecheck passed;
+- Node v24.19.0 with `--experimental-strip-types` rejected a constructor parameter property in `StateGraph`;
+- the failure occurred before graph/explorer tests and the Phase 5 experiment could execute;
+- the constructor was rewritten to use a normal readonly field plus assignment, preserving behavior while remaining compatible with strip-only TypeScript execution;
+- the same run reconfirmed the frozen Phase 2, Phase 3, and Phase 4 experiment results before reaching the Phase 5 runtime failure.
+
+This is an implementation/runtime defect, not evidence for or against the Phase 5 hypothesis.
+
 ## Next phase after verification
 
 If Phase 5 passes, evaluate the remaining adversarial assumptions—especially semantically meaningful clock times and ambiguous tracking keys such as `ref`—before promoting v2 as the default. This guards against reducing false splits by introducing hidden false merges.
