@@ -217,10 +217,10 @@ export class StateGraph {
   exportSnapshot(): StateGraphSnapshot {
     return {
       schemaVersion: 1,
-      states: this.listStates().sort((a, b) =>
+      states: [...this.listStates()].sort((a, b) =>
         a.id.localeCompare(b.id),
       ),
-      transitions: this.listTransitions().sort((a, b) =>
+      transitions: [...this.listTransitions()].sort((a, b) =>
         a.id.localeCompare(b.id),
       ),
     };
