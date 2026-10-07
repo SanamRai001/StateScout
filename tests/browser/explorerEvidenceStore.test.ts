@@ -5,6 +5,9 @@ import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 
 import { evaluateExplorerEvidenceStore } from "../../benchmarks/explorer-evidence-store/evaluate.ts";
+import { exploreWithPlaywright } from "../../src/browser/explorer.ts";
+import { createFingerprintStateV4 } from "../../src/core/fingerprintV4.ts";
+import { createVolatilityProfile } from "../../src/core/volatility.ts";
 import { EXPLORER_EVIDENCE_GROUND_TRUTH } from "../../benchmarks/explorer-evidence-store/groundTruth.ts";
 
 const startUrl = pathToFileURL(
@@ -64,4 +67,39 @@ test("Phase 11 collects cross-run evidence without changing run-frozen identity"
     EXPLORER_EVIDENCE_GROUND_TRUTH.expectedDistinctValues,
   );
   assert.equal(result.candidates[0]?.status, "quarantined");
+});
+
+
+test("evidence sink failures are isolated from the frozen explorer graph", async (t) => {
+  const browser = await chromium.launch({ headless: true });
+  t.after(() => browser.close());
+
+  const baselinePage = await browser.newPage();
+  const faultyPage = await browser.newPage();
+  const fingerprinter = createFingerprintStateV4(createVolatilityProfile([]));
+
+  const baseline = await exploreWithPlaywright(baselinePage, {
+    startUrl,
+    maxTransitions: 2,
+    fingerprinter,
+  });
+
+  const faulty = await exploreWithPlaywright(faultyPage, {
+    startUrl,
+    maxTransitions: 2,
+    fingerprinter,
+    observationSink: () => {
+      throw new Error("synthetic evidence sink failure");
+    },
+  });
+
+  assert.equal(faulty.graph.stateCount, baseline.graph.stateCount);
+  assert.equal(faulty.graph.transitionCount, baseline.graph.transitionCount);
+  assert.equal(faulty.attemptedTransitions, baseline.attemptedTransitions);
+  assert.ok(faulty.evidenceErrors.length > 0);
+  assert.ok(
+    faulty.evidenceErrors.every(
+      (message) => message === "synthetic evidence sink failure",
+    ),
+  );
 });
