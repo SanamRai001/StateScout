@@ -2292,6 +2292,31 @@ The experiment writes:
 
 A Phase 18 pass would establish a controlled comparative result rather than another isolated algorithm win.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 60/60 passed, 0 failed;
+- frozen Phase 17 corpus result remained unchanged;
+- URL-only: 5/16 correct, accuracy 0.3125, 10 false merges, 1 false split;
+- v1: 13/16, accuracy 0.8125, 2 false merges, 1 false split;
+- v2: 13/16, accuracy 0.8125, 3 false merges, 0 false splits;
+- v3: 13/16, accuracy 0.8125, 3 false merges, 0 false splits;
+- v4: 14/16, accuracy 0.875, 2 false merges, 0 false splits;
+- v4 without controls: 9/16, accuracy 0.5625, 7 false merges, 0 false splits;
+- v4 without title: 13/16, accuracy 0.8125, 3 false merges, 0 false splits;
+- v4 without query: 13/16, accuracy 0.8125, 3 false merges, 0 false splits;
+- v4 plus targeted visible content: 16/16, accuracy 1.0, 0 false merges, 0 false splits.
+
+The exact frozen failure IDs also matched every strategy.
+
+The targeted-content augmentation changed predictions for exactly the two Phase 17 content-coverage failures and no other corpus case.
+
+Phase 18 therefore establishes both a historical baseline comparison and a feature-contribution ablation result on one frozen observed corpus.
+
+Phase 18 verification gate is complete.
+
 It would show:
 
 - URL-only identity is severely insufficient on this corpus;
@@ -2309,4 +2334,4 @@ If Phase 18 passes, Phase 19 should evaluate StateScout on real/open-source appl
 
 ## Merge status
 
-Phases 1A through 17 are merged. Phase 18 implementation is complete on `feat/phase-18-baselines-ablations` and awaits its single whole-phase verification gate.
+Phases 1A through 17 are merged. Phase 18 implementation and whole-phase verification are complete on `feat/phase-18-baselines-ablations`; PR #20 is ready for merge.
