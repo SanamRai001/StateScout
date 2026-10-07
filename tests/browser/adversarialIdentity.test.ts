@@ -30,4 +30,8 @@ test("Phase 6 freezes known v2 false-merge risks instead of hiding them", async 
     .sort();
 
   assert.deepEqual(v2Failures, ["meaningful-title-time", "semantic-ref-query"]);
+
+  assert.equal(result.v3.correct, 6);
+  assert.equal(result.v3.falseMerges, 0);
+  assert.equal(result.v3.falseSplits, 0);
 });

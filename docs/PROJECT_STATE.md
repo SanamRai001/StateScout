@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 6 — Adversarial false-merge challenge**
+**Phase 7 — Evidence-driven fingerprint v3**
 
 ## Branch
 
-`feat/phase-6-adversarial-identity`
+`feat/phase-7-fingerprint-v3`
 
 ## Phase 0 status
 
@@ -592,10 +592,80 @@ Phase 6 therefore confirms that v2's efficiency gain comes with two measured fal
 
 Phase 6 verification gate is complete.
 
+## Phase 7 implementation
+
+Phase 7 introduces fingerprint v3 from the measured Phase 6 failure modes while keeping v1 and v2 frozen.
+
+V3 makes exactly two evidence-driven changes relative to v2:
+
+1. removes `ref` from the unconditional tracking-query suppression set because Phase 6 demonstrated that `ref` can identify meaningful application state;
+2. narrows title-time normalization from any `HH:MM[:SS]` clock to second-resolution `HH:MM:SS` clocks only.
+
+The second rule is intentionally narrower rather than "context aware" in a broad heuristic sense. Every frozen volatile-title case from Phases 2, 4, and 5 uses second-resolution clocks such as `10:00:01 → 10:00:02`, while the measured meaningful Phase 6 appointment case uses minute-resolution time `10:00 → 11:00`.
+
+This does not prove that every second-resolution clock is noise or every minute-resolution clock is semantic. V3 remains an experimental candidate whose purpose is to improve the measured tradeoff without hiding the remaining uncertainty.
+
+All existing evaluators now include v3 while preserving v1/v2 outputs. A dedicated cross-benchmark Phase 7 report compares all three algorithms against the frozen evidence from Phases 2, 4, 5, and 6.
+
+### Phase 7 acceptance hypothesis
+
+- Phase 2 equivalence: v3 = 9/9, 0 false merges, 0 false splits;
+- Phase 4 browser generalization: v3 = 4/4, 0 false merges, 0 false splits;
+- Phase 5 explorer strategy: v3 = 2 graph states, 3 attempted transitions, 0 excess states, 100% meaningful-state coverage, 0 failed transitions;
+- Phase 6 adversarial identity: v3 = 6/6, 0 false merges, 0 false splits;
+- all v1/v2 frozen measurements remain unchanged;
+- v3 remains non-default until this complete gate passes.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 29/29 passed, 0 failed;
+- Phase 2 frozen baseline remained v1 7/9 and v2 9/9;
+- Phase 7 v3 on Phase 2: 9/9, 0 false merges, 0 false splits;
+- Phase 4 frozen comparison remained v1 3/4 and v2 4/4;
+- Phase 7 v3 on Phase 4: 4/4, 0 false merges, 0 false splits;
+- Phase 5 frozen explorer comparison remained v1 15 states / 20 attempts and v2 2 states / 3 attempts;
+- Phase 7 v3 on Phase 5: 2 graph states, 3 graph transitions, 3 attempted transitions, 100% meaningful-state coverage, 0 excess states, 0 failed transitions;
+- Phase 6 frozen adversarial comparison remained v1 5/6 and v2 4/6 with 2 false merges;
+- Phase 7 v3 on Phase 6: 6/6, 0 false merges, 0 false splits.
+
+V3 therefore preserves v2's measured state-space reduction while removing both measured v2 false-merge hazards. The complete cross-benchmark report is written to `results/raw/phase-7-fingerprint-v3-comparison.json`, with a compact summary in `results/raw/phase-7-fingerprint-v3-comparison-summary.txt`.
+
+Phase 7 verification gate is complete. V3 is now the strongest identity candidate measured so far, but default promotion remains deferred until broader generalization validation.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-7-fingerprint-v3
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+
+npm run experiment:equivalence
+npm run experiment:fingerprint-comparison
+npm run experiment:browser-generalization
+npm run experiment:explorer-strategy
+npm run experiment:adversarial-identity
+npm run experiment:fingerprint-v3
+```
+
+The Phase 7 experiment writes:
+
+- full machine-readable evidence: `results/raw/phase-7-fingerprint-v3-comparison.json`;
+- compact shareable summary: `results/raw/phase-7-fingerprint-v3-comparison-summary.txt`.
+
+Experiment runners now keep terminal output compact instead of printing their entire JSON reports.
+
 ## Next phase after verification
 
-If Phase 6 confirms the predicted false merges, design fingerprint v3 from the measured failure modes rather than guessing. The likely direction is narrower/context-aware normalization: remove ambiguous `ref` from unconditional tracking suppression and avoid unconditional title-time stripping unless volatility is supported by stronger evidence.
+If Phase 7 passes, v3 becomes the strongest identity candidate so far, but promotion should still be a separate decision. The next phase should validate v3 on a broader fixture set or realistic applications with naturally occurring volatility before changing the default explorer identity from v1.
 
 ## Merge status
 
-Phases 1A, 1B, 2, 3, 4, and 5 are merged. Phase 6 implementation and whole-phase verification are complete on `feat/phase-6-adversarial-identity`; PR #8 is ready for merge.
+Phases 1A through 6 are merged. Phase 7 implementation and whole-phase verification are complete on `feat/phase-7-fingerprint-v3`; PR #9 is ready for merge.

@@ -29,8 +29,8 @@ try {
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, JSON.stringify(report, null, 2) + "\n", "utf8");
 
-  console.log(JSON.stringify(report, null, 2));
-  console.log(`Wrote ${outputPath}`);
+  console.log(`Phase 6: v1=${comparison.v1.correct}/${comparison.v1.total}, v2=${comparison.v2.correct}/${comparison.v2.total} (false merges=${comparison.v2.falseMerges}), v3=${comparison.v3.correct}/${comparison.v3.total} (false merges=${comparison.v3.falseMerges})`);
+  console.log(`Full result: ${outputPath}`);
 } finally {
   await browser.close();
 }

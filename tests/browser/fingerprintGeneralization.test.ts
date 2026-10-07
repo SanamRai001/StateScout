@@ -20,4 +20,8 @@ test("fingerprint v2 generalizes across real browser observations without false 
   assert.equal(result.v2.correct, 4);
   assert.equal(result.v2.falseSplits, 0);
   assert.equal(result.v2.falseMerges, 0);
+
+  assert.equal(result.v3.correct, 4);
+  assert.equal(result.v3.falseSplits, 0);
+  assert.equal(result.v3.falseMerges, 0);
 });
