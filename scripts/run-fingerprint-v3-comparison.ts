@@ -62,8 +62,17 @@ try {
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, JSON.stringify(report, null, 2) + "\n", "utf8");
 
-  console.log(JSON.stringify(report, null, 2));
-  console.log(`Wrote ${outputPath}`);
+  const phase2 = report.phase2Equivalence.v3;
+  const phase4 = report.phase4BrowserGeneralization.v3;
+  const phase5 = report.phase5ExplorerStrategy.v3;
+  const phase6 = report.phase6AdversarialIdentity.v3;
+
+  console.log("Phase 7 fingerprint-v3 summary");
+  console.log(`  Phase 2: ${phase2.correct}/${phase2.total}, false merges=${phase2.falseMergeCount}, false splits=${phase2.falseSplitCount}`);
+  console.log(`  Phase 4: ${phase4.correct}/${phase4.total}, false merges=${phase4.falseMerges}, false splits=${phase4.falseSplits}`);
+  console.log(`  Phase 5: states=${phase5.graphStates}, attempts=${phase5.attemptedTransitions}, coverage=${phase5.meaningfulStateCoverage}, excess=${phase5.excessStates}, failed=${phase5.failedTransitions}`);
+  console.log(`  Phase 6: ${phase6.correct}/${phase6.total}, false merges=${phase6.falseMerges}, false splits=${phase6.falseSplits}`);
+  console.log(`Full result: ${outputPath}`);
 } finally {
   await browser.close();
 }
