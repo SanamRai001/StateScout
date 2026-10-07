@@ -280,3 +280,24 @@ Research rules:
 - preserve per-family and per-case outcomes for later paper tables and threats-to-validity analysis.
 
 The frozen study compares nine strategies: URL-only, v1, v2, v3, v4, v4 without controls, v4 without title, v4 without query, and v4 with targeted visible status/list content.
+
+
+## Phase 19 real-world repeated-run evaluation
+
+Public applications are observational evidence, not controlled ground truth.
+
+Research rules:
+
+- freeze the target list and run protocol before collecting results;
+- use fresh browser contexts for repeated runs;
+- use only the default safe-only action policy;
+- bound attempted transitions;
+- separate external unavailability from StateScout run errors;
+- keep interaction-level failures inside the graph;
+- require at least two successful runs before making a target-level stability statement;
+- measure initial fingerprint stability separately from graph-structure stability;
+- do not require public applications to produce a predetermined state count;
+- normal unit/browser tests must remain network-independent;
+- require at least two evaluable public targets before accepting the phase.
+
+The frozen target set contains TodoMVC React, The Internet Dynamic Controls, and UI Testing Playground Visibility, each measured across three fresh-browser runs.

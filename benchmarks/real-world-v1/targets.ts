@@ -53,4 +53,5 @@ export const PHASE19_PROTOCOL = {
   identity: "v4-empty-profile",
   externalGroundTruth: false,
   minimumSuccessfulRunsForStability: 2,
+  minimumEvaluableTargets: 2,
 } as const;

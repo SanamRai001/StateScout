@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 18 — Baselines and ablations**
+**Phase 19 — Real-world repeated-run evaluation**
 
 ## Branch
 
-`feat/phase-18-baselines-ablations`
+`feat/phase-19-real-world-evaluation-ready`
 
 ## Phase 0 status
 
@@ -2328,10 +2328,172 @@ It would show:
 
 The exact targeted-content strategy remains experimental until broader and real-world evaluation.
 
+## Phase 19 implementation
+
+Phase 19 moves beyond controlled fixtures and evaluates StateScout against currently available public/open-source web applications.
+
+This phase deliberately does not invent semantic ground truth for externally changing applications.
+
+### Frozen public targets
+
+Three public targets were selected and verified reachable during Phase 19 design:
+
+1. TodoMVC React
+   - URL: `https://todomvc.com/examples/react/dist/`
+   - category: SPA/local client state;
+   - purpose: hash navigation, same-page controls, and local browser state.
+
+2. The Internet — Dynamic Controls
+   - URL: `https://the-internet.herokuapp.com/dynamic_controls`
+   - category: asynchronous controls;
+   - purpose: async enable/remove behavior and conservative blocking of a destructive `Remove` action.
+
+3. UI Testing Playground — Visibility
+   - URL: `https://uitestingplayground.com/visibility`
+   - category: visibility mutation;
+   - purpose: safe UI mutation where one action changes visibility through several mechanisms.
+
+These are external dependencies. Their availability and content are not controlled by StateScout.
+
+### Repeated-run protocol
+
+Each target receives:
+
+- 3 runs;
+- a fresh Chromium browser context for every run;
+- v4 identity with an empty volatility profile;
+- StateScout's default safe-only action policy;
+- at most 6 attempted transitions per run;
+- 15-second navigation timeout;
+- 10-second action timeout.
+
+Fresh browser contexts prevent local storage, cookies, and per-run client state from leaking between repeated measurements.
+
+### Availability is not algorithm correctness
+
+Every run first performs a network/navigation preflight.
+
+Outcomes are separated into:
+
+- `success`: target was reachable and StateScout completed the bounded exploration;
+- `unavailable`: the external page could not be reached during preflight;
+- `run-error`: the page was reachable but the exploration run itself failed.
+
+Interaction-level failures are not promoted to run errors. They remain graph transitions with status `failed`.
+
+This distinction prevents an external outage from being mislabeled as a StateScout failure and prevents a StateScout runtime failure from being hidden as mere site unavailability.
+
+### Stability measurements
+
+For successful runs the experiment records:
+
+- initial semantic fingerprint;
+- deterministic graph-structure signature;
+- discovered state count;
+- transition count;
+- attempted-transition count;
+- evidence-sidecar error count;
+- observed transition count;
+- policy-blocked transition count;
+- failed transition count;
+- no-state-change transition count;
+- run duration.
+
+Across repeated runs the target summary reports:
+
+- availability rate;
+- unique initial fingerprint count;
+- unique graph-signature count;
+- initial-fingerprint stability;
+- graph-structure stability;
+- state-count range;
+- transition-count range;
+- attempted-transition range.
+
+Graph instability is valid evidence. Phase 19 does not require repeated graphs to be identical.
+
+### Evaluability threshold
+
+A target is evaluable for stability only when at least 2 of its 3 runs complete successfully.
+
+The whole Phase 19 study is evaluable when at least 2 of the 3 targets are evaluable.
+
+If fewer than 2 targets are evaluable, the experiment still writes its complete evidence report but exits non-zero so the research phase is not accepted from insufficient external evidence.
+
+### Offline test discipline
+
+Normal `npm test` never contacts public websites.
+
+The offline test suite uses synthetic run records to verify:
+
+- external unavailability is separated from stability;
+- reachable run errors are separated from external outages;
+- graph instability is measured independently from initial identity stability;
+- insufficient successful runs produce no stability claim;
+- study-level aggregation counts only explicit evaluable/stable targets.
+
+Only `npm run experiment:phase19` performs live network access.
+
+### Research boundary
+
+Phase 19 is not an accuracy benchmark.
+
+There is no manual assertion such as "this public page contains exactly N true semantic states."
+
+Instead this phase measures:
+
+- whether StateScout can operate on public applications under conservative policy;
+- repeated-run identity stability;
+- graph reproducibility;
+- policy blocking;
+- failed transitions;
+- state-space size ranges;
+- external availability.
+
+Qualitative interpretation of the measured graphs must remain separate from controlled-corpus accuracy claims.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-19-real-world-evaluation-ready
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase18
+npm run experiment:phase19
+```
+
+Expected offline suite size: 65 tests.
+
+There are intentionally no frozen exact graph counts for the live targets.
+
+The key acceptance line is:
+
+```text
+Study evaluable: true
+```
+
+with at least 2/3 targets marked evaluable.
+
+The experiment writes:
+
+- full report: `results/raw/phase-19-real-world-evaluation.json`;
+- compact summary: `results/raw/phase-19-real-world-evaluation-summary.txt`.
+
+### Research interpretation
+
+A Phase 19 pass would establish that StateScout can be measured on public applications without conflating external availability, runtime failures, and graph instability.
+
+The actual state/transition counts and stability outcomes become empirical Phase 19 findings rather than numbers chosen in advance.
+
 ## Next phase after verification
 
-If Phase 18 passes, Phase 19 should evaluate StateScout on real/open-source applications under safe/read-only constraints. Controlled corpus labels should remain separate from real-app observations: the real-world phase should measure stability, repeated-run consistency, state-space size, replay failures, action attempts, and qualitative coverage rather than pretending externally changing applications have perfect ground truth.
+If Phase 19 is sufficiently evaluable, Phase 20 should stress scalability and robustness under controlled but much larger state spaces: deeper replay paths, hundreds of states, bounded memory/runtime measurements, injected crashes/timeouts, and checkpoint/recovery behavior.
 
 ## Merge status
 
-Phases 1A through 17 are merged. Phase 18 implementation and whole-phase verification are complete on `feat/phase-18-baselines-ablations`; PR #20 is ready for merge.
+Phases 1A through 18 are merged. Phase 19 implementation is complete on `feat/phase-19-real-world-evaluation-ready` and awaits its live repeated-run verification gate.
