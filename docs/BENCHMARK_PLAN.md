@@ -96,3 +96,16 @@ For every fixture:
 4. do not change ground truth to make StateScout appear better.
 
 This prevents benchmark design from becoming unconsciously biased toward our algorithm.
+
+
+## Phase 8 broader generalization
+
+The benchmark program now adds a second controlled browser-equivalence suite with ten frozen pairs. It deliberately includes both known wins and known risks so a newer algorithm cannot be judged only on cases it was designed to solve.
+
+Phase 8 also adds read-only observations of public demo/testing sites. Those live observations are kept separate from manual ground truth because external content and availability can change independently of StateScout.
+
+Research rule:
+
+- controlled fixtures measure correctness;
+- live-site observations measure stability/generalization signals;
+- live-site observations must never silently become ground truth.
