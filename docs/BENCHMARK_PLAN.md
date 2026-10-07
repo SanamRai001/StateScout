@@ -244,3 +244,21 @@ Research rules:
 - restoring the previous profile must reproduce the previous projection.
 
 The frozen benchmark stores six observations and seven transitions. A trusted title rule projects them to three states and six transitions. Removing that rule must recover six states and seven transitions from the same archive while leaving the archive digest unchanged.
+
+
+## Phase 17 broader frozen corpus
+
+Generalization must be challenged on a broader controlled corpus before further identity tuning.
+
+Research rules:
+
+- freeze all semantic labels before evaluator implementation;
+- use multiple fixture families rather than one page pattern;
+- include both equivalence and distinction cases;
+- retain known difficult temporal cases;
+- deliberately include meaningful user-visible content not represented by the current observer;
+- do not change the observer or fingerprint during this phase to repair corpus failures;
+- report both aggregate and per-family false merges/false splits;
+- keep browser observation separate from fingerprinter evaluation so Phase 18 can reuse the same observed corpus for baselines and ablations.
+
+The frozen corpus contains 16 pairs across 7 families. The current v4-empty-profile hypothesis is 14/16 correct with two false merges in the content-coverage family and zero false splits.
