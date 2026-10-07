@@ -44,3 +44,44 @@ test("every discovered replay path restores its semantic state", async (t) => {
     assert.equal(replay.actualStateHash, expected?.fingerprint.hash);
   }
 });
+
+
+test("explorer fully resets same-document hash start URLs before replay", async (t) => {
+  const browser = await chromium.launch({ headless: true });
+  t.after(() => browser.close());
+
+  const page = await browser.newPage();
+  const startUrl = pathToFileURL(
+    resolve("benchmarks/replay-hash-reset/index.html"),
+  ).href + "#seed-1";
+
+  await page.goto(
+    pathToFileURL(resolve("benchmarks/replay-hash-reset/index.html")).href +
+      "#seed-99",
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Advance" }).click();
+
+  const exploration = await exploreWithPlaywright(page, {
+    startUrl,
+    maxTransitions: 3,
+  });
+
+  assert.equal(exploration.graph.stateCount, 4);
+  assert.equal(exploration.graph.transitionCount, 3);
+  assert.equal(exploration.attemptedTransitions, 3);
+  assert.equal(
+    exploration.graph
+      .listTransitions()
+      .filter((transition) => transition.status === "failed").length,
+    0,
+  );
+
+  assert.deepEqual(
+    exploration.graph
+      .listStates()
+      .map((state) => state.snapshot.title)
+      .sort(),
+    ["Counter 1", "Counter 2", "Counter 3", "Counter 4"],
+  );
+});

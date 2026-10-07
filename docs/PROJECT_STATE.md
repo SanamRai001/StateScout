@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 12 — Offline between-run profile promotion**
+**Phase 13 — Trusted-profile revalidation and revocation**
 
 ## Branch
 
-`feat/phase-12-offline-profile-promotion`
+`feat/phase-13-profile-revalidation-revocation`
 
 ## Phase 0 status
 
@@ -1231,10 +1231,192 @@ Phase 12 verification gate is complete.
 
 It would still not establish that the current single-probe promotion policy is sufficient for arbitrary real applications. Broader probe sets, conflict handling, profile revocation, and stale-evidence detection remain open research problems.
 
+## Phase 13 implementation
+
+Phase 13 makes trusted volatility rules revocable when later application behavior contradicts the evidence that originally justified them.
+
+### Revalidation evidence
+
+A new deterministic `RuleRevalidationEvidenceStore` persists later safe-probe observations with:
+
+- session ID;
+- exact volatility field;
+- source semantic anchor;
+- newly observed field value;
+- downstream behavior signature.
+
+The field is explicit so behavior evidence for one rule cannot accidentally challenge another rule that shares the same semantic anchor.
+
+### Offline revalidation policy
+
+Revalidation remains between runs and outside the explorer.
+
+The default policy requires:
+
+- at least 4 later behavior confirmations;
+- at least 2 later sessions;
+- at least 3 distinct later field values.
+
+A trusted rule can receive three outcomes:
+
+- `retained`: sufficient later evidence still produces one downstream behavior signature;
+- `revoked`: sufficient later evidence produces divergent downstream behavior signatures;
+- `insufficient-evidence`: not enough later evidence exists to make a revocation decision.
+
+Insufficient evidence does not revoke an existing rule. Revocation requires positive contradictory evidence.
+
+### Frozen revision artifact
+
+`buildRevalidatedVolatilityProfile()` produces an auditable profile-revision artifact containing:
+
+- the next trusted profile;
+- every rule revalidation decision;
+- SHA-256 digest of the parent frozen profile;
+- SHA-256 digest of the later challenge evidence;
+- explicit provenance `offline-between-run-revalidation`.
+
+Revoked rules are removed from the next profile. Retained and insufficient-evidence rules remain until stronger evidence exists.
+
+### Phase 13 controlled benchmark
+
+The benchmark first reproduces a valid trusted Dashboard-title rule using the Phase 12 style promotion process.
+
+It then freezes two later scenarios against the same semantic anchor.
+
+Stable future:
+
+- later values 5, 6, 7, and 8;
+- 4 behavior confirmations across 2 sessions;
+- all safe probes reach the same downstream semantic state;
+- expected decision: `retained`;
+- expected behavior signatures: 1;
+- resulting trusted rules: 1.
+
+Evolved future:
+
+- the same later title values 5, 6, 7, and 8;
+- 4 behavior confirmations across 2 sessions;
+- odd and even refresh values now reach different downstream semantic states;
+- expected decision: `revoked`;
+- expected behavior signatures: 2;
+- resulting trusted rules: 0.
+
+The immediate Dashboard snapshot deliberately keeps the same protected semantic anchor after the simulated application evolution. This makes the stale trusted rule dangerous rather than automatically harmless through anchor mismatch.
+
+### System-level stale-profile effect
+
+The benchmark freezes the future explorer behavior before and after revocation.
+
+Evolved app using the stale trusted profile:
+
+- meaningful Details coverage: 0.5;
+- graph states: 2;
+- graph transitions: 3;
+- attempted transitions: 3;
+- failed transitions: 0;
+- only `Dashboard standard details` is discovered.
+
+Evolved app after offline revocation and loading the revised profile on a new crawl:
+
+- meaningful Details coverage: 1.0;
+- graph states: 6;
+- graph transitions: 6;
+- attempted transitions: 6;
+- failed transitions: 0;
+- both `Dashboard standard details` and `Dashboard priority details` are discovered.
+
+The larger graph after revocation is intentional: once previous volatility assumptions become unsafe, StateScout falls back toward conservative identity so reachable semantic behavior is not silently hidden.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-13-profile-revalidation-revocation
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase12
+npm run experiment:phase13
+```
+
+First local Phase 13 gate exposed a replay-reset defect before the system-level revocation result could be accepted:
+
+- TypeScript passed;
+- 44/45 tests passed;
+- all core revalidation policy tests passed;
+- stable later evidence correctly produced `retained` with 1 behavior signature and 1 resulting rule;
+- evolved later evidence correctly produced `revoked` with 2 behavior signatures and 0 resulting rules;
+- the frozen Phase 12 experiment remained unchanged;
+- the browser integration test failed because the observation crawl accumulated 7 Dashboard title values instead of the frozen 4;
+- the evolved crawl after revocation produced replay failures and 0 meaningful Details coverage instead of the frozen full-coverage result.
+
+Root cause was not the revalidation policy. The explorer used `page.goto(startUrl)` as its reset operation. When the benchmark start URL was a same-document hash URL, Playwright could change or revisit the fragment without recreating the document, leaving JavaScript state such as the refresh counter alive across replay attempts.
+
+This is the same browser semantic previously encountered in Phase 4, but here it exposed a real explorer replay-reset weakness.
+
+The explorer now uses an explicit start-state navigation helper:
+
+- if the current and target URLs refer to the same document (same origin, path, and query), it sets the requested URL when needed and then forces `page.reload()`;
+- otherwise it performs the normal full `page.goto()`;
+- the same reset path is used for both the initial exploration observation and every replay restoration.
+
+A dedicated regression fixture primes `#seed-99`, mutates its in-memory state, then explores from `#seed-1`. The frozen expectation is 4 states, 3 transitions, 3 attempts, titles Counter 1 through Counter 4, and 0 failed transitions.
+
+The Phase 13 scientific criteria remain unchanged. The gate must be rerun after this replay fix.
+
+The Phase 13 experiment writes:
+
+- full report: `results/raw/phase-13-profile-revalidation.json`;
+- compact summary: `results/raw/phase-13-profile-revalidation-summary.txt`;
+- parent trusted profile;
+- stable later evidence;
+- evolved later evidence;
+- retained profile revision;
+- revoked profile revision.
+
+The experiment reloads the persisted stale parent profile and persisted revoked revision from disk before the final evolved-app comparison crawls.
+
+### Research interpretation
+
+A Phase 13 pass would show that StateScout can reverse a previously beneficial abstraction when later behavior demonstrates that the application has changed.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0 after correcting the same-document replay-reset defect.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 46/46 passed, 0 failed;
+- the new same-document replay reset regression passed;
+- the frozen Phase 12 offline-promotion result remained unchanged;
+- parent trusted rules: 1;
+- stable revalidation: `retained`, 1 behavior signature, 1 resulting trusted rule;
+- evolved revalidation: `revoked`, 2 behavior signatures, 0 resulting trusted rules;
+- both stable and evolved profile revisions survived serialization round-trip;
+- parent-profile SHA-256 digest present;
+- challenge-evidence SHA-256 digest present;
+- evolved run with stale profile: meaningful Details coverage 0.5, 2 states, 3 transitions, 3 attempts;
+- evolved run after revocation: meaningful Details coverage 1.0, 6 states, 6 transitions, 6 attempts;
+- failed transitions after revocation: 0.
+
+The stable later evidence therefore preserved a still-valid abstraction, while the evolved later evidence revoked the stale abstraction after replicated safe probes produced divergent downstream behavior.
+
+The stale profile hid one of the two reachable meaningful Details outcomes. Removing the revoked rule in the next profile restored both outcomes on the next crawl.
+
+Phase 13 therefore demonstrates a defeasible abstraction lifecycle: trusted rules can remain trusted under stable evidence, but can be withdrawn when sufficiently replicated later behavior contradicts the original equivalence assumption.
+
+Phase 13 verification gate is complete.
+
+The important safety property is asymmetric: insufficient evidence does not erase trust, but sufficiently replicated contradictory behavior can revoke it before a future crawl begins.
+
+This still does not solve when revalidation should be scheduled in real deployments, how long evidence should remain valid, or how to distinguish temporary experiments/A-B tests from permanent semantic drift.
+
 ## Next phase after verification
 
-If Phase 12 passes, the next phase should challenge profile safety over time: stale profiles, changed application behavior, conflicting later evidence, and rule revocation. A trusted rule should not remain trusted forever if the application evolves underneath it.
+If Phase 13 passes, the next research step should address profile freshness and conflict lifecycle: explicit evidence age, application/version scope, challenge windows, repeated retain/revoke cycles, and possibly a trust state machine rather than permanent binary trusted/untrusted rules.
 
 ## Merge status
 
-Phases 1A through 11 are merged. Phase 12 implementation and whole-phase verification are complete on `feat/phase-12-offline-profile-promotion`; PR #14 is ready for merge.
+Phases 1A through 12 are merged. Phase 13 implementation and whole-phase verification are complete on `feat/phase-13-profile-revalidation-revocation`; PR #15 is ready for merge.

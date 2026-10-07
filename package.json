@@ -8,7 +8,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/core/volatility.test.ts tests/core/volatilityCandidates.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts tests/browser/explorerStrategy.test.ts tests/browser/replayRobustness.test.ts tests/browser/fingerprintGeneralization.test.ts tests/browser/adversarialIdentity.test.ts tests/browser/broaderGeneralization.test.ts tests/browser/observedVolatility.test.ts tests/browser/volatilityCandidatePromotion.test.ts tests/browser/explorerEvidenceStore.test.ts tests/browser/offlineProfilePromotion.test.ts tests/research/stateEquivalence.test.ts tests/research/fingerprintV2.test.ts tests/research/fingerprintV3.test.ts",
+    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/core/volatility.test.ts tests/core/volatilityCandidates.test.ts tests/core/offlineVolatilityRevalidation.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts tests/browser/explorerStrategy.test.ts tests/browser/replayRobustness.test.ts tests/browser/fingerprintGeneralization.test.ts tests/browser/adversarialIdentity.test.ts tests/browser/broaderGeneralization.test.ts tests/browser/observedVolatility.test.ts tests/browser/volatilityCandidatePromotion.test.ts tests/browser/explorerEvidenceStore.test.ts tests/browser/offlineProfilePromotion.test.ts tests/browser/profileRevalidation.test.ts tests/research/stateEquivalence.test.ts tests/research/fingerprintV2.test.ts tests/research/fingerprintV3.test.ts",
     "test:core": "node --experimental-strip-types --test tests/core/*.test.ts",
     "test:browser": "node --experimental-strip-types --test tests/browser/playwrightAdapter.test.ts",
     "experiment:equivalence": "node --experimental-strip-types scripts/run-state-equivalence-experiment.ts",
@@ -21,7 +21,8 @@
     "experiment:phase9": "node --experimental-strip-types scripts/run-phase9-observed-volatility.ts",
     "experiment:phase10": "node --experimental-strip-types scripts/run-phase10-volatility-candidate-promotion.ts",
     "experiment:phase11": "node --experimental-strip-types scripts/run-phase11-explorer-evidence-store.ts",
-    "experiment:phase12": "node --experimental-strip-types scripts/run-phase12-offline-profile-promotion.ts"
+    "experiment:phase12": "node --experimental-strip-types scripts/run-phase12-offline-profile-promotion.ts",
+    "experiment:phase13": "node --experimental-strip-types scripts/run-phase13-profile-revalidation.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",
