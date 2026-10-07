@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 20 — Scalability, checkpointing, and recovery**
+**Phase 21 — Research freeze and paper artifact**
 
 ## Branch
 
-`feat/phase-20-scalability-recovery`
+`feat/phase-21-research-freeze-paper-artifact`
 
 ## Phase 0 status
 
@@ -2893,10 +2893,180 @@ A Phase 20 pass would establish that:
 
 Phase 20 does not yet claim optimal scaling or crash-safe database durability. Checkpoints are JSON-compatible in-memory artifacts; durable atomic storage and distributed execution remain future engineering work.
 
-## Next phase after verification
+## Phase 21 implementation
 
-If Phase 20 passes, Phase 21 should be the research freeze and paper-artifact phase: freeze algorithms and benchmarks, rerun the complete experimental suite, aggregate the main result tables, document threats to validity, and produce the reproducibility/paper package without further algorithm tuning unless a correctness defect is discovered.
+Phase 21 freezes the research implementation and turns the verified Phase 0-20 work into a reproducible paper artifact.
+
+No new semantic-identity algorithm is introduced in this phase.
+
+### Freeze baseline
+
+The research implementation is frozen at:
+
+```text
+d4aa27d4e2516555a30741f9829785b0db12316e
+```
+
+This is the Phase 20 squash merge on `main`.
+
+The machine-readable manifest is:
+
+```text
+research/freeze-manifest.json
+```
+
+It protects the exact Git tree identities of:
+
+- `src/`;
+- `benchmarks/`;
+- `tests/`.
+
+Those trees contain the algorithms, frozen evaluation artifacts, and accepted correctness suite.
+
+### Machine-checkable freeze
+
+`npm run experiment:phase21` verifies:
+
+1. the freeze commit is an ancestor of the current checkout;
+2. the current `src/` tree matches the frozen tree;
+3. the current `benchmarks/` tree matches the frozen tree;
+4. the current `tests/` tree matches the frozen tree.
+
+Expected result:
+
+```text
+src: MATCH
+benchmarks: MATCH
+tests: MATCH
+Research freeze intact: true
+```
+
+A later documentation/reporting commit may therefore evolve without silently changing the measured system.
+
+### Allowed post-freeze work
+
+Allowed:
+
+- paper writing;
+- result-table/figure generation;
+- related-work updates;
+- citation updates;
+- reproducibility documentation;
+- non-algorithmic reporting scripts;
+- release packaging.
+
+Protected algorithm/benchmark/test changes require a documented correctness or ground-truth defect, a new freeze baseline, and rerunning every materially affected experiment.
+
+### Consolidated research package
+
+Added:
+
+- `docs/RESEARCH_FREEZE.md` — freeze/change policy;
+- `docs/RESULTS_SUMMARY.md` — verified results through Phase 20;
+- `docs/THREATS_TO_VALIDITY.md` — internal, construct, external, statistical, safety, and reproducibility limitations;
+- `docs/REPRODUCIBILITY.md` — artifact setup and rerun protocol;
+- `docs/PAPER_OUTLINE.md` — working title, research questions, contributions, method/results structure, and conservative conclusion direction.
+
+The README now points reviewers directly to these research artifacts.
+
+### Reproduction commands
+
+Fast frozen-artifact gate:
+
+```powershell
+npm run typecheck
+npm test
+npm run experiment:phase21
+```
+
+Complete controlled/local reproduction:
+
+```powershell
+npm run research:reproduce-controlled
+```
+
+The controlled command reruns the strict typecheck, complete 75-test suite, Phases 8-18, Phase 20, and the freeze verifier.
+
+Phase 19 remains separate:
+
+```powershell
+npm run research:rerun-real-world
+```
+
+This prevents changing public-site availability from making the deterministic artifact appear irreproducible.
+
+### Paper framing
+
+The current paper framing centers on five research questions:
+
+1. how semantic state identity compares with URL-only and earlier fingerprint strategies;
+2. whether dynamic fields can be abstracted contextually without unsafe global normalization;
+3. whether learned abstraction can be challenged, revoked, and historically reversed;
+4. whether learned rules can be selectively revalidated under a bounded verification budget;
+5. whether semantic exploration remains safe and recoverable under public-site variability, deep replay, interruption, and failed interactions.
+
+The paper must distinguish:
+
+- controlled correctness;
+- ablation results;
+- real-world observational stability;
+- scalability/recovery measurements.
+
+It must not present public-site graph size as oracle-backed coverage.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-21-research-freeze-paper-artifact
+git pull --ff-only
+npm install
+
+npm run typecheck
+npm test
+npm run experiment:phase21
+```
+
+Expected suite size remains:
+
+```text
+75 tests
+75 pass
+0 fail
+```
+
+Expected freeze result:
+
+```text
+src: MATCH
+benchmarks: MATCH
+tests: MATCH
+Research freeze intact: true
+```
+
+This gate intentionally does not rerun public websites.
+
+### Research interpretation
+
+A Phase 21 pass means StateScout has transitioned from active algorithm development into a frozen research artifact suitable for paper drafting and reproducible review.
+
+Passing Phase 21 does not mean the paper is automatically publication-ready. The remaining scholarly work includes:
+
+- final literature review and novelty positioning;
+- final controlled reproduction run for archived result tables;
+- figures;
+- manuscript drafting;
+- venue selection and formatting;
+- independent review where possible.
+
+## After Phase 21
+
+Do not start Phase 22 algorithm work by default.
+
+The default next work should be the manuscript/reproducibility release built from the frozen artifact.
+
+Future product features may continue on a separate post-paper roadmap without being mixed into the frozen experimental claims.
 
 ## Merge status
 
-Phases 1A through 19 are merged. Phase 20 implementation and whole-phase verification are complete on `feat/phase-20-scalability-recovery`; PR #22 is ready for merge.
+Phases 1A through 20 are merged. Phase 21 research-freeze and paper-artifact packaging is complete on `feat/phase-21-research-freeze-paper-artifact` and awaits its whole-phase verification gate.
