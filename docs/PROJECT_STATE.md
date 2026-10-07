@@ -805,6 +805,29 @@ The Phase 9 experiment writes:
 
 A Phase 9 pass would show that scoped volatility evidence can solve the measured Dashboard noise without globally erasing meaningful second-resolution Auction state.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 33/33 passed, 0 failed;
+- the Phase 7 v3 cross-benchmark remained unchanged;
+- exactly 2 trusted scoped volatility rules were learned;
+- v1: 3/6, 0 false merges, 3 false splits;
+- v2: 2/6, 2 false merges, 2 false splits;
+- v3: 3/6, 1 false merge, 2 false splits;
+- v4: 6/6, 0 false merges, 0 false splits;
+- held-out Dashboard title volatility generalized from training values A17/B29 to unseen C31/D44;
+- held-out Dashboard refreshToken volatility generalized from training values A17/B29 to unseen C31/D44;
+- the learned Dashboard title rule did not leak into the Auction anchor;
+- the learned Dashboard refreshToken rule did not leak into the Invoice anchor;
+- semantic ref values remained distinct;
+- known tracking-query normalization remained intact.
+
+Phase 9 therefore supports the core architecture: volatility evidence can be scoped to a protected semantic anchor and then applied to unseen values without globally deleting the same field from unrelated states.
+
+Phase 9 verification gate is complete. V4 remains experimental because trust establishment is still externally supplied; automatic rule promotion remains a separate research problem.
+
 It would **not** prove that StateScout can autonomously decide what is volatile. Trust establishment remains a separate research problem. The important architectural improvement is that normalization is now conditional on explicit evidence and semantic scope rather than on text format.
 
 ## Next phase after verification
@@ -813,4 +836,4 @@ If Phase 9 passes, the next research problem is how StateScout can earn trust fo
 
 ## Merge status
 
-Phases 1A through 8 are merged. Phase 9 implementation is complete on `feat/phase-9-observed-volatility` and awaits its single whole-phase verification gate.
+Phases 1A through 8 are merged. Phase 9 implementation and whole-phase verification are complete on `feat/phase-9-observed-volatility`; PR #11 is ready for merge.
