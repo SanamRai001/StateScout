@@ -318,3 +318,16 @@ Research rules for recovery:
 - retain per-target graph instability as evidence rather than a failure condition.
 
 The pre-registered recovery targets are the W3C ARIA APG Automatic Tabs example and Selenium's official Web Form example.
+
+
+### Phase 19 same-origin enforcement finding
+
+Moving from controlled fixtures to public applications exposed that the browser explorer had not been enforcing the already-defined same-origin boundary before enqueueing discovered links.
+
+The Phase 19 recovery branch therefore adds a browser-level boundary regression:
+
+- internal safe interactions remain explorable;
+- external-origin links are represented as `blocked-by-policy`;
+- external navigation must never become a discovered state.
+
+This is a safety correction to execution policy, not an identity-algorithm optimization.
