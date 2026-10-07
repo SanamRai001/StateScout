@@ -301,3 +301,20 @@ Research rules:
 - require at least two evaluable public targets before accepting the phase.
 
 The frozen target set contains TodoMVC React, The Internet Dynamic Controls, and UI Testing Playground Visibility, each measured across three fresh-browser runs.
+
+
+### Phase 19B recovery cohort
+
+The first primary-cohort execution produced only one evaluable target because two public sites were unreachable from the measurement environment.
+
+Research rules for recovery:
+
+- preserve the original three-target cohort and its failed evaluability result;
+- do not relax the minimum-two-target acceptance threshold;
+- add fallback targets before observing their StateScout outcomes;
+- select fallback targets because of external availability need, not because they are known algorithm wins;
+- rerun primary and fallback cohorts together in one self-contained report;
+- require at least two distinct evaluable targets across the combined cohort;
+- retain per-target graph instability as evidence rather than a failure condition.
+
+The pre-registered recovery targets are the W3C ARIA APG Automatic Tabs example and Selenium's official Web Form example.
