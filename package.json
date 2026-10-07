@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/browser/playwrightAdapter.test.ts",
+    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts",
     "test:core": "node --experimental-strip-types --test tests/core/*.test.ts",
     "test:browser": "node --experimental-strip-types --test tests/browser/playwrightAdapter.test.ts"
   },
