@@ -175,7 +175,16 @@ Phase 1B implementation is complete in code and now adds:
 - controlled benchmark evaluation against fixed ground truth;
 - an end-to-end browser test expecting all 5 benchmark states and all 9 benchmark transitions.
 
-Runtime verification is intentionally deferred until the whole Phase 1B implementation is complete, per the project workflow.
+Whole-phase runtime verification was completed successfully by the user on Node v24.19.0 after the final strict-TypeScript and accessible-dialog assertion fixes.
+
+Verified commands:
+
+```powershell
+npm run typecheck
+npm test
+```
+
+Result: Phase 1B verification gate passed.
 
 Required verification:
 
@@ -276,4 +285,4 @@ AI, arbitrary form filling, persistence, and broad real-world crawling remain ou
 
 ## Merge status
 
-Phase 1A is merged. Phase 1B implementation is complete on `feat/phase-1b-playwright-observation` and awaits one whole-phase local verification gate before PR #3 is marked ready/merged.
+Phase 1A is merged. Phase 1B implementation and its whole-phase local verification gate are complete on `feat/phase-1b-playwright-observation`. PR #3 is ready for merge.
