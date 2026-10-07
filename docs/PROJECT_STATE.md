@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 1B — Playwright-backed deterministic benchmark exploration**
+**Phase 2 — State-equivalence measurement and replay robustness**
 
 ## Branch
 
-`feat/phase-1b-playwright-observation`
+`feat/phase-2-state-equivalence`
 
 ## Phase 0 status
 
@@ -267,22 +267,52 @@ Before Phase 1B, be able to explain:
 6. why the frontier contains state/action pairs rather than URLs;
 7. why a deterministic benchmark needs ground truth written before evaluation.
 
+## Phase 2 implementation
+
+Phase 2 is complete in code and intentionally measures fingerprint v1 before changing it.
+
+Added:
+
+- a frozen nine-pair semantic-equivalence benchmark;
+- explicit same/different ground-truth labels and rationales;
+- precision/recall/F1-style equivalence metrics;
+- false-merge and false-split counts/rates;
+- fingerprint pair timing;
+- a machine-readable JSON experiment runner;
+- reusable replay verification;
+- browser coverage ensuring every discovered benchmark state can be restored by replay.
+
+The frozen baseline predicts two known false splits in fingerprint v1: tracking-query noise and volatile timestamp title noise. Those limitations remain visible rather than being tuned away during the same experiment.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-2-state-equivalence
+git pull --ff-only
+npm install
+npx playwright install chromium
+npm run typecheck
+npm test
+npm run experiment:equivalence
+```
+
+The experiment command writes `results/raw/phase-2-state-equivalence.json`.
+
+Expected deterministic classification baseline:
+
+- 9 labeled pairs;
+- 7 correct;
+- 0 false merges;
+- 2 false splits;
+- false-split cases: `tracking-query-noise` and `timestamp-title-noise`.
+
+Do not begin the next phase until this complete gate passes.
+
 ## Next phase after verification
 
-**Phase 2 — robustness experiments and state-equivalence measurement.**
-
-Do not begin Phase 2 until the complete Phase 1B verification gate passes.
-
-Likely Phase 2 scope:
-
-1. add controlled dynamic/noisy-state benchmark cases;
-2. measure false merges and false splits in fingerprint v1;
-3. test replay robustness under deterministic DOM variation;
-4. record coverage and failure metrics as machine-readable experiment output;
-5. revise the semantic fingerprint only from measured evidence.
-
-AI, arbitrary form filling, persistence, and broad real-world crawling remain out of scope until the deterministic baseline is measured.
+Use the measured Phase 2 evidence to define fingerprint v2 and compare it against the frozen v1 benchmark. Do not overwrite v1 or change Phase 2 ground truth.
 
 ## Merge status
 
-Phase 1A is merged. Phase 1B implementation and its whole-phase local verification gate are complete on `feat/phase-1b-playwright-observation`. PR #3 is ready for merge.
+Phase 1A and Phase 1B are merged. Phase 2 implementation is complete on `feat/phase-2-state-equivalence` and awaits its single whole-phase local verification gate.
