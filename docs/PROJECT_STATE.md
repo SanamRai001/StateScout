@@ -616,6 +616,25 @@ All existing evaluators now include v3 while preserving v1/v2 outputs. A dedicat
 - all v1/v2 frozen measurements remain unchanged;
 - v3 remains non-default until this complete gate passes.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 29/29 passed, 0 failed;
+- Phase 2 frozen baseline remained v1 7/9 and v2 9/9;
+- Phase 7 v3 on Phase 2: 9/9, 0 false merges, 0 false splits;
+- Phase 4 frozen comparison remained v1 3/4 and v2 4/4;
+- Phase 7 v3 on Phase 4: 4/4, 0 false merges, 0 false splits;
+- Phase 5 frozen explorer comparison remained v1 15 states / 20 attempts and v2 2 states / 3 attempts;
+- Phase 7 v3 on Phase 5: 2 graph states, 3 graph transitions, 3 attempted transitions, 100% meaningful-state coverage, 0 excess states, 0 failed transitions;
+- Phase 6 frozen adversarial comparison remained v1 5/6 and v2 4/6 with 2 false merges;
+- Phase 7 v3 on Phase 6: 6/6, 0 false merges, 0 false splits.
+
+V3 therefore preserves v2's measured state-space reduction while removing both measured v2 false-merge hazards. The complete cross-benchmark report is written to `results/raw/phase-7-fingerprint-v3-comparison.json`, with a compact summary in `results/raw/phase-7-fingerprint-v3-comparison-summary.txt`.
+
+Phase 7 verification gate is complete. V3 is now the strongest identity candidate measured so far, but default promotion remains deferred until broader generalization validation.
+
 ### Whole-phase verification gate
 
 ```powershell
@@ -649,4 +668,4 @@ If Phase 7 passes, v3 becomes the strongest identity candidate so far, but promo
 
 ## Merge status
 
-Phases 1A through 6 are merged. Phase 7 implementation is complete on `feat/phase-7-fingerprint-v3` and awaits its single whole-phase verification gate.
+Phases 1A through 6 are merged. Phase 7 implementation and whole-phase verification are complete on `feat/phase-7-fingerprint-v3`; PR #9 is ready for merge.
