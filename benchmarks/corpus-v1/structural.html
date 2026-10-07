@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Workspace</title></head>
+<body><main id="app"></main><script>
+const variant=location.hash.slice(1)||"base";
+const app=document.querySelector("#app");
+const base='<h1>Workspace</h1><button>Open menu</button><a href="?view=reports">Reports</a>';
+if(variant==="wrapper-noise"){
+  app.innerHTML='<div id="generated-91" class="x-482"><section><a href="?view=reports"> Reports </a><div><button data-testid="generated-button"> Open   menu </button></div><h1> Workspace </h1></section></div>';
+}else if(variant==="control-order"){
+  app.innerHTML='<h1>Workspace</h1><a href="?view=reports">Reports</a><button>Open menu</button>';
+}else{
+  app.innerHTML=base;
+}
+</script></body></html>
