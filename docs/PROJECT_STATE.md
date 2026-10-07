@@ -2579,6 +2579,72 @@ The recovery targets were chosen because Phase 19A lacked enough reachable targe
 
 A Phase 19 pass would establish that StateScout can be measured on public applications without conflating external availability, runtime failures, and graph instability.
 
+Phase 19B combined live verification passed on Windows x64 with Node v24.19.0.
+
+Observed offline verification:
+
+- TypeScript typecheck: passed;
+- tests: 68/68 passed, 0 failed;
+- same-origin browser regression passed;
+- frozen Phase 18 baseline/ablation result remained unchanged.
+
+Observed live evaluation:
+
+- primary targets/requested runs: 3/9;
+- recovery targets/requested runs: 2/6;
+- combined targets/requested runs: 5/15;
+- successful/unavailable/run-error runs: 9/6/0;
+- primary evaluable targets: 1/3;
+- recovery evaluable targets: 2/2;
+- combined evaluable targets: 3/5;
+- minimum required evaluable targets: 2;
+- study evaluable: true;
+- stable initial targets: 2;
+- stable graph targets: 1.
+
+Per-target findings:
+
+- TodoMVC React:
+  - 3/3 successful;
+  - initial fingerprint not stable across all three runs;
+  - graph structure not stable;
+  - states: 2-2;
+  - transitions: 11-13;
+  - attempted transitions: 1-1;
+  - aggregate transition statuses: 2 observed, 34 blocked-by-policy, 1 failed, 0 no-state-change.
+
+- The Internet Dynamic Controls:
+  - 0/3 successful;
+  - all three runs externally unavailable during preflight.
+
+- UI Testing Playground Visibility:
+  - 0/3 successful;
+  - all three runs externally unavailable during preflight.
+
+- W3C ARIA APG Automatic Tabs:
+  - 3/3 successful;
+  - initial fingerprint stable;
+  - graph structure not stable;
+  - states: 5-5;
+  - transitions: 27-36;
+  - attempted transitions: 6-6;
+  - aggregate transition statuses: 14 observed, 81 blocked-by-policy, 4 failed, 0 no-state-change.
+
+- Selenium Web Form:
+  - 3/3 successful;
+  - initial fingerprint stable;
+  - graph structure stable;
+  - states: 2-2;
+  - transitions: 2-2;
+  - attempted transitions: 1-1;
+  - aggregate transition statuses: 3 observed, 3 blocked-by-policy, 0 failed, 0 no-state-change.
+
+Phase 19 therefore produced sufficient external evidence without relaxing the original evaluability threshold.
+
+The recovery cohort also showed that public-app reproducibility varies materially by target: stable initial identity does not imply stable bounded graph structure, and a conservative same-origin safe-only policy can produce a large blocked-action surface on documentation-heavy pages.
+
+Phase 19 verification gate is complete.
+
 The actual state/transition counts and stability outcomes become empirical Phase 19 findings rather than numbers chosen in advance.
 
 ## Next phase after verification
