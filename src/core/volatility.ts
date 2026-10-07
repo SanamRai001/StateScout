@@ -9,7 +9,7 @@ export interface ScopedVolatilityRule {
   anchorHash: string;
   sampleCount: number;
   distinctValues: readonly string[];
-  provenance: "trusted-repeated-observation";
+  provenance: "trusted-repeated-observation" | "verified-candidate-promotion";
 }
 
 export interface VolatilityProfile {
@@ -214,7 +214,8 @@ export function hasTrustedVolatilityRule(
     (rule) =>
       rule.field === field &&
       rule.anchorHash === anchorHash &&
-      rule.provenance === "trusted-repeated-observation",
+      (rule.provenance === "trusted-repeated-observation" ||
+        rule.provenance === "verified-candidate-promotion"),
   );
 }
 
