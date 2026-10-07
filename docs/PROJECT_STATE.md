@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 1A — Deterministic exploration kernel design**
+**Phase 1B — Playwright observation adapter (first slice)**
 
 ## Branch
 
-`feat/phase-1a-domain-model`
+`feat/phase-1b-playwright-observation`
 
 ## Phase 0 status
 
@@ -156,25 +156,37 @@ Current decisions:
 - TypeScript: 7.0.2
 - Node type definitions: ^24.19.1
 
-Playwright has intentionally not been added yet.
+Playwright is now added only at the browser-adapter boundary; the core remains browser-independent.
 
 ## Verification status
 
-Repository history, Phase 0 documents, branch diff, and implementation structure were reviewed during Phase 1A.
+Phase 1A was reported locally working by the user and merged to `main` through PR #2 at `a7cb0f31`.
 
-An attempted isolated runtime check could not clone GitHub because the execution environment had no DNS access to GitHub. That environment also exposes Node 22 while this project intentionally targets Node >=24.
+Phase 1B first slice adds:
 
-Therefore runtime verification remains pending on the user's Node 24+ checkout.
+- `src/browser/playwrightAdapter.ts`;
+- live semantic snapshot extraction from Playwright;
+- visible button/link interaction discovery;
+- deterministic interaction IDs;
+- reuse of the core risk classifier;
+- role/name-first execution with semantic fallbacks;
+- a browser test proving a same-URL dialog produces a different semantic fingerprint.
+
+Runtime verification for the new Playwright slice is intentionally left to the user's Node 24+ checkout.
 
 Required verification:
 
 ```powershell
+git fetch origin
+git switch feat/phase-1b-playwright-observation
+git pull --ff-only
 npm install
+npx playwright install chromium
 npm run typecheck
 npm test
 ```
 
-Do not mark Phase 1A verified or merge it until these commands pass.
+Expected behavior: all existing core tests remain green and the new browser adapter test passes.
 
 ## Risks and open questions
 
@@ -245,19 +257,19 @@ Before Phase 1B, be able to explain:
 
 ## Next phase after verification
 
-**Phase 1B — Playwright observation adapter**
+Continue **Phase 1B** by wiring observation + discovery into the existing `StateGraph` and BFS frontier against the controlled benchmark.
 
-Initial scope only:
+The next slice should:
 
-1. launch benchmark page;
-2. capture a `SemanticStateSnapshot` from the live DOM/accessibility semantics;
-3. discover visible safe buttons/links;
-4. execute one interaction;
-5. feed resulting snapshots/transitions into the existing graph/frontier;
-6. compare discovered graph with benchmark ground truth.
+1. restore/replay a known state;
+2. observe it through Playwright;
+3. enqueue its safe interactions;
+4. execute one frontier work item at a time;
+5. add resulting states/transitions to the graph;
+6. compare discovered states/edges with benchmark ground truth.
 
-Do not add form filling, AI, visual regression, persistence, or test generation in Phase 1B.
+Still out of scope: form filling, AI, visual regression, persistence, and generated tests.
 
 ## Merge status
 
-Phase 1A is not merged.
+Phase 1A is merged. Phase 1B is in progress on `feat/phase-1b-playwright-observation`.
