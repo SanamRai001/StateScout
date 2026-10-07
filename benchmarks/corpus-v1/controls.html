@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Controls</title></head>
+<body><main id="app"></main><script>
+const variant=location.hash.slice(1);
+const app=document.querySelector("#app");
+const h='<h1>Controls</h1>';
+if(variant==="tab-home"){
+  app.innerHTML=h+'<div role="tablist"><button role="tab" aria-selected="true">Home</button><button role="tab" aria-selected="false">Reports</button></div>';
+}else if(variant==="tab-reports"){
+  app.innerHTML=h+'<div role="tablist"><button role="tab" aria-selected="false">Home</button><button role="tab" aria-selected="true">Reports</button></div>';
+}else if(variant==="expanded-false"){
+  app.innerHTML=h+'<button aria-expanded="false">Advanced filters</button>';
+}else if(variant==="expanded-true"){
+  app.innerHTML=h+'<button aria-expanded="true">Advanced filters</button>';
+}else if(variant==="checked-false"){
+  app.innerHTML=h+'<label><input type="checkbox" aria-label="Email alerts"> Email alerts</label>';
+}else if(variant==="checked-true"){
+  app.innerHTML=h+'<label><input type="checkbox" aria-label="Email alerts" checked> Email alerts</label>';
+}else if(variant==="disabled-false"){
+  app.innerHTML=h+'<button>Continue</button>';
+}else if(variant==="disabled-true"){
+  app.innerHTML=h+'<button disabled>Continue</button>';
+}else{
+  app.innerHTML=h;
+}
+</script></body></html>
