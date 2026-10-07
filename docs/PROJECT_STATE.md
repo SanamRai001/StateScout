@@ -1903,6 +1903,28 @@ The experiment writes:
 
 A Phase 16 pass would demonstrate that semantic abstraction no longer has to destroy historical distinctions.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 56/56 passed, 0 failed;
+- frozen Phase 15 selective-revalidation result remained unchanged;
+- raw observations: 6;
+- raw transitions: 7;
+- raw archive serialization round-trip: stable;
+- trusted projection: 3 states, 6 transitions;
+- trusted Dashboard alias members: 4;
+- merged projected edge preserved raw transition provenance for `raw-transition-4` and `raw-transition-5`;
+- revoked projection: 6 states, 7 transitions;
+- historical Dashboard states recovered after removing the rule: 4;
+- restored trusted projection: 3 states, 6 transitions;
+- raw archive SHA-256 digest remained unchanged across trusted, revoked, and restored reprojections.
+
+Phase 16 therefore demonstrates reversible historical abstraction in the core model: StateScout can preserve raw observations and transitions once, compress them through a trusted equivalence projection, later remove that abstraction, and recover the historical distinctions without re-crawling or mutating the source archive.
+
+Phase 16 verification gate is complete.
+
 StateScout can preserve raw observations and transitions once, project them through a trusted abstraction for efficiency, later remove that abstraction, and recover the historical distinctions without re-crawling.
 
 This is important because a later challenge or revocation can reinterpret old evidence rather than discovering that the earlier abstraction permanently erased it.
@@ -1913,4 +1935,4 @@ If Phase 16 passes, Phase 17 should build a broader frozen benchmark corpus acro
 
 ## Merge status
 
-Phases 1A through 15 are merged. Phase 16 implementation is complete on `feat/phase-16-reversible-equivalence-archive` and awaits its single whole-phase verification gate.
+Phases 1A through 15 are merged. Phase 16 implementation and whole-phase verification are complete on `feat/phase-16-reversible-equivalence-archive`; PR #18 is ready for merge.
