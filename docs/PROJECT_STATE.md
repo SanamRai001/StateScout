@@ -900,6 +900,15 @@ npm run experiment:phase9
 npm run experiment:phase10
 ```
 
+First local Phase 10 gate exposed a syntax defect before the Phase 10 hypothesis could run:
+
+- TypeScript reported TS1005 in `src/core/volatilityCandidates.ts` at the candidate `sessionIds` expression;
+- Node v24 strip-types reported the same parse failure;
+- 33 pre-existing tests still passed, while the 2 Phase 10 tests failed at module parse time rather than assertion time;
+- the frozen Phase 9 experiment still reproduced its verified 6/6 v4 result;
+- Phase 10 itself did not execute, so this run provides no evidence for or against the candidate-promotion hypothesis;
+- the malformed `new Set(...)` expression was corrected without changing candidate-promotion behavior or acceptance criteria.
+
 The Phase 10 experiment writes:
 
 - full report: `results/raw/phase-10-volatility-candidate-promotion.json`;
