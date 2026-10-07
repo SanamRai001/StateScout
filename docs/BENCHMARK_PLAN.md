@@ -120,3 +120,21 @@ Rules are learned only from trusted repeated observations whose protected semant
 A learned rule is scoped to the anchor on which it was learned. Global "this field format is always noise" rules are explicitly rejected as the default research direction.
 
 The benchmark must include a meaningful state with the same superficial changing-value pattern so that a volatility rule cannot pass merely by deleting all dynamic text.
+
+
+## Phase 10 candidate promotion
+
+Automatic discovery and automatic trust are different problems.
+
+A field may be discovered as a volatility candidate when repeated observations share the same protected semantic anchor while the field varies. That candidate remains quarantined and cannot affect state identity.
+
+Promotion requires independent evidence:
+
+- multiple observation sessions;
+- enough distinct values;
+- repeated safe behavioral probes;
+- identical downstream behavior signatures.
+
+If behavior diverges, the candidate must remain quarantined even when its immediate snapshots differ only in the candidate field.
+
+This phase deliberately includes a Dashboard candidate that should promote and an Auction countdown candidate that should not.

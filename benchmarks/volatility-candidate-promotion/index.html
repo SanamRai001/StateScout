@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>StateScout Candidate Promotion</title></head>
+<body>
+<main id="app"></main>
+<script>
+const variant = location.hash.slice(1) || "dashboard-a1";
+const app = document.querySelector("#app");
+
+const dashboardTitles = {
+  "dashboard-a1": "Dashboard — refresh A17",
+  "dashboard-a2": "Dashboard — refresh A18",
+  "dashboard-b1": "Dashboard — refresh B29",
+  "dashboard-b2": "Dashboard — refresh B30",
+  "dashboard-holdout-c": "Dashboard — refresh C31",
+  "dashboard-holdout-d": "Dashboard — refresh D44",
+};
+
+const auctionTitles = {
+  "auction-a1": "Auction closes — 10:00:01",
+  "auction-a2": "Auction closes — 10:00:02",
+  "auction-b1": "Auction closes — 10:00:03",
+  "auction-b2": "Auction closes — 10:00:04",
+  "auction-holdout-c": "Auction closes — 10:00:05",
+  "auction-holdout-d": "Auction closes — 10:00:06",
+};
+
+function renderDashboard() {
+  document.title = dashboardTitles[variant];
+  app.innerHTML = '<h1>Dashboard</h1><button id="probe">Inspect dashboard</button>';
+  document.querySelector("#probe").addEventListener("click", () => {
+    document.title = "Dashboard details";
+    app.innerHTML = '<h1>Dashboard details</h1><button>Back</button>';
+  });
+}
+
+function renderAuction() {
+  document.title = auctionTitles[variant];
+  app.innerHTML = '<h1>Auction</h1><button id="probe">Inspect auction</button>';
+  document.querySelector("#probe").addEventListener("click", () => {
+    const second = Number(document.title.match(/:(\d{2})$/)?.[1] ?? "0");
+    document.title = "Auction inspection";
+    app.innerHTML = second % 2 === 0
+      ? '<h1>Auction closing soon</h1><button>Back</button>'
+      : '<h1>Auction open</h1><button>Back</button>';
+  });
+}
+
+if (variant.startsWith("dashboard-")) {
+  renderDashboard();
+} else {
+  renderAuction();
+}
+</script>
+</body>
+</html>

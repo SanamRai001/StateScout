@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 9 — Scoped observed-volatility foundation**
+**Phase 10 — Quarantined volatility candidate promotion**
 
 ## Branch
 
-`feat/phase-9-observed-volatility`
+`feat/phase-10-volatility-candidate-promotion`
 
 ## Phase 0 status
 
@@ -830,10 +830,118 @@ Phase 9 verification gate is complete. V4 remains experimental because trust est
 
 It would **not** prove that StateScout can autonomously decide what is volatile. Trust establishment remains a separate research problem. The important architectural improvement is that normalization is now conditional on explicit evidence and semantic scope rather than on text format.
 
+## Phase 10 implementation
+
+Phase 10 begins automatic volatility discovery while keeping unsafe inferences quarantined until independent behavioral evidence supports promotion.
+
+### Candidate lifecycle
+
+A new candidate pipeline introduces:
+
+- automatic candidate discovery from repeated observations where one candidate field varies and the protected semantic anchor remains stable;
+- candidate status starts as `quarantined`;
+- default promotion policy requires at least 4 observations, at least 2 independent sessions, at least 3 distinct field values, and at least 4 behavior confirmations;
+- behavior confirmation is collected through a safe probe and summarized as a downstream semantic signature;
+- every behavior-evidence record is bound back to the candidate's source anchor and must reference a value actually observed by that candidate;
+- any divergent downstream behavior blocks promotion;
+- only eligible candidates can be converted into trusted `ScopedVolatilityRule` entries with provenance `verified-candidate-promotion`.
+
+Quarantined candidates never affect fingerprint identity.
+
+### Phase 10 controlled benchmark
+
+The benchmark creates two superficially similar title-volatility candidates.
+
+Dashboard candidate:
+
+- four changing title values across two sessions;
+- all protected semantic anchors are identical;
+- the safe `Inspect dashboard` probe always reaches the same downstream semantic state;
+- expected: eligible and promoted.
+
+Auction candidate:
+
+- four changing second-resolution title values across two sessions;
+- immediate protected anchors are also identical;
+- the safe `Inspect auction` probe reaches two different downstream semantic states depending on the countdown value;
+- expected: remains quarantined because behavior signatures diverge.
+
+Held-out evaluation then checks unseen Dashboard and Auction title values.
+
+Expected results:
+
+- Dashboard candidate eligible: true;
+- Dashboard behavior signature count: 1;
+- Auction candidate eligible: false;
+- Auction behavior signature count: 2;
+- promoted trusted rules: 1;
+- v3: 0/2, 1 false merge, 1 false split;
+- v4 with no profile: 1/2, 0 false merges, 1 false split;
+- v4 with verified promoted profile: 2/2, 0 false merges, 0 false splits.
+
+### Safety interpretation
+
+This phase does not claim that repeated stability alone proves semantic irrelevance. Promotion requires a separate safe behavioral probe and cross-session evidence.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0 after correcting the earlier parse-only syntax defect.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 37/37 passed, 0 failed;
+- Phase 9 frozen result remained v4 6/6 with 0 false merges and 0 false splits;
+- Dashboard candidate: eligible = true;
+- Dashboard behavior signature count: 1;
+- Auction candidate: eligible = false;
+- Auction behavior signature count: 2;
+- Auction rejection reason: `safe probe produced divergent downstream behavior`;
+- promoted trusted rules: 1;
+- promoted rule provenance: `verified-candidate-promotion`;
+- v3 held-out result: 0/2, 1 false merge, 1 false split;
+- v4 without profile: 1/2, 0 false merges, 1 false split;
+- v4 with verified promoted profile: 2/2, 0 false merges, 0 false splits.
+
+The Dashboard candidate satisfied the full promotion policy across two sessions and four observed values while producing one stable downstream behavior signature. The Auction candidate satisfied the repetition/session/value thresholds but remained quarantined because its safe probe produced two downstream behavior signatures.
+
+Phase 10 therefore supports the quarantine architecture: automatic candidate discovery can proceed independently from identity, and promotion can require independent behavioral evidence before a rule is allowed to affect fingerprinting.
+
+Phase 10 verification gate is complete.
+
+The behavioral verifier is still a controlled abstraction: real applications may need multiple probes, deeper transition signatures, time-delayed observations, or additional invariants before automatic promotion is safe enough for production use.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-10-volatility-candidate-promotion
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase9
+npm run experiment:phase10
+```
+
+First local Phase 10 gate exposed a syntax defect before the Phase 10 hypothesis could run:
+
+- TypeScript reported TS1005 in `src/core/volatilityCandidates.ts` at the candidate `sessionIds` expression;
+- Node v24 strip-types reported the same parse failure;
+- 33 pre-existing tests still passed, while the 2 Phase 10 tests failed at module parse time rather than assertion time;
+- the frozen Phase 9 experiment still reproduced its verified 6/6 v4 result;
+- Phase 10 itself did not execute, so this run provides no evidence for or against the candidate-promotion hypothesis;
+- the malformed `new Set(...)` expression was corrected without changing candidate-promotion behavior or acceptance criteria.
+
+The Phase 10 experiment writes:
+
+- full report: `results/raw/phase-10-volatility-candidate-promotion.json`;
+- compact shareable summary: `results/raw/phase-10-volatility-candidate-promotion-summary.txt`.
+
 ## Next phase after verification
 
-If Phase 9 passes, the next research problem is how StateScout can earn trust for volatility rules automatically without circular reasoning or dangerous false merges. Candidate directions include repeated replay observations combined with invariants, cross-session evidence, confidence thresholds, and keeping newly inferred rules in candidate/quarantine state before they affect identity.
+If Phase 10 passes, the next step is to integrate candidate discovery with the explorer itself in observation-only mode: collect quarantined candidates during normal replay/exploration, persist evidence across runs, and test whether promotion decisions stay reproducible without letting candidate rules change identity mid-run.
 
 ## Merge status
 
-Phases 1A through 8 are merged. Phase 9 implementation and whole-phase verification are complete on `feat/phase-9-observed-volatility`; PR #11 is ready for merge.
+Phases 1A through 9 are merged. Phase 10 implementation and whole-phase verification are complete on `feat/phase-10-volatility-candidate-promotion`; PR #12 is ready for merge.
