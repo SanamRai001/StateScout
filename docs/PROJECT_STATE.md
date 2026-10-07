@@ -1527,6 +1527,18 @@ npm run experiment:phase13
 npm run experiment:phase14
 ```
 
+First local Phase 14 gate produced the expected runtime/research results but exposed one strict-TypeScript benchmark typing defect:
+
+- `npm test`: 50/50 passed;
+- frozen Phase 13 result remained unchanged;
+- Phase 14 lifecycle experiment matched every frozen behavioral expectation;
+- strict `tsc --noEmit` failed because the helper parameter `applicationScope` was inferred from the default value as the literal type `"statescout-fixture:v1"`;
+- the intentional wrong-scope case passes `"statescout-fixture:v2"`, so TypeScript rejected the benchmark call even though the runtime behavior was correct;
+- the helper parameter is now explicitly typed as `string`;
+- no lifecycle policy, state transition, benchmark expectation, or experiment logic was changed.
+
+The Phase 14 gate remains incomplete until strict TypeScript is rerun successfully after this type-only fix.
+
 The Phase 14 experiment writes:
 
 - full report: `results/raw/phase-14-trust-lifecycle.json`;
