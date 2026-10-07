@@ -9,7 +9,7 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 1B — Playwright observation adapter (first slice)**
+**Phase 1B — Playwright-backed deterministic benchmark exploration**
 
 ## Branch
 
@@ -162,17 +162,20 @@ Playwright is now added only at the browser-adapter boundary; the core remains b
 
 Phase 1A was reported locally working by the user and merged to `main` through PR #2 at `a7cb0f31`.
 
-Phase 1B first slice adds:
+Phase 1B implementation is complete in code and now adds:
 
-- `src/browser/playwrightAdapter.ts`;
-- live semantic snapshot extraction from Playwright;
-- visible button/link interaction discovery;
-- deterministic interaction IDs;
-- reuse of the core risk classifier;
-- role/name-first execution with semantic fallbacks;
-- a browser test proving a same-URL dialog produces a different semantic fingerprint.
+- a Playwright adapter that converts live browser state into `SemanticStateSnapshot`;
+- visible button/link discovery with deterministic interaction IDs;
+- semantic locator execution;
+- reuse of the core conservative action-risk policy;
+- replay-based state restoration with intermediate fingerprint verification;
+- BFS execution over `(state, interaction)` work items;
+- state/transition insertion into the browser-independent `StateGraph`;
+- explicit blocked/failed/no-state-change transition handling;
+- controlled benchmark evaluation against fixed ground truth;
+- an end-to-end browser test expecting all 5 benchmark states and all 9 benchmark transitions.
 
-Runtime verification for the new Playwright slice is intentionally left to the user's Node 24+ checkout.
+Runtime verification is intentionally deferred until the whole Phase 1B implementation is complete, per the project workflow.
 
 Required verification:
 
@@ -257,19 +260,20 @@ Before Phase 1B, be able to explain:
 
 ## Next phase after verification
 
-Continue **Phase 1B** by wiring observation + discovery into the existing `StateGraph` and BFS frontier against the controlled benchmark.
+**Phase 2 — robustness experiments and state-equivalence measurement.**
 
-The next slice should:
+Do not begin Phase 2 until the complete Phase 1B verification gate passes.
 
-1. restore/replay a known state;
-2. observe it through Playwright;
-3. enqueue its safe interactions;
-4. execute one frontier work item at a time;
-5. add resulting states/transitions to the graph;
-6. compare discovered states/edges with benchmark ground truth.
+Likely Phase 2 scope:
 
-Still out of scope: form filling, AI, visual regression, persistence, and generated tests.
+1. add controlled dynamic/noisy-state benchmark cases;
+2. measure false merges and false splits in fingerprint v1;
+3. test replay robustness under deterministic DOM variation;
+4. record coverage and failure metrics as machine-readable experiment output;
+5. revise the semantic fingerprint only from measured evidence.
+
+AI, arbitrary form filling, persistence, and broad real-world crawling remain out of scope until the deterministic baseline is measured.
 
 ## Merge status
 
-Phase 1A is merged. Phase 1B is in progress on `feat/phase-1b-playwright-observation`.
+Phase 1A is merged. Phase 1B implementation is complete on `feat/phase-1b-playwright-observation` and awaits one whole-phase local verification gate before PR #3 is marked ready/merged.
