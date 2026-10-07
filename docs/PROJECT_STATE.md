@@ -307,7 +307,24 @@ Expected deterministic classification baseline:
 - 2 false splits;
 - false-split cases: `tracking-query-noise` and `timestamp-title-noise`.
 
-Do not begin the next phase until this complete gate passes.
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 17/17 passed, 0 failed;
+- equivalence experiment: 9 labeled pairs, 7 correct;
+- accuracy: 0.7777777777777778;
+- same-state precision: 1.0;
+- same-state recall: 0.6;
+- same-state F1: 0.75;
+- false merges: 0/4 (0%);
+- false splits: 2/5 (40%);
+- observed false splits: `tracking-query-noise`, `timestamp-title-noise`;
+- replay robustness test restored every discovered controlled-benchmark state;
+- experiment output was successfully written to `results/raw/phase-2-state-equivalence.json`.
+
+Phase 2 verification gate is complete.
 
 ## Next phase after verification
 
@@ -315,4 +332,4 @@ Use the measured Phase 2 evidence to define fingerprint v2 and compare it agains
 
 ## Merge status
 
-Phase 1A and Phase 1B are merged. Phase 2 implementation is complete on `feat/phase-2-state-equivalence` and awaits its single whole-phase local verification gate.
+Phase 1A and Phase 1B are merged. Phase 2 implementation and its whole-phase verification gate are complete on `feat/phase-2-state-equivalence`; PR #4 is ready for merge.
