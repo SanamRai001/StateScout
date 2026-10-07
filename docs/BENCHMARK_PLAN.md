@@ -171,3 +171,20 @@ Research rules:
 - pre-promotion and post-promotion explorer metrics are both frozen before measurement.
 
 The controlled benchmark requires the future empty-profile run to retain volatile-state inflation while the future promoted-profile run collapses only the verified Dashboard volatility.
+
+
+## Phase 13 trusted-profile revalidation
+
+Trusted abstraction rules must be defeasible when later application behavior contradicts them.
+
+Research rules:
+
+- revalidation happens offline between runs;
+- later behavior evidence identifies both the exact field and semantic anchor;
+- insufficient evidence cannot revoke a rule;
+- sufficiently replicated divergent safe-probe behavior can revoke a rule;
+- every revision records the parent-profile digest and challenge-evidence digest;
+- a revoked rule disappears only from a future profile, never from the identity function of a crawl already in progress;
+- benchmark both stable later evidence and semantic drift so the mechanism is not biased toward revocation.
+
+The controlled evolved-app benchmark requires stale trust to lose meaningful-state coverage and offline revocation to restore that coverage on the next crawl.
