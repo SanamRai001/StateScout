@@ -25,14 +25,16 @@ function normalizeList(values: readonly string[]): string[] {
 function normalizeQuery(
   query: Readonly<Record<string, string | readonly string[]>>,
 ): Record<string, string | string[]> {
-  return Object.fromEntries(
-    Object.entries(query)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, value]) => [
-        key,
-        Array.isArray(value) ? [...value].sort() : value,
-      ]),
-  );
+  const normalized: Record<string, string | string[]> = {};
+
+  for (const [key, value] of Object.entries(query).sort(([left], [right]) =>
+    left.localeCompare(right),
+  )) {
+    normalized[key] =
+      typeof value === "string" ? value : [...value].sort();
+  }
+
+  return normalized;
 }
 
 function controlKey(control: SemanticControl): string {
@@ -53,25 +55,24 @@ function normalizeControls(
   controls: readonly SemanticControl[],
 ): SemanticControl[] {
   return controls
-    .map((control) => ({
-      role: control.role.trim().toLowerCase(),
-      ...(normalizeText(control.name) !== undefined
-        ? { name: normalizeText(control.name) }
-        : {}),
-      ...(normalizeText(control.label) !== undefined
-        ? { label: normalizeText(control.label) }
-        : {}),
-      ...(normalizeText(control.value) !== undefined
-        ? { value: normalizeText(control.value) }
-        : {}),
-      ...(control.selected !== undefined ? { selected: control.selected } : {}),
-      ...(control.expanded !== undefined ? { expanded: control.expanded } : {}),
-      ...(control.checked !== undefined ? { checked: control.checked } : {}),
-      ...(control.disabled !== undefined ? { disabled: control.disabled } : {}),
-      ...(normalizeText(control.context) !== undefined
-        ? { context: normalizeText(control.context) }
-        : {}),
-    }))
+    .map((control): SemanticControl => {
+      const name = normalizeText(control.name);
+      const label = normalizeText(control.label);
+      const value = normalizeText(control.value);
+      const context = normalizeText(control.context);
+
+      return {
+        role: control.role.trim().toLowerCase(),
+        ...(name !== undefined ? { name } : {}),
+        ...(label !== undefined ? { label } : {}),
+        ...(value !== undefined ? { value } : {}),
+        ...(control.selected !== undefined ? { selected: control.selected } : {}),
+        ...(control.expanded !== undefined ? { expanded: control.expanded } : {}),
+        ...(control.checked !== undefined ? { checked: control.checked } : {}),
+        ...(control.disabled !== undefined ? { disabled: control.disabled } : {}),
+        ...(context !== undefined ? { context } : {}),
+      };
+    })
     .sort((left, right) => controlKey(left).localeCompare(controlKey(right)));
 }
 
