@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 2 — State-equivalence measurement and replay robustness**
+**Phase 3 — Evidence-driven fingerprint v2 comparison**
 
 ## Branch
 
-`feat/phase-2-state-equivalence`
+`feat/phase-3-fingerprint-v2`
 
 ## Phase 0 status
 
@@ -326,10 +326,69 @@ Observed verification:
 
 Phase 2 verification gate is complete.
 
+## Phase 3 implementation
+
+Phase 3 is complete in code and keeps fingerprint v1 unchanged as the experimental baseline.
+
+Fingerprint v2 makes only two evidence-driven changes:
+
+1. ignores a fixed allowlist of known tracking query keys;
+2. normalizes clock-time tokens in the page title.
+
+It intentionally does not remove arbitrary numbers/timestamps from headings or controls because those values may represent meaningful application state.
+
+The comparison layer evaluates v1 and v2 against the exact frozen Phase 2 labels. Additional guard tests ensure v2 still distinguishes ordinary query changes and meaningful numeric control names.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-3-fingerprint-v2
+git pull --ff-only
+npm install
+npx playwright install chromium
+npm run typecheck
+npm test
+npm run experiment:equivalence
+npm run experiment:fingerprint-comparison
+```
+
+Expected comparison hypothesis:
+
+- v1 remains 7/9 with 0 false merges and 2 false splits;
+- v2 reaches 9/9 on the frozen benchmark;
+- v2 introduces 0 false merges;
+- false splits decrease by 2;
+- non-tracking query changes and meaningful numeric controls remain distinct.
+
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 21/21 passed, 0 failed;
+- frozen v1 baseline remained 7/9;
+- v1 false merges: 0;
+- v1 false splits: 2;
+- v2 result: 9/9;
+- v2 accuracy: 1.0;
+- v2 same-state precision/recall/F1: 1.0 / 1.0 / 1.0;
+- v2 false merges: 0;
+- v2 false splits: 0;
+- accuracy delta: +0.2222222222222222;
+- same-state F1 delta: +0.25;
+- false-split delta: -2;
+- non-tracking query and meaningful numeric-control guard tests passed;
+- comparison output was written to `results/raw/phase-3-fingerprint-comparison.json`.
+
+The single-run fingerprint timing values are recorded as raw observations only. They are not evidence that v2 is faster because this micro-benchmark is susceptible to startup/JIT/warm-up effects and needs repeated measurements before performance claims.
+
+Phase 3 verification gate is complete. Fingerprint v2 remains an experimental candidate rather than the explorer default until broader browser-fixture validation.
+
 ## Next phase after verification
 
-Use the measured Phase 2 evidence to define fingerprint v2 and compare it against the frozen v1 benchmark. Do not overwrite v1 or change Phase 2 ground truth.
+If Phase 3 confirms the hypothesis, the next phase can evaluate v2 as an explorer state-identity strategy on broader/noisier browser fixtures before considering promotion to the default.
 
 ## Merge status
 
-Phase 1A and Phase 1B are merged. Phase 2 implementation and its whole-phase verification gate are complete on `feat/phase-2-state-equivalence`; PR #4 is ready for merge.
+Phases 1A, 1B, and 2 are merged. Phase 3 implementation and its whole-phase verification gate are complete on `feat/phase-3-fingerprint-v2`; PR #5 is ready for merge.

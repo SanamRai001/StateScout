@@ -74,7 +74,7 @@ export interface SemanticStateSnapshot {
 
 export interface StateFingerprint {
   algorithm: "statescout-semantic";
-  version: 1;
+  version: 1 | 2;
   canonical: string;
   hash: string;
 }

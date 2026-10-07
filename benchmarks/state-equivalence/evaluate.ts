@@ -1,7 +1,10 @@
 import { performance } from "node:perf_hooks";
 
+import type { SemanticStateSnapshot, StateFingerprint } from "../../src/core/model.ts";
 import { fingerprintState } from "../../src/core/fingerprint.ts";
 import type { EquivalenceCase } from "./cases.ts";
+
+type Fingerprinter = (snapshot: SemanticStateSnapshot) => StateFingerprint;
 
 export interface EquivalenceCaseResult {
   id: string;
@@ -26,11 +29,14 @@ export interface EquivalenceMetrics {
   cases: readonly EquivalenceCaseResult[];
 }
 
-export function evaluateEquivalence(cases: readonly EquivalenceCase[]): EquivalenceMetrics {
+export function evaluateEquivalence(
+  cases: readonly EquivalenceCase[],
+  fingerprinter: Fingerprinter = fingerprintState,
+): EquivalenceMetrics {
   const results = cases.map((candidate): EquivalenceCaseResult => {
     const start = performance.now();
-    const left = fingerprintState(candidate.left);
-    const right = fingerprintState(candidate.right);
+    const left = fingerprinter(candidate.left);
+    const right = fingerprinter(candidate.right);
     const durationMs = performance.now() - start;
     const predicted = left.hash === right.hash ? "same" : "different";
     return { id: candidate.id, expected: candidate.label, predicted, correct: predicted === candidate.label, durationMs };
