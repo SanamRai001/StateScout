@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 19 — Real-world repeated-run evaluation**
+**Phase 20 — Scalability, checkpointing, and recovery**
 
 ## Branch
 
-`feat/phase-19-real-world-evaluation-recovery`
+`feat/phase-20-scalability-recovery`
 
 ## Phase 0 status
 
@@ -2647,10 +2647,256 @@ Phase 19 verification gate is complete.
 
 The actual state/transition counts and stability outcomes become empirical Phase 19 findings rather than numbers chosen in advance.
 
+## Phase 20 implementation
+
+Phase 20 tests whether StateScout remains correct when exploration becomes deeper, larger, interrupted, and partially failure-prone.
+
+This phase separates correctness thresholds from machine-dependent performance measurements.
+
+### Checkpointable graph and frontier
+
+`StateGraph` now supports deterministic export and validated restoration.
+
+A graph snapshot contains:
+
+- schema version;
+- semantic states with fingerprints and original capture metadata;
+- transitions with their exact IDs, statuses, interactions, destinations, and errors.
+
+Restoration recomputes every state fingerprint with the current run fingerprinter and rejects mismatches.
+
+`BfsFrontier` now supports deterministic export and restoration of:
+
+- pending work in FIFO order;
+- the full seen `(state, interaction)` work set.
+
+Preserving the seen set matters because restoring only pending items would allow already-consumed interactions to be scheduled again after a crash.
+
+### Exploration checkpoint artifact
+
+A Phase 20 checkpoint contains:
+
+- start URL;
+- attempted-transition count;
+- root replay path;
+- graph snapshot;
+- frontier snapshot;
+- accumulated evidence-sidecar errors.
+
+The payload is wrapped in a SHA-256 digest.
+
+Serialized corruption must therefore be detected before resume.
+
+A checkpoint is a logical exploration snapshot, not a browser-process snapshot.
+
+StateScout still restores each pending source state through deterministic replay when exploration resumes.
+
+### Playwright resume
+
+`exploreWithPlaywright()` now accepts a checkpoint from a previous bounded run.
+
+On resume:
+
+1. start URL must match the checkpoint;
+2. stored states are revalidated with the current run fingerprinter;
+3. graph and BFS frontier are restored;
+4. attempted-transition accounting continues from the stored value;
+5. already-seen work remains deduplicated;
+6. the next pending source state is restored through the existing replay mechanism.
+
+The final result always exposes a fresh checkpoint artifact.
+
+An optional checkpoint sink can persist intermediate checkpoints after transition attempts.
+
+### Browser deep-replay benchmark
+
+The frozen browser fixture is a linear same-document workflow:
+
+```text
+Depth 0
+  -> Depth 1
+  -> ...
+  -> Depth 32
+```
+
+Frozen correctness:
+
+- depth: 32;
+- states: 33;
+- transitions: 32;
+- attempted transitions: 32;
+- failed transitions: 0;
+- replay-step observations: 496;
+- restored-source observations: 32;
+- after-interaction observations: 32.
+
+The 496 replay-step count is the exact sum of replay depths:
+
+```text
+0 + 1 + 2 + ... + 31 = 496
+```
+
+This intentionally exposes the cost of replay-based restoration rather than hiding it.
+
+### Browser interruption and resume
+
+The browser benchmark also runs:
+
+1. uninterrupted to 32 attempts;
+2. interrupted after 10 attempts;
+3. checkpoint serialized and parsed;
+4. exploration resumed in a fresh Playwright page;
+5. resumed run continued to 32 total attempts.
+
+The resumed graph must have the same canonical state/transition signature as the uninterrupted graph.
+
+### Synthetic scale benchmark
+
+A browser-independent deterministic state machine measures larger graph sizes without making the test suite spend tens of thousands of browser replay clicks.
+
+Frozen scale points:
+
+| States | Observed transitions | Injected failed probes | Total transitions / attempts |
+| ---: | ---: | ---: | ---: |
+| 64 | 63 | 4 | 67 |
+| 128 | 127 | 8 | 135 |
+| 256 | 255 | 16 | 271 |
+
+The main `Advance` interaction produces the next semantic state.
+
+Every 16th state also exposes a deterministic safe probe whose execution is intentionally recorded as a failed transition.
+
+These failures do not block discovery of the main state chain.
+
+### Synthetic checkpoint recovery
+
+The 256-state run is executed in two ways:
+
+1. uninterrupted to completion;
+2. stopped after 100 attempts, serialized, parsed, then resumed.
+
+Frozen final correctness:
+
+- attempts: 271;
+- states: 256;
+- transitions: 271;
+- failed transitions: 16;
+- resumed canonical graph signature equals uninterrupted signature;
+- corrupted serialized checkpoint is rejected.
+
+### Performance measurements
+
+Phase 20 records, but does not freeze as correctness thresholds:
+
+- duration for 64 / 128 / 256-state synthetic runs;
+- heap delta for each scale point;
+- browser deep-replay duration;
+- browser heap delta;
+- serialized checkpoint sizes.
+
+These values depend on OS, Node/V8 state, hardware, process scheduling, and garbage collection.
+
+They are evidence for later scalability analysis, not a reason to tune the benchmark until a particular laptop passes an arbitrary millisecond threshold.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-20-scalability-recovery
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:phase18
+npm run experiment:phase20
+```
+
+Expected offline suite size: 75 tests.
+
+Expected Phase 20 correctness summary:
+
+```text
+Synthetic 64: transitions=67, attempts=67, failed=4
+Synthetic 128: transitions=135, attempts=135, failed=8
+Synthetic 256: transitions=271, attempts=271, failed=16
+
+Synthetic checkpoint interrupt/final attempts: 100/271
+Synthetic resumed states/transitions/failed: 256/271/16
+Synthetic resumed matches uninterrupted: true
+Corrupted checkpoint rejected: true
+
+Browser deep replay states/transitions/attempts: 33/32/32
+Browser replay-step/restored/after observations: 496/32/32
+Browser checkpoint interrupt/final attempts: 10/32
+Browser resumed matches uninterrupted: true
+```
+
+Durations, heap deltas, and checkpoint byte counts are expected to vary and should be reported exactly as observed.
+
+The experiment writes:
+
+- `results/raw/phase-20-scalability-recovery.json`;
+- `results/raw/phase-20-scalability-recovery-summary.txt`.
+
+### Research interpretation
+
+Phase 20 whole-phase verification passed on Windows x64 with Node v24.19.0 after one TypeScript immutability fix in graph snapshot sorting.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 75/75 passed, 0 failed;
+- Phase 20 browser deep-replay test passed;
+- Phase 20 browser checkpoint-resume test passed;
+- Phase 20 synthetic 64/128/256-state correctness tests passed;
+- checkpoint corruption detection passed.
+
+Measured synthetic results:
+
+- 64 states: 67 transitions, 67 attempts, 4 injected failures, 17.699 ms, heap delta 914176 bytes;
+- 128 states: 135 transitions, 135 attempts, 8 injected failures, 4.761 ms, heap delta 1737152 bytes;
+- 256 states: 271 transitions, 271 attempts, 16 injected failures, 9.397 ms, heap delta 3910544 bytes.
+
+Synthetic checkpoint recovery:
+
+- interrupted after 100 attempts;
+- resumed to 271 attempts;
+- final states/transitions/failed: 256/271/16;
+- checkpoint size: 260141 bytes;
+- resumed graph matched uninterrupted graph: true;
+- corrupted checkpoint rejected: true.
+
+Browser deep-replay measurement:
+
+- states/transitions/attempts: 33/32/32;
+- replay-step/restored-source/after-interaction observations: 496/32/32;
+- duration: 22655.856 ms;
+- heap delta: 30665168 bytes;
+- checkpoint interrupted after 10 attempts and resumed to 32;
+- browser checkpoint size: 34747 bytes;
+- resumed graph matched uninterrupted graph: true.
+
+The synthetic timings are intentionally treated as noisy single-run measurements rather than monotonic scaling evidence. The correctness counts and resume equivalence are the frozen acceptance criteria.
+
+Phase 20 verification gate is complete.
+
+A Phase 20 pass would establish that:
+
+- StateScout can serialize and validate its logical exploration state;
+- already-consumed work remains deduplicated after resume;
+- browser exploration can stop and resume without changing the final controlled graph;
+- hundreds of deterministic semantic states can be processed with injected failed interactions while maintaining complete state coverage;
+- corrupted checkpoints fail closed instead of silently resuming from modified state;
+- replay cost grows visibly with path depth and is therefore a measured scalability concern rather than an undocumented implementation detail.
+
+Phase 20 does not yet claim optimal scaling or crash-safe database durability. Checkpoints are JSON-compatible in-memory artifacts; durable atomic storage and distributed execution remain future engineering work.
+
 ## Next phase after verification
 
-If Phase 19 is sufficiently evaluable, Phase 20 should stress scalability and robustness under controlled but much larger state spaces: deeper replay paths, hundreds of states, bounded memory/runtime measurements, injected crashes/timeouts, and checkpoint/recovery behavior.
+If Phase 20 passes, Phase 21 should be the research freeze and paper-artifact phase: freeze algorithms and benchmarks, rerun the complete experimental suite, aggregate the main result tables, document threats to validity, and produce the reproducibility/paper package without further algorithm tuning unless a correctness defect is discovered.
 
 ## Merge status
 
-Phases 1A through 18 are merged. Phase 19 implementation is complete on `feat/phase-19-real-world-evaluation-ready` and awaits its live repeated-run verification gate.
+Phases 1A through 19 are merged. Phase 20 implementation and whole-phase verification are complete on `feat/phase-20-scalability-recovery`; PR #22 is ready for merge.

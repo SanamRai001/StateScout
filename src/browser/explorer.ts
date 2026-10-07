@@ -2,6 +2,10 @@ import type { Page } from "playwright";
 
 import { BfsFrontier } from "../core/frontier.ts";
 import { StateGraph, type StateFingerprinter } from "../core/graph.ts";
+import {
+  createExplorationCheckpointArtifact,
+  type ExplorationCheckpointArtifact,
+} from "./explorationCheckpoint.ts";
 import { fingerprintState } from "../core/fingerprint.ts";
 import type {
   Interaction,
@@ -42,6 +46,10 @@ export interface ExplorationOptions {
   maxTransitions?: number;
   fingerprinter?: StateFingerprinter;
   observationSink?: ExplorationObservationSink;
+  resumeFrom?: ExplorationCheckpointArtifact;
+  checkpointSink?: (
+    checkpoint: ExplorationCheckpointArtifact,
+  ) => void;
 }
 
 export interface ExplorationResult {
@@ -49,6 +57,7 @@ export interface ExplorationResult {
   rootPath: StatePath;
   attemptedTransitions: number;
   evidenceErrors: readonly string[];
+  checkpoint: ExplorationCheckpointArtifact;
 }
 
 function sameDocumentTarget(currentUrl: string, targetUrl: string): boolean {
@@ -174,15 +183,39 @@ export async function exploreWithPlaywright(
   // Identity is frozen for the entire run. Evidence collection is observation-only
   // and has no API to replace or mutate this run's fingerprinter.
   const runFingerprinter = options.fingerprinter ?? fingerprintState;
-  const graph = new StateGraph(runFingerprinter);
-  const frontier = new BfsFrontier();
   const policy = options.actionPolicy ?? DEFAULT_ACTION_POLICY;
   const boundary: CrawlBoundaryPolicy = {
     mode: "same-origin",
     startUrl: options.startUrl,
   };
   const maxTransitions = options.maxTransitions ?? 1_000;
-  const evidenceErrors: string[] = [];
+
+  if (
+    options.resumeFrom !== undefined &&
+    options.resumeFrom.payload.startUrl !== options.startUrl
+  ) {
+    throw new Error(
+      "Exploration checkpoint start URL does not match this run.",
+    );
+  }
+
+  const graph =
+    options.resumeFrom === undefined
+      ? new StateGraph(runFingerprinter)
+      : StateGraph.fromSnapshot(
+          options.resumeFrom.payload.graph,
+          runFingerprinter,
+        );
+  const frontier =
+    options.resumeFrom === undefined
+      ? new BfsFrontier()
+      : BfsFrontier.fromSnapshot(
+          options.resumeFrom.payload.frontier,
+        );
+  const evidenceErrors: string[] =
+    options.resumeFrom === undefined
+      ? []
+      : [...options.resumeFrom.payload.evidenceErrors];
 
   const observeForRun = async (
     phase: ExplorationObservationPhase,
@@ -202,22 +235,48 @@ export async function exploreWithPlaywright(
     return snapshot;
   };
 
-  await navigateToStartState(page, options.startUrl);
-  const initialSnapshot = await observeForRun("initial");
-  const initial = graph.upsertState(initialSnapshot);
-  const rootPath: StatePath = { stateId: initial.node.id, steps: [] };
+  let rootPath: StatePath;
+  let attemptedTransitions: number;
 
-  enqueueInteractions(
-    frontier,
-    initial.node.id,
-    rootPath,
-    await discoverInteractions(page),
-    policy,
-    boundary,
-    graph,
-  );
+  if (options.resumeFrom === undefined) {
+    await navigateToStartState(page, options.startUrl);
+    const initialSnapshot = await observeForRun("initial");
+    const initial = graph.upsertState(initialSnapshot);
+    rootPath = { stateId: initial.node.id, steps: [] };
 
-  let attemptedTransitions = 0;
+    enqueueInteractions(
+      frontier,
+      initial.node.id,
+      rootPath,
+      await discoverInteractions(page),
+      policy,
+      boundary,
+      graph,
+    );
+
+    attemptedTransitions = 0;
+  } else {
+    rootPath = options.resumeFrom.payload.rootPath;
+    attemptedTransitions =
+      options.resumeFrom.payload.attemptedTransitions;
+
+    if (graph.getState(rootPath.stateId) === undefined) {
+      throw new Error(
+        "Exploration checkpoint root state is missing from the graph.",
+      );
+    }
+  }
+
+  const createCheckpoint = () =>
+    createExplorationCheckpointArtifact({
+      schemaVersion: 1,
+      startUrl: options.startUrl,
+      attemptedTransitions,
+      rootPath,
+      graph: graph.exportSnapshot(),
+      frontier: frontier.exportSnapshot(),
+      evidenceErrors,
+    });
 
   while (frontier.size > 0 && attemptedTransitions < maxTransitions) {
     const work = frontier.dequeue();
@@ -285,7 +344,19 @@ export async function exploreWithPlaywright(
         error: error instanceof Error ? error.message : String(error),
       });
     }
+
+    if (options.checkpointSink) {
+      options.checkpointSink(createCheckpoint());
+    }
   }
 
-  return { graph, rootPath, attemptedTransitions, evidenceErrors };
+  const checkpoint = createCheckpoint();
+
+  return {
+    graph,
+    rootPath,
+    attemptedTransitions,
+    evidenceErrors,
+    checkpoint,
+  };
 }

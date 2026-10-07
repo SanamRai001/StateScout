@@ -31,6 +31,12 @@ export interface AddTransitionInput {
   error?: string;
 }
 
+export interface StateGraphSnapshot {
+  schemaVersion: 1;
+  states: readonly StateNode[];
+  transitions: readonly Transition[];
+}
+
 function transitionId(input: AddTransitionInput): string {
   const identity = JSON.stringify([
     input.fromStateId,
@@ -51,6 +57,76 @@ export class StateGraph {
 
   constructor(fingerprinter: StateFingerprinter = fingerprintState) {
     this.fingerprinter = fingerprinter;
+  }
+
+  static fromSnapshot(
+    snapshot: StateGraphSnapshot,
+    fingerprinter: StateFingerprinter = fingerprintState,
+  ): StateGraph {
+    if (
+      snapshot.schemaVersion !== 1 ||
+      !Array.isArray(snapshot.states) ||
+      !Array.isArray(snapshot.transitions)
+    ) {
+      throw new Error("Unsupported or invalid state graph snapshot.");
+    }
+
+    const graph = new StateGraph(fingerprinter);
+
+    for (const state of [...snapshot.states].sort((a, b) =>
+      a.id.localeCompare(b.id),
+    )) {
+      const expected = fingerprinter(state.snapshot);
+      const expectedId = `state:${expected.hash}`;
+
+      if (
+        state.id !== expectedId ||
+        state.fingerprint.hash !== expected.hash ||
+        state.fingerprint.canonical !== expected.canonical ||
+        state.fingerprint.version !== expected.version ||
+        state.fingerprint.algorithm !== expected.algorithm
+      ) {
+        throw new Error(
+          `State graph snapshot fingerprint mismatch: ${state.id}`,
+        );
+      }
+
+      if (
+        graph.statesById.has(state.id) ||
+        graph.stateIdsByHash.has(state.fingerprint.hash)
+      ) {
+        throw new Error(
+          `Duplicate state graph snapshot state: ${state.id}`,
+        );
+      }
+
+      graph.statesById.set(state.id, state);
+      graph.stateIdsByHash.set(state.fingerprint.hash, state.id);
+    }
+
+    for (const transition of [...snapshot.transitions].sort((a, b) =>
+      a.id.localeCompare(b.id),
+    )) {
+      const restored = graph.addTransition({
+        fromStateId: transition.fromStateId,
+        ...(transition.toStateId !== undefined
+          ? { toStateId: transition.toStateId }
+          : {}),
+        interaction: transition.interaction,
+        status: transition.status,
+        ...(transition.error !== undefined
+          ? { error: transition.error }
+          : {}),
+      });
+
+      if (restored.id !== transition.id) {
+        throw new Error(
+          `State graph snapshot transition mismatch: ${transition.id}`,
+        );
+      }
+    }
+
+    return graph;
   }
 
   upsertState(
@@ -136,6 +212,18 @@ export class StateGraph {
 
   listTransitions(): readonly Transition[] {
     return [...this.transitionsById.values()];
+  }
+
+  exportSnapshot(): StateGraphSnapshot {
+    return {
+      schemaVersion: 1,
+      states: [...this.listStates()].sort((a, b) =>
+        a.id.localeCompare(b.id),
+      ),
+      transitions: [...this.listTransitions()].sort((a, b) =>
+        a.id.localeCompare(b.id),
+      ),
+    };
   }
 
   get stateCount(): number {
