@@ -331,3 +331,41 @@ The Phase 19 recovery branch therefore adds a browser-level boundary regression:
 - external navigation must never become a discovered state.
 
 This is a safety correction to execution policy, not an identity-algorithm optimization.
+
+
+## Phase 20 scalability and recovery
+
+Scalability and recovery are evaluated separately from semantic-identity accuracy.
+
+Research rules:
+
+- freeze exact correctness counts before implementing the scale driver;
+- use a real Playwright deep-replay fixture to measure replay-path cost;
+- use a larger deterministic browser-independent state machine for hundreds-of-state graph/checkpoint tests;
+- inject failed interactions that do not block the main reachable-state chain;
+- persist both pending BFS work and the complete seen-work set;
+- validate stored graph fingerprints against the run fingerprinter during restore;
+- protect serialized checkpoints with a SHA-256 payload digest;
+- compare resumed and uninterrupted exploration using a canonical graph signature;
+- reject corrupted checkpoint artifacts;
+- record duration, heap delta, and checkpoint size without setting machine-specific timing thresholds.
+
+Frozen browser benchmark:
+
+- depth 32;
+- 33 states;
+- 32 transitions;
+- 32 attempts;
+- 496 replay-step observations;
+- interruption after 10 attempts;
+- resumed final graph must equal uninterrupted final graph.
+
+Frozen synthetic scale points:
+
+- 64 states -> 67 attempts/transitions with 4 injected failures;
+- 128 states -> 135 attempts/transitions with 8 injected failures;
+- 256 states -> 271 attempts/transitions with 16 injected failures.
+
+The 256-state recovery run stops after 100 attempts and must resume to the exact uninterrupted graph signature with 256 states, 271 transitions, and 16 failed probe transitions.
+
+Performance numbers are observational evidence rather than correctness thresholds.
