@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "statescout-research-freeze",
+  "freezeBaseCommit": "d4aa27d4e2516555a30741f9829785b0db12316e",
+  "frozenAt": "2026-10-07",
+  "protectedTrees": {
+    "src": "e4dead3eb17b0b6e93d485a530a8aa4c0468027a",
+    "benchmarks": "1925f690f218ddd50575c26a2c3fb9ec86ca6a73",
+    "tests": "fa473f7a0e9e1f2b4ffe18ca1a55a639078e49a5"
+  },
+  "policy": {
+    "algorithmChangesAfterFreeze": "forbidden-unless-correctness-defect",
+    "benchmarkLabelChangesAfterFreeze": "forbidden-unless-ground-truth-defect",
+    "testChangesAfterFreeze": "forbidden-unless-correctness-or-harness-defect",
+    "documentationAndReportingChanges": "allowed",
+    "newPaperFiguresAndTables": "allowed",
+    "newNonAlgorithmicReproductionScripts": "allowed",
+    "externalRealWorldReruns": "allowed-but-never-replace-recorded-results"
+  },
+  "verifiedEnvironment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64",
+    "browser": "Chromium via Playwright"
+  },
+  "finalVerifiedSuite": {
+    "tests": 75,
+    "pass": 75,
+    "fail": 0
+  }
+}
