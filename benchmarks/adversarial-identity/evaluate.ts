@@ -3,6 +3,7 @@ import type { Page } from "playwright";
 import { observePage } from "../../src/browser/playwrightAdapter.ts";
 import { fingerprintState } from "../../src/core/fingerprint.ts";
 import { fingerprintStateV2 } from "../../src/core/fingerprintV2.ts";
+import { fingerprintStateV3 } from "../../src/core/fingerprintV3.ts";
 import type { SemanticStateSnapshot, StateFingerprint } from "../../src/core/model.ts";
 import { ADVERSARIAL_IDENTITY_CASES } from "./groundTruth.ts";
 
@@ -79,5 +80,6 @@ export async function evaluateAdversarialIdentity(page: Page, baseUrl: string) {
   return {
     v1: evaluate(fingerprintState),
     v2: evaluate(fingerprintStateV2),
+    v3: evaluate(fingerprintStateV3),
   };
 }
