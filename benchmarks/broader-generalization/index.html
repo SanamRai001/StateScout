@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Dashboard</title></head>
+<body>
+<main id="app"></main>
+<script>
+const variant = location.hash.slice(1) || "base";
+const app = document.querySelector("#app");
+
+function renderBase() {
+  document.title = "Dashboard";
+  app.innerHTML = '<h1>Dashboard</h1><button>Open menu</button><a href="?page=reports">Reports</a>';
+}
+
+const views = {
+  base: renderBase,
+  "wrapper-noise": () => {
+    document.title = "Dashboard";
+    app.innerHTML = '<div class="generated-839" id="random-wrapper"><section><a href="?page=reports">Reports</a><div><button data-testid="generated-control"> Open   menu </button></div><h1> Dashboard </h1></section></div>';
+  },
+  "volatile-1": () => {
+    document.title = "Dashboard — 10:00:01";
+    app.innerHTML = '<h1>Dashboard</h1><button>Open menu</button><a href="?page=reports">Reports</a>';
+  },
+  "volatile-2": () => {
+    document.title = "Dashboard — 10:00:02";
+    app.innerHTML = '<h1>Dashboard</h1><button>Open menu</button><a href="?page=reports">Reports</a>';
+  },
+  invoice: () => {
+    document.title = "Invoice";
+    app.innerHTML = '<h1>Invoice</h1><button>Open invoice</button>';
+  },
+  "appointment-minute-10": () => {
+    document.title = "Appointment — 10:00";
+    app.innerHTML = '<h1>Appointment</h1><button>Continue</button>';
+  },
+  "appointment-minute-11": () => {
+    document.title = "Appointment — 11:00";
+    app.innerHTML = '<h1>Appointment</h1><button>Continue</button>';
+  },
+  "auction-second-1": () => {
+    document.title = "Auction closes — 10:00:01";
+    app.innerHTML = '<h1>Auction</h1><button>Place bid</button>';
+  },
+  "auction-second-2": () => {
+    document.title = "Auction closes — 10:00:02";
+    app.innerHTML = '<h1>Auction</h1><button>Place bid</button>';
+  },
+  "expanded-false": () => {
+    document.title = "Filters";
+    app.innerHTML = '<h1>Filters</h1><button aria-expanded="false">Advanced filters</button>';
+  },
+  "expanded-true": () => {
+    document.title = "Filters";
+    app.innerHTML = '<h1>Filters</h1><button aria-expanded="true">Advanced filters</button>';
+  },
+  "input-alice": () => {
+    document.title = "Profile";
+    app.innerHTML = '<h1>Profile</h1><input aria-label="Name" value="Alice" />';
+  },
+  "input-bob": () => {
+    document.title = "Profile";
+    app.innerHTML = '<h1>Profile</h1><input aria-label="Name" value="Bob" />';
+  },
+  dialog: () => {
+    document.title = "Dashboard";
+    app.innerHTML = '<h1>Dashboard</h1><button>Open menu</button><a href="?page=reports">Reports</a><div role="dialog" aria-label="Confirmation"><button>Cancel</button></div>';
+  },
+};
+
+(views[variant] || renderBase)();
+</script>
+</body>
+</html>
