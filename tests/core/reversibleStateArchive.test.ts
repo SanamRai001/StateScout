@@ -103,6 +103,21 @@ test("raw archive rejects conflicting ids and projection remains pure", () => {
         ],
         archive.transitions,
       ),
+    /Raw observation fingerprint mismatch/,
+  );
+
+  assert.throws(
+    () =>
+      createRawStateArchive(
+        [
+          ...archive.observations,
+          {
+            ...archive.observations[1]!,
+            id: archive.observations[0]!.id,
+          },
+        ],
+        archive.transitions,
+      ),
     /Conflicting raw observation id/,
   );
 
