@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 1A — Deterministic exploration kernel design**
+**Phase 1B — Playwright-backed deterministic benchmark exploration**
 
 ## Branch
 
-`feat/phase-1a-domain-model`
+`feat/phase-1b-playwright-observation`
 
 ## Phase 0 status
 
@@ -156,25 +156,49 @@ Current decisions:
 - TypeScript: 7.0.2
 - Node type definitions: ^24.19.1
 
-Playwright has intentionally not been added yet.
+Playwright is now added only at the browser-adapter boundary; the core remains browser-independent.
 
 ## Verification status
 
-Repository history, Phase 0 documents, branch diff, and implementation structure were reviewed during Phase 1A.
+Phase 1A was reported locally working by the user and merged to `main` through PR #2 at `a7cb0f31`.
 
-An attempted isolated runtime check could not clone GitHub because the execution environment had no DNS access to GitHub. That environment also exposes Node 22 while this project intentionally targets Node >=24.
+Phase 1B implementation is complete in code and now adds:
 
-Therefore runtime verification remains pending on the user's Node 24+ checkout.
+- a Playwright adapter that converts live browser state into `SemanticStateSnapshot`;
+- visible button/link discovery with deterministic interaction IDs;
+- semantic locator execution;
+- reuse of the core conservative action-risk policy;
+- replay-based state restoration with intermediate fingerprint verification;
+- BFS execution over `(state, interaction)` work items;
+- state/transition insertion into the browser-independent `StateGraph`;
+- explicit blocked/failed/no-state-change transition handling;
+- controlled benchmark evaluation against fixed ground truth;
+- an end-to-end browser test expecting all 5 benchmark states and all 9 benchmark transitions.
 
-Required verification:
+Whole-phase runtime verification was completed successfully by the user on Node v24.19.0 after the final strict-TypeScript and accessible-dialog assertion fixes.
+
+Verified commands:
 
 ```powershell
-npm install
 npm run typecheck
 npm test
 ```
 
-Do not mark Phase 1A verified or merge it until these commands pass.
+Result: Phase 1B verification gate passed.
+
+Required verification:
+
+```powershell
+git fetch origin
+git switch feat/phase-1b-playwright-observation
+git pull --ff-only
+npm install
+npx playwright install chromium
+npm run typecheck
+npm test
+```
+
+Expected behavior: all existing core tests remain green and the new browser adapter test passes.
 
 ## Risks and open questions
 
@@ -245,19 +269,20 @@ Before Phase 1B, be able to explain:
 
 ## Next phase after verification
 
-**Phase 1B — Playwright observation adapter**
+**Phase 2 — robustness experiments and state-equivalence measurement.**
 
-Initial scope only:
+Do not begin Phase 2 until the complete Phase 1B verification gate passes.
 
-1. launch benchmark page;
-2. capture a `SemanticStateSnapshot` from the live DOM/accessibility semantics;
-3. discover visible safe buttons/links;
-4. execute one interaction;
-5. feed resulting snapshots/transitions into the existing graph/frontier;
-6. compare discovered graph with benchmark ground truth.
+Likely Phase 2 scope:
 
-Do not add form filling, AI, visual regression, persistence, or test generation in Phase 1B.
+1. add controlled dynamic/noisy-state benchmark cases;
+2. measure false merges and false splits in fingerprint v1;
+3. test replay robustness under deterministic DOM variation;
+4. record coverage and failure metrics as machine-readable experiment output;
+5. revise the semantic fingerprint only from measured evidence.
+
+AI, arbitrary form filling, persistence, and broad real-world crawling remain out of scope until the deterministic baseline is measured.
 
 ## Merge status
 
-Phase 1A is not merged.
+Phase 1A is merged. Phase 1B implementation and its whole-phase local verification gate are complete on `feat/phase-1b-playwright-observation`. PR #3 is ready for merge.
