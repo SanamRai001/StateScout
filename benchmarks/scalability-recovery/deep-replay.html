@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deep Replay 0</title>
+  </head>
+  <body>
+    <main id="app"></main>
+
+    <script>
+      const MAX_DEPTH = 32;
+      const app = document.querySelector("#app");
+      let depth = 0;
+
+      function render() {
+        document.title = `Deep Replay ${depth}`;
+        app.innerHTML = `
+          <h1>Depth ${depth}</h1>
+          ${depth < MAX_DEPTH
+            ? '<button type="button" id="advance">Advance</button>'
+            : '<p>Terminal state</p>'}
+        `;
+
+        document.querySelector("#advance")?.addEventListener("click", () => {
+          depth += 1;
+          render();
+        });
+      }
+
+      render();
+    </script>
+  </body>
+</html>
