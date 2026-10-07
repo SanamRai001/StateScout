@@ -573,10 +573,29 @@ npm run experiment:adversarial-identity
 
 All Phase 2-5 frozen results must remain unchanged. Fingerprint v2 remains non-default regardless of its earlier Phase 5 efficiency win until this adversarial risk is resolved.
 
+Whole-phase verification passed on Windows x64 with Node v24.19.0.
+
+Observed verification:
+
+- TypeScript typecheck: passed;
+- tests: 24/24 passed, 0 failed;
+- Phase 2 frozen v1 baseline remained 7/9 with 0 false merges and 2 false splits;
+- Phase 3 frozen comparison remained v2 9/9 with 0 false merges and 0 false splits;
+- Phase 4 browser comparison remained v1 3/4 and v2 4/4;
+- Phase 5 explorer comparison remained v1 15 states / 20 attempts versus v2 2 states / 3 attempts, with 100% meaningful-state coverage for both;
+- Phase 6 v1: 5/6 correct, 0 false merges, 1 false split;
+- Phase 6 v2: 4/6 correct, 2 false merges, 0 false splits;
+- the exact v2 false merges were `meaningful-title-time` and `semantic-ref-query`;
+- `tracking-utm-query`, `ordinary-query-id`, `meaningful-heading-time`, and `meaningful-control-time` behaved as expected.
+
+Phase 6 therefore confirms that v2's efficiency gain comes with two measured false-merge hazards caused by unconditional normalization. v2 must not become the default identity strategy in its current form.
+
+Phase 6 verification gate is complete.
+
 ## Next phase after verification
 
 If Phase 6 confirms the predicted false merges, design fingerprint v3 from the measured failure modes rather than guessing. The likely direction is narrower/context-aware normalization: remove ambiguous `ref` from unconditional tracking suppression and avoid unconditional title-time stripping unless volatility is supported by stronger evidence.
 
 ## Merge status
 
-Phases 1A, 1B, 2, 3, 4, and 5 are merged. Phase 6 implementation is complete on `feat/phase-6-adversarial-identity` and awaits its single whole-phase verification gate.
+Phases 1A, 1B, 2, 3, 4, and 5 are merged. Phase 6 implementation and whole-phase verification are complete on `feat/phase-6-adversarial-identity`; PR #8 is ready for merge.
