@@ -12,6 +12,7 @@ export interface CandidateObservation {
 
 export interface CandidateBehaviorEvidence {
   sessionId: string;
+  sourceAnchorHash: string;
   fieldValue: string;
   behaviorSignature: string;
 }
@@ -143,6 +144,21 @@ export function assessVolatilityCandidate(
     reasons.push(
       `needs at least ${policy.minBehaviorEvidence} behavior confirmations`,
     );
+  }
+
+  const mismatchedAnchors = behaviorEvidence.filter(
+    (evidence) => evidence.sourceAnchorHash !== candidate.anchorHash,
+  );
+  if (mismatchedAnchors.length > 0) {
+    reasons.push("behavior evidence contains a mismatched source anchor");
+  }
+
+  const candidateValues = new Set(candidate.distinctValues);
+  const unknownBehaviorValues = behaviorEvidence.filter(
+    (evidence) => !candidateValues.has(evidence.fieldValue),
+  );
+  if (unknownBehaviorValues.length > 0) {
+    reasons.push("behavior evidence contains values not observed by the candidate");
   }
 
   const behaviorSessions = new Set(
