@@ -29,7 +29,10 @@
     "experiment:phase17": "node --experimental-strip-types scripts/run-phase17-broader-corpus.ts",
     "experiment:phase18": "node --experimental-strip-types scripts/run-phase18-baselines-ablations.ts",
     "experiment:phase19": "node --experimental-strip-types scripts/run-phase19-real-world-evaluation.ts",
-    "experiment:phase20": "node --experimental-strip-types scripts/run-phase20-scalability-recovery.ts"
+    "experiment:phase20": "node --experimental-strip-types scripts/run-phase20-scalability-recovery.ts",
+    "experiment:phase21": "node --experimental-strip-types scripts/verify-research-freeze.ts",
+    "research:reproduce-controlled": "npm run typecheck && npm test && npm run experiment:phase8 && npm run experiment:phase9 && npm run experiment:phase10 && npm run experiment:phase11 && npm run experiment:phase12 && npm run experiment:phase13 && npm run experiment:phase14 && npm run experiment:phase15 && npm run experiment:phase16 && npm run experiment:phase17 && npm run experiment:phase18 && npm run experiment:phase20 && npm run experiment:phase21",
+    "research:rerun-real-world": "npm run experiment:phase19"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",
