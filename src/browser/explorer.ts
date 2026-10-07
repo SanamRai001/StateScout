@@ -1,7 +1,8 @@
 import type { Page } from "playwright";
 
 import { BfsFrontier } from "../core/frontier.ts";
-import { StateGraph } from "../core/graph.ts";
+import { StateGraph, type StateFingerprinter } from "../core/graph.ts";
+import { fingerprintState } from "../core/fingerprint.ts";
 import type { Interaction, StatePath } from "../core/model.ts";
 import {
   DEFAULT_ACTION_POLICY,
@@ -18,6 +19,7 @@ export interface ExplorationOptions {
   startUrl: string;
   actionPolicy?: ActionExecutionPolicy;
   maxTransitions?: number;
+  fingerprinter?: StateFingerprinter;
 }
 
 export interface ExplorationResult {
@@ -30,14 +32,14 @@ async function restoreState(
   page: Page,
   startUrl: string,
   path: StatePath,
+  fingerprinter: StateFingerprinter,
 ): Promise<void> {
   await page.goto(startUrl);
 
   for (const step of path.steps) {
     await executeInteraction(page, step.interaction);
     const snapshot = await observePage(page);
-    const { fingerprintState } = await import("../core/fingerprint.ts");
-    const actual = fingerprintState(snapshot).hash;
+    const actual = fingerprinter(snapshot).hash;
 
     if (actual !== step.expectedStateHash) {
       throw new Error(
@@ -77,7 +79,8 @@ export async function exploreWithPlaywright(
   page: Page,
   options: ExplorationOptions,
 ): Promise<ExplorationResult> {
-  const graph = new StateGraph();
+  const fingerprinter = options.fingerprinter ?? fingerprintState;
+  const graph = new StateGraph(fingerprinter);
   const frontier = new BfsFrontier();
   const policy = options.actionPolicy ?? DEFAULT_ACTION_POLICY;
   const maxTransitions = options.maxTransitions ?? 1_000;
@@ -105,7 +108,7 @@ export async function exploreWithPlaywright(
     attemptedTransitions += 1;
 
     try {
-      await restoreState(page, options.startUrl, work.replayPath);
+      await restoreState(page, options.startUrl, work.replayPath, fingerprinter);
       const restored = graph.upsertState(await observePage(page));
 
       if (restored.node.id !== work.fromStateId) {

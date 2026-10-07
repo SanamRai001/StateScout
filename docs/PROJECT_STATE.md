@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 4 — Browser-level fingerprint generalization**
+**Phase 5 — End-to-end explorer identity strategy**
 
 ## Branch
 
-`feat/phase-4-browser-generalization`
+`feat/phase-5-explorer-strategy`
 
 ## Phase 0 status
 
@@ -454,10 +454,69 @@ Phase 4 therefore supports the original hypothesis after correcting two independ
 
 Phase 4 verification gate is complete. v2 remains non-default until an end-to-end explorer strategy comparison is completed.
 
+## Phase 5 implementation
+
+Phase 5 moves the fingerprint comparison into the complete BFS explorer.
+
+Architecture changes:
+
+- `StateGraph` accepts an injectable `StateFingerprinter`;
+- the default remains fingerprint v1 for backward compatibility;
+- `exploreWithPlaywright` accepts the same optional strategy;
+- replay verification uses the identical injected strategy, preventing mixed v1/v2 identity during restoration.
+
+The frozen end-to-end fixture has two meaningful states, Home and Details. A safe "Refresh view" interaction changes only volatile title time, tracking query data, wrapper/class/id structure, and control ordering. This deliberately creates a state-space inflation opportunity for v1 while v2 should deduplicate the observation.
+
+Measured outputs include:
+
+- graph state count;
+- graph transition count;
+- attempted transitions;
+- meaningful-state coverage;
+- excess states above ground truth;
+- failed transitions.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-5-explorer-strategy
+git pull --ff-only
+npm install
+npx playwright install chromium
+npm run typecheck
+npm test
+npm run experiment:equivalence
+npm run experiment:fingerprint-comparison
+npm run experiment:browser-generalization
+npm run experiment:explorer-strategy
+```
+
+Phase 5 acceptance hypothesis:
+
+- both v1 and v2 retain 100% meaningful-state coverage;
+- v2 produces exactly the two ground-truth meaningful states;
+- v2 has zero excess states and zero failed transitions;
+- v1 produces more excess states than v2;
+- v1 attempts more transitions than v2;
+- all Phase 2-4 frozen results remain unchanged.
+
+v2 must remain non-default until this gate passes. A passing result would support promotion based on system-level exploration behavior rather than pairwise classification alone.
+
+First local Phase 5 gate exposed a runtime-compatibility defect before the experiment could run:
+
+- TypeScript typecheck passed;
+- Node v24.19.0 with `--experimental-strip-types` rejected a constructor parameter property in `StateGraph`;
+- the failure occurred before graph/explorer tests and the Phase 5 experiment could execute;
+- the constructor was rewritten to use a normal readonly field plus assignment, preserving behavior while remaining compatible with strip-only TypeScript execution;
+- the same run reconfirmed the frozen Phase 2, Phase 3, and Phase 4 experiment results before reaching the Phase 5 runtime failure.
+
+This is an implementation/runtime defect, not evidence for or against the Phase 5 hypothesis.
+
 ## Next phase after verification
 
-If Phase 4 passes, v2 has evidence at both snapshot and browser-observation levels. The next phase can introduce an injectable fingerprint strategy into the graph/explorer and compare end-to-end exploration behavior before any default promotion.
+If Phase 5 passes, evaluate the remaining adversarial assumptions—especially semantically meaningful clock times and ambiguous tracking keys such as `ref`—before promoting v2 as the default. This guards against reducing false splits by introducing hidden false merges.
 
 ## Merge status
 
-Phases 1A, 1B, 2, and 3 are merged. Phase 4 implementation and corrected whole-phase verification are complete on `feat/phase-4-browser-generalization`; PR #6 is ready for merge.
+Phases 1A, 1B, 2, 3, and 4 are merged. Phase 5 implementation and whole-phase verification are complete on `feat/phase-5-explorer-strategy`; PR #7 is ready for merge.
