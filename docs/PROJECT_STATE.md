@@ -433,6 +433,9 @@ First local Phase 4 gate exposed a benchmark-design defect before acceptance:
 - This was not evidence of a v2 regression; the benchmark had leaked its own fixture-control variable into the fingerprint input.
 - Fixture selection now uses the URL fragment, which is intentionally outside the current semantic fingerprint, while real query parameters remain available for tracking/noise and meaningful-query cases.
 - No fingerprint-v2 logic was changed in response to this failure.
+- The corrected fixture then exposed a second harness issue: hash-only `page.goto` navigation is same-document navigation, so the fixture script did not rerun for the dialog/disabled variants. Both algorithms therefore received stale base DOM and falsely appeared to merge those states.
+- Browser-fixture observation now explicitly reloads after navigation so the script renders from the complete target URL/fragment before each snapshot.
+- Again, no fingerprint implementation was changed; the measurement harness was corrected instead.
 
 Do not promote v2 as the default explorer identity until the corrected complete gate passes.
 
