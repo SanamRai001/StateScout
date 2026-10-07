@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Counter 1</title></head>
+<body>
+<main id="app"></main>
+<script>
+const app = document.querySelector("#app");
+const seedMatch = location.hash.match(/^#seed-(\d+)$/);
+let counter = seedMatch ? Number(seedMatch[1]) : 1;
+
+function render() {
+  document.title = `Counter ${counter}`;
+  app.innerHTML = `<h1>Counter</h1><button type="button">Advance</button>`;
+}
+
+app.addEventListener("click", () => {
+  counter += 1;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
