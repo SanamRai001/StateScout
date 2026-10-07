@@ -636,7 +636,12 @@ npm run experiment:adversarial-identity
 npm run experiment:fingerprint-v3
 ```
 
-The Phase 7 experiment writes `results/raw/phase-7-fingerprint-v3-comparison.json`.
+The Phase 7 experiment writes:
+
+- full machine-readable evidence: `results/raw/phase-7-fingerprint-v3-comparison.json`;
+- compact shareable summary: `results/raw/phase-7-fingerprint-v3-comparison-summary.txt`.
+
+Experiment runners now keep terminal output compact instead of printing their entire JSON reports.
 
 ## Next phase after verification
 
