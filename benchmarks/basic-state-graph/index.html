@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StateScout Basic State Graph</title>
+  </head>
+  <body data-benchmark-state="home">
+    <main id="app" aria-live="polite"></main>
+
+    <script>
+      const app = document.querySelector("#app");
+
+      function button(label, action) {
+        return `<button type="button" data-action="${action}">${label}</button>`;
+      }
+
+      const views = {
+        home: () => `
+          <h1>Home</h1>
+          <nav aria-label="Primary">
+            ${button("Open menu", "open-menu")}
+            ${button("Open dialog", "open-dialog")}
+            ${button("About", "open-about")}
+          </nav>
+        `,
+        "menu-open": () => `
+          <h1>Home</h1>
+          <section aria-label="Menu">
+            <h2>Menu</h2>
+            <p>Navigation choices are visible.</p>
+            ${button("Close menu", "close-menu")}
+          </section>
+        `,
+        "dialog-open": () => `
+          <h1>Home</h1>
+          <div role="dialog" aria-labelledby="dialog-title">
+            <h2 id="dialog-title">Example dialog</h2>
+            ${button("Cancel", "cancel-dialog")}
+            ${button("Details", "open-details")}
+          </div>
+        `,
+        details: () => `
+          <h1>Details</h1>
+          <p>This state is reachable from more than one parent.</p>
+          ${button("Home", "go-home")}
+        `,
+        about: () => `
+          <h1>About</h1>
+          <p>About StateScout's controlled benchmark.</p>
+          ${button("Read details", "open-details")}
+          ${button("Home", "go-home")}
+        `,
+      };
+
+      const transitions = {
+        "open-menu": "menu-open",
+        "close-menu": "home",
+        "open-dialog": "dialog-open",
+        "cancel-dialog": "home",
+        "open-details": "details",
+        "open-about": "about",
+        "go-home": "home",
+      };
+
+      function render(state) {
+        document.body.dataset.benchmarkState = state;
+        app.innerHTML = views[state]();
+      }
+
+      app.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-action]");
+
+        if (!target) {
+          return;
+        }
+
+        render(transitions[target.dataset.action]);
+      });
+
+      render("home");
+    </script>
+  </body>
+</html>
