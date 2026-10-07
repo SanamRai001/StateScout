@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 8 — Broader generalization and real-site observation**
+**Phase 9 — Scoped observed-volatility foundation**
 
 ## Branch
 
-`feat/phase-8-broader-generalization`
+`feat/phase-9-observed-volatility`
 
 ## Phase 0 status
 
@@ -730,32 +730,87 @@ The Phase 8 experiment writes:
 
 The terminal remains compact.
 
+## Phase 9 implementation
+
+Phase 9 replaces clock-format guessing with scoped, evidence-backed volatility rules.
+
+### Core design
+
+A new volatility evidence layer introduces:
+
+- `VolatilityField` for title and query-field candidates;
+- a protected semantic anchor built from origin, path, non-excluded query data, headings, landmarks, dialogs, and normalized controls;
+- `learnScopedVolatilityRule()`, which requires at least two trusted observations, requires the protected anchor to remain identical, and requires the candidate field itself to vary;
+- `VolatilityProfile`, which stores trusted rules with provenance and binds every rule to the exact semantic anchor on which it was learned.
+
+Repeated observations alone are not automatically trusted. The caller must supply a trusted same-state observation set. This is deliberate: an auction countdown and a noisy dashboard clock can look structurally identical as "changing title text," so repetition by itself cannot prove semantic irrelevance.
+
+### Fingerprint v4 candidate
+
+Fingerprint v4 removes title-clock regex normalization entirely.
+
+It preserves the previously established fixed tracking-query suppression set, but any additional volatility suppression is applied only when a trusted profile rule matches the current semantic anchor.
+
+This means:
+
+- a Dashboard title rule can normalize unseen Dashboard title values;
+- the same rule cannot affect an Auction state with different headings/controls;
+- a Dashboard `refreshToken` rule cannot affect an Invoice state;
+- `ref` remains semantic unless future scoped evidence explicitly supports otherwise.
+
+V1, v2, and v3 remain frozen.
+
+### Train/holdout benchmark
+
+The Phase 9 fixture separates training observations from evaluation observations.
+
+Training evidence:
+
+- Dashboard title values `refresh A17` and `refresh B29`;
+- Dashboard `refreshToken=A17` and `refreshToken=B29`.
+
+Held-out evaluation uses unseen values `C31` and `D44` and also tests rule leakage into Auction and Invoice anchors.
+
+Expected results:
+
+- v1: 3/6, 0 false merges, 3 false splits;
+- v2: 2/6, 2 false merges, 2 false splits;
+- v3: 3/6, 1 false merge, 2 false splits;
+- v4 with the learned scoped profile: 6/6, 0 false merges, 0 false splits;
+- exactly two trusted scoped rules are learned.
+
+Additional unit guards require the learner to reject training sets where the protected semantic anchor changes.
+
+### Whole-phase verification gate
+
+```powershell
+git fetch origin
+git switch feat/phase-9-observed-volatility
+git pull --ff-only
+npm install
+npx playwright install chromium
+
+npm run typecheck
+npm test
+npm run experiment:fingerprint-v3
+npm run experiment:phase9
+```
+
+The Phase 9 experiment writes:
+
+- full report: `results/raw/phase-9-observed-volatility.json`;
+- compact shareable summary: `results/raw/phase-9-observed-volatility-summary.txt`.
+
+### Research interpretation
+
+A Phase 9 pass would show that scoped volatility evidence can solve the measured Dashboard noise without globally erasing meaningful second-resolution Auction state.
+
+It would **not** prove that StateScout can autonomously decide what is volatile. Trust establishment remains a separate research problem. The important architectural improvement is that normalization is now conditional on explicit evidence and semantic scope rather than on text format.
+
 ## Next phase after verification
 
-If Phase 8 confirms the predicted v3 second-resolution false merge, v3 must remain non-default. The next phase should design v4 around a stronger notion of observed volatility rather than treating any clock format as automatically noisy. Repeated-observation stability or evidence-backed field volatility is a more defensible direction than another broader regex.
-
-Whole-phase verification passed on Windows x64 with Node v24.19.0.
-
-Observed verification:
-
-- TypeScript typecheck: passed;
-- tests: 30/30 passed, 0 failed;
-- Phase 7 frozen v3 cross-benchmark results remained unchanged;
-- Phase 8 local v1: 8/10, 0 false merges, 2 false splits;
-- Phase 8 local v2: 7/10, 3 false merges, 0 false splits;
-- Phase 8 local v3: 9/10, 1 false merge, 0 false splits;
-- the exact v3 failure was `meaningful-second-title`, as predicted;
-- the Playwright TodoMVC target was observed successfully three times and remained stable with one unique hash for v1, v2, and v3;
-- both The Internet targets timed out before observation and therefore contribute no correctness or stability evidence.
-
-Phase 8 confirms that v3 is the strongest measured candidate so far but is still unsafe to promote as the default because unconditional second-resolution title normalization can hide meaningful state.
-
-The read-only real-site result is intentionally interpreted separately from controlled correctness: one stable observed target is positive but insufficient external-validity evidence, while unavailable targets are treated as missing data rather than failures of the fingerprint.
-
-Phase 8 verification gate is complete.
-
-If the broader fixture unexpectedly contradicts the prediction, inspect the snapshots and measurement harness before changing any fingerprint algorithm.
+If Phase 9 passes, the next research problem is how StateScout can earn trust for volatility rules automatically without circular reasoning or dangerous false merges. Candidate directions include repeated replay observations combined with invariants, cross-session evidence, confidence thresholds, and keeping newly inferred rules in candidate/quarantine state before they affect identity.
 
 ## Merge status
 
-Phases 1A through 7 are merged. Phase 8 implementation and whole-phase verification are complete on `feat/phase-8-broader-generalization`; PR #10 is ready for merge.
+Phases 1A through 8 are merged. Phase 9 implementation is complete on `feat/phase-9-observed-volatility` and awaits its single whole-phase verification gate.
