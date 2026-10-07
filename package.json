@@ -8,7 +8,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts tests/browser/explorerStrategy.test.ts tests/browser/replayRobustness.test.ts tests/browser/fingerprintGeneralization.test.ts tests/browser/adversarialIdentity.test.ts tests/research/stateEquivalence.test.ts tests/research/fingerprintV2.test.ts tests/research/fingerprintV3.test.ts",
+    "test": "node --experimental-strip-types --test tests/core/fingerprint.test.ts tests/core/policy.test.ts tests/core/graph.test.ts tests/core/frontier.test.ts tests/browser/playwrightAdapter.test.ts tests/browser/explorer.test.ts tests/browser/explorerStrategy.test.ts tests/browser/replayRobustness.test.ts tests/browser/fingerprintGeneralization.test.ts tests/browser/adversarialIdentity.test.ts tests/browser/broaderGeneralization.test.ts tests/research/stateEquivalence.test.ts tests/research/fingerprintV2.test.ts tests/research/fingerprintV3.test.ts",
     "test:core": "node --experimental-strip-types --test tests/core/*.test.ts",
     "test:browser": "node --experimental-strip-types --test tests/browser/playwrightAdapter.test.ts",
     "experiment:equivalence": "node --experimental-strip-types scripts/run-state-equivalence-experiment.ts",
@@ -16,7 +16,8 @@
     "experiment:browser-generalization": "node --experimental-strip-types scripts/run-browser-generalization.ts",
     "experiment:explorer-strategy": "node --experimental-strip-types scripts/run-explorer-strategy-experiment.ts",
     "experiment:adversarial-identity": "node --experimental-strip-types scripts/run-adversarial-identity-experiment.ts",
-    "experiment:fingerprint-v3": "node --experimental-strip-types scripts/run-fingerprint-v3-comparison.ts"
+    "experiment:fingerprint-v3": "node --experimental-strip-types scripts/run-fingerprint-v3-comparison.ts",
+    "experiment:phase8": "node --experimental-strip-types scripts/run-phase8-generalization.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",
