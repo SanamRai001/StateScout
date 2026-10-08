@@ -26,6 +26,6 @@ The later replication supplements the original accepted Phase 19 result. It does
 
 ## Source provenance
 
-These values are recorded in `docs/REAL_WORLD_REPLICATIONS.md`.
+This reviewer-facing table is the self-contained record included in the anonymous artifact; no omitted repository document is required to interpret these values.
 
 The table is intentionally descriptive. Public-site observations do not have a complete semantic-state ground-truth oracle.
