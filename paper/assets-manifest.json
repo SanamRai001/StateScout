@@ -5,53 +5,53 @@
   "inputs": [
     {
       "name": "phase13",
-      "path": "D:\\Projects\\StateScout\\results\\raw\\phase-13-profile-revalidation.json",
+      "path": "results/raw/phase-13-profile-revalidation.json",
       "sha256": "14994f17531f766ee06abe756b4a599777824ac60906785bc06a4c5832bf4fc6"
     },
     {
       "name": "phase16",
-      "path": "D:\\Projects\\StateScout\\results\\raw\\phase-16-reversible-equivalence.json",
+      "path": "results/raw/phase-16-reversible-equivalence.json",
       "sha256": "7cdd12804b5ba95884fe9fa2b3e5c52f848d0d1ac306f598bcc6cd6a99aa1dac"
     },
     {
       "name": "phase18",
-      "path": "D:\\Projects\\StateScout\\results\\raw\\phase-18-baselines-ablations.json",
+      "path": "results/raw/phase-18-baselines-ablations.json",
       "sha256": "c4b09381f331a6990feafd6f4f41357fe4c5b36e2af73b41a5aeb0bcd07fd21e"
     },
     {
       "name": "phase20",
-      "path": "D:\\Projects\\StateScout\\results\\raw\\phase-20-scalability-recovery.json",
+      "path": "results/raw/phase-20-scalability-recovery.json",
       "sha256": "b85a63ddead2aa6537e0b3e8ea7d7f22456c145f801b716e7d8cf98f8408d51a"
     }
   ],
   "outputs": [
     {
-      "path": "D:\\Projects\\StateScout\\paper\\tables\\table-phase18-ablation.md",
+      "path": "paper/tables/table-phase18-ablation.md",
       "sha256": "7b6ab9cf5883b89b32f7bc5489526f39811c3f423903802a1064fb374feb4e09",
       "bytes": 546
     },
     {
-      "path": "D:\\Projects\\StateScout\\paper\\tables\\table-phase18-ablation.csv",
+      "path": "paper/tables/table-phase18-ablation.csv",
       "sha256": "e9b78292f1daa4d779823a87c791c32fc0f5c86a10cceeeb96721d0a1f5881c7",
       "bytes": 284
     },
     {
-      "path": "D:\\Projects\\StateScout\\paper\\tables\\table-phase20-recovery.md",
+      "path": "paper/tables/table-phase20-recovery.md",
       "sha256": "23b28490e45cf2ea42bbad477384b122bbe12407ba6005fc00a693667b59e1d6",
       "bytes": 836
     },
     {
-      "path": "D:\\Projects\\StateScout\\paper\\figures\\fig-phase18-ablation.svg",
+      "path": "paper/figures/fig-phase18-ablation.svg",
       "sha256": "30a73dc66d124546914583cd8e7fd33c3cd9929c3db3cd1a8680e2d603bcc1f9",
       "bytes": 4066
     },
     {
-      "path": "D:\\Projects\\StateScout\\paper\\figures\\fig-phase13-revocation.svg",
+      "path": "paper/figures/fig-phase13-revocation.svg",
       "sha256": "e3335dd0492bc6eacd93976d168a81da448bdc7335664c75adbfc704d6ed250a",
       "bytes": 1479
     },
     {
-      "path": "D:\\Projects\\StateScout\\paper\\figures\\fig-phase16-reprojection.svg",
+      "path": "paper/figures/fig-phase16-reprojection.svg",
       "sha256": "f14d3835c7cf9cb97fa314787eaa4c003c82cf0a120fbe7be2e9e55a03fc3df4",
       "bytes": 1457
     }
