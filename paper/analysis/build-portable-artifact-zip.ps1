@@ -38,7 +38,7 @@ $fileStream = [System.IO.File]::Open(
   [System.IO.FileShare]::None
 )
 
-$archive = New-Object System.IO.Compression.ZipArchive(
+$archive = [System.IO.Compression.ZipArchive]::new(
   $fileStream,
   [System.IO.Compression.ZipArchiveMode]::Create,
   $false
