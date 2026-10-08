@@ -113,7 +113,7 @@ Do not make the external Phase 19 public-site rerun a required acceptance gate.
 
 ## 8. Final archive inspection
 
-Confirm that the archive uses forward-slash ZIP entry names and contains no `.git/`, `.github/`, `paper/`, or `node_modules/`; contains no author name, personal GitHub handle/domain, local project path, or public freeze/merge commit identifiers; and contains `README.md`, `package-lock.json`, both research manifests, and the four controlled result JSON files.
+Confirm that the archive uses forward-slash ZIP entry names and contains no `.git/`, `.github/`, `paper/`, or `node_modules/`; contains no author name, personal GitHub handle/domain, local project path, or public freeze/merge commit identifiers; contains `README.md`, `package-lock.json`, both research manifests, the four controlled result JSON files, and `results/recorded/phase19-original-and-replication.md`; and contains no reviewer-facing Markdown references to omitted author-side `docs/` or `paper/` paths.
 
 ## 9. Submission hosting
 
