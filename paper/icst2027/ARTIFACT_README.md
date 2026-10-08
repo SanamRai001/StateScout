@@ -27,12 +27,14 @@ Verified reference configuration:
 
 The implementation is TypeScript/Node and is not intentionally Windows-specific.
 
+The submitted artifact includes `package-lock.json`; use `npm ci` so the exact reviewed dependency graph is installed.
+
 ## Install
 
 From the anonymized artifact root:
 
 ```powershell
-npm install
+npm ci
 npx playwright install chromium
 ```
 
