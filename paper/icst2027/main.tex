@@ -16,9 +16,9 @@
 \begin{abstract}
 Modern web applications expose many interaction states without changing URL, while timestamps, generated identifiers, and other dynamic content can make equivalent observations appear different. Automated web explorers therefore depend on state abstraction that avoids both false splits, which waste exploration effort, and false merges, which can hide reachable behavior. Prior work has proposed DOM comparators, adaptive abstraction refinement, page fragmentation, neural embeddings, and learned classifiers. This paper studies a complementary question: how should an abstraction assumption be governed after evidence suggests that it is valid?
 
-We present StateScout, an experimental Playwright-based web UI explorer that treats learned state abstraction as an explicit cross-run trust hypothesis. StateScout freezes state identity within each run, quarantines candidate volatility, promotes rules only between runs after scoped repeated observations and stable safe-probe behavior, and tracks rule provenance, freshness, challenge, revocation, cooldown, and restoration. A bounded scheduler prioritizes rule revalidation, while an immutable raw archive preserves historical observations beneath the current projection.
+We present StateScout, an experimental Playwright-based web UI explorer that treats evidence-derived abstraction rules as explicit cross-run trust hypotheses. StateScout freezes state identity within each run, quarantines candidate volatility, promotes rules only between runs after scoped repeated observations and stable safe-probe behavior, and tracks rule provenance, freshness, challenge, revocation, cooldown, and restoration. A bounded scheduler can prioritize rule revalidation, while an immutable raw archive preserves historical observations beneath the current projection.
 
-Across a frozen 16-pair controlled corpus, URL-only identity classified 5/16 pairs correctly while the frozen semantic baseline classified 14/16; removing semantic control state reduced correctness to 9/16. Scoped learned volatility resolved a held-out ambiguity benchmark at 6/6. In a controlled drift benchmark, stale abstraction reduced meaningful-state coverage to 0.5 and revocation restored full coverage. The same immutable six-observation archive projected to 3, then 6, then 3 states as trust changed. A five-target public study produced three evaluable targets and zero StateScout run-level errors, while a later replication demonstrated temporal graph variability. Finally, interrupted synthetic and Playwright explorations resumed to the same controlled final graphs as uninterrupted runs.
+Across a frozen 16-pair controlled corpus, URL-only identity classified 5/16 pairs correctly while the frozen semantic baseline classified 14/16; removing semantic control state reduced correctness to 9/16. Scoped evidence-derived volatility resolved a separately frozen ambiguity benchmark at 6/6. In a controlled drift benchmark, stale abstraction reduced meaningful-state coverage to 0.5 and revocation restored full coverage. The same immutable six-observation archive projected to 3, then 6, then 3 states as trust changed. A five-target public study produced three evaluable targets and zero StateScout run-level errors, while a later replication demonstrated temporal graph variability. Finally, interrupted synthetic and Playwright explorations resumed to the same controlled final graphs as uninterrupted runs.
 
 These results do not establish a universally optimal state classifier. They support a narrower design principle: state abstraction in a web explorer can benefit from explicit cross-run trust management, delayed promotion, defeasible rules, and preservation of historical evidence.
 \end{abstract}
@@ -125,7 +125,9 @@ Behavior evidence records bounded safe-probe outcomes. Stable downstream behavio
 \subsection{Cross-Run Trust Lifecycle}
 Trusted rules carry provenance and freshness. Later rule-scoped evidence can retain, challenge, revoke, or restore trust. The frozen lifecycle uses a 30-day maximum trust age, 7-day maximum evidence age, two conflicting windows to revoke, and two stable windows to restore.
 
-When multiple rules require maintenance, StateScout ranks them under a fixed verification budget using a transparent score combining state urgency, freshness risk, conflict history, and estimated coverage impact. The weights are experimental choices, not claimed optimal.
+Let $P_r$ denote the active trust profile for run $r$, and let $F(o;P_r)$ denote the state identity computed for observation $o$. StateScout enforces the invariant that $P_r$ is immutable while run $r$ is executing. Evidence collected during that run may update persistent rule evidence only after the run ends, producing at most a future profile $P_{r+1}$. Reprojection applies a chosen profile to the preserved raw archive; it changes the current interpretation of equivalence without mutating the archived observations or transitions.
+
+When multiple rules require maintenance, StateScout ranks them under a fixed verification budget using a transparent score combining state urgency, freshness risk, conflict history, and estimated coverage impact. The weights are experimental choices, not claimed optimal. Phase~15 verifies deterministic budgeted selection as a mechanism check; it is not treated as evidence that this scoring policy is optimal or superior to alternative schedulers.
 
 \subsection{Preserved History and Reprojection}
 StateScout keeps raw semantic observations and transitions separate from the current abstraction projection. A trusted rule may alias several raw observations into one projected state. Revocation can expose already-recorded distinctions again. This does not recover interactions that were never explored due to a previous false merge.
@@ -141,9 +143,7 @@ Table~\ref{tab:rqmap} maps each question to its frozen evidence. \textbf{RQ1---I
 
 \textbf{RQ3---Defeasibility:} Can stale trusted abstraction be challenged/revoked, and can recorded distinctions be recovered without mutating raw evidence?
 
-\textbf{RQ4---Bounded maintenance:} Can multiple learned rules be prioritized for revalidation under a fixed budget?
-
-\textbf{RQ5---Operational robustness:} Can safe bounded exploration operate on public targets and resume interrupted controlled exploration without changing the final graph?
+\textbf{RQ4---Operational robustness:} Under the frozen identity and lifecycle design, can safe bounded exploration be measured on public targets, and can interrupted controlled exploration resume without changing the final graph?
 
 
 
@@ -159,8 +159,7 @@ RQ & Question & Frozen evidence \\
 RQ1 & Identity accuracy & 16 labeled browser-observed pairs; URL-only, v1--v4, and three v4 ablations plus targeted-content diagnostic. \\
 RQ2 & Contextual abstraction & Six held-out pairs testing whether anchor-scoped evidence can separate measured volatility from meaningful time/reference values. \\
 RQ3 & Defeasibility & Behavior-drift benchmark (stale vs.\ revoked trust) plus one immutable six-observation archive projected under trusted, revoked, and restored profiles. \\
-RQ4 & Bounded maintenance & Four independent rules with fixed priority metadata and a verification budget of two. \\
-RQ5 & Operational robustness & Five public targets $\times$ three runs, plus 64/128/256-state synthetic exploration and depth-32 Playwright checkpoint/resume. \\
+RQ4 & Operational robustness & Five public targets $\times$ three runs, plus 64/128/256-state synthetic exploration and depth-32 Playwright checkpoint/resume. \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -168,7 +167,7 @@ RQ5 & Operational robustness & Five public targets $\times$ three runs, plus 64/
 \subsection{Controlled Identity and Lifecycle Experiments}
 For a labeled pair, a strategy predicts \emph{same} when state hashes match. We report exact correct pairs, false merges (expected different/predicted same), and false splits (expected same/predicted different). The frozen corpus contains 16 pairs across seven state families. Phase~18 evaluates nine identity conditions on the same observations.
 
-Phase~9 evaluates anchor-scoped trusted volatility on held-out cases. Phase~10 separates stable- and divergent-behavior candidates. Phases~13--14 evaluate drift and trust transitions. Phase~15 freezes four rules under a verification budget of two. Phase~16 reprojects one immutable six-observation archive under trusted, revoked, and restored profiles.
+Phase~9 evaluates anchor-scoped trusted volatility on a separately frozen six-pair ambiguity benchmark. Phase~10 separates stable- and divergent-behavior candidates. Phases~13--14 evaluate drift and trust transitions. Phase~15 performs a mechanism-level check that four rules can be selected deterministically under a verification budget of two; because its weights are hand-chosen, it is not used as a scheduler-efficacy result. Phase~16 reprojects one immutable six-observation archive under trusted, revoked, and restored profiles.
 
 \subsection{Public-Site Study}
 Phase~19 uses five public targets across primary and preregistered recovery cohorts. Each receives three fresh-browser runs, v4 with an empty profile, same-origin safe-only policy, at most six attempted transitions, 15-second navigation timeout, and 10-second action timeout. A target is evaluable with at least two successful runs; the combined study requires at least two evaluable targets.
@@ -207,7 +206,7 @@ targeted content & 16/16 & 1.000 & 0 & 0 \\
 URL-only identity produces ten false merges. v4 reaches 14/16 with two false merges and no false splits. Removing semantic controls drops correctness to 9/16. The targeted-content condition reaches 16/16 but is diagnostic only.
 
 \subsection{RQ2: Contextual Abstraction}
-The Phase~9 held-out experiment gives v4 with trusted scoped evidence 6/6 correct (FM=0, FS=0), while earlier global/syntactic normalizations produce measured false merges or false splits. This supports only the measured contextual-ambiguity claim, not universal correctness.
+The Phase~9 separately frozen six-pair ambiguity experiment gives v4 with trusted scoped evidence 6/6 correct (FM=0, FS=0), while earlier global/syntactic normalizations produce measured false merges or false splits. This supports only the measured contextual-ambiguity claim, not universal correctness.
 
 \subsection{RQ3: Defeasibility and Preserved History}
 Figure~\ref{fig:defeasible} summarizes the RQ3 result. In Phase~13, stale trust yields meaningful-details coverage 0.5; revocation restores coverage to 1.0 with six states, six transitions, six attempts, and no failed transitions.
@@ -235,11 +234,8 @@ In Phase~16, one immutable archive contains six raw observations and seven trans
 \label{fig:defeasible}
 \end{figure}
 
-\subsection{RQ4: Bounded Maintenance}
-Phase~15 freezes four rules with priority scores 150, 84, 80, and 11 and budget two. The scheduler selects two rules and preserves unrelated lifecycle states. This demonstrates deterministic bounded selection, not an optimal scoring policy.
-
-\subsection{RQ5: Operational Robustness}
-The accepted Phase~19 combined study requests 15 runs over five targets. Nine succeed, six are externally unavailable, none is a StateScout run-error, and three targets are evaluable. A later replication remains 3/5 evaluable but changes TodoMVC stability.
+\subsection{RQ4: Operational Robustness}
+The accepted Phase~19 combined study requests 15 runs over five targets. Nine succeed, six are externally unavailable, none is a StateScout run-error, and three targets are evaluable. A later replication remains 3/5 evaluable but changes TodoMVC stability. This study is not a semantic-accuracy oracle and does not directly validate the trust lifecycle: it measures reachability, StateScout run failure, and temporal graph stability under the frozen explorer with an empty learned profile.
 
 Phase~20 produces a 256-state synthetic graph with 271 transitions/attempts and 16 injected failed probes. Interrupting at attempt 100 and resuming reaches the same final canonical graph as uninterrupted exploration; corrupted checkpoints are rejected. The depth-32 Playwright workflow produces 33 states, 32 transitions, and 496 replay-step observations; interrupting at 10 attempts and resuming to 32 also reaches the same final graph.
 
@@ -266,7 +262,7 @@ No confidence intervals are reported for public-site stability or performance. P
 We do not reproduce Judge, FragGen, WebEmbed, or all modern baselines on this corpus and make no state-of-the-art classifier claim. APE also establishes dynamic abstraction refinement and model rebuilding as prior art~\cite{gu2019ape}. The remaining novelty claim is qualified as "to our knowledge, in the reviewed literature."
 
 \section{Artifact and Reproducibility}
-The frozen artifact exposes strict typecheck/tests, a deterministic controlled reproduction command, a separate public-site replication command, and SHA-256 provenance for quantitative paper assets. Protected Git-tree identities prevent paper editing from silently changing source, benchmarks, or tests.
+The frozen artifact exposes strict typecheck/tests, a deterministic controlled reproduction command, a separate public-site replication command, and SHA-256 provenance for quantitative paper assets. Protected content digests in the anonymous artifact prevent paper editing from silently changing source, benchmarks, or tests.
 
 For double-anonymous review, the artifact will be distributed through an anonymized repository/archive that does not expose author identity.
 
@@ -276,7 +272,7 @@ StateScout does not propose a universally optimal web-state classifier. It studi
 The resulting design principle is narrow: web UI state equivalence can be represented as evidence-backed, revisable cross-run trust whose history survives the current abstraction.
 
 \section*{Acknowledgment}
-\textbf{Use of generative AI.} OpenAI ChatGPT was used during software development and manuscript preparation for interactive coding assistance, code and documentation review, literature-search assistance, language drafting/editing, and generation/refinement of reporting scripts and figure specifications. The author independently executed and reviewed the experiments, verified reported numerical results against the frozen research artifact, checked cited references and claim boundaries, and reviewed all AI-assisted text, code, and figures before inclusion.
+\textbf{Use of generative AI.} OpenAI ChatGPT was used during software development and manuscript preparation for interactive coding assistance, code and documentation review, literature-search assistance, language drafting/editing, and generation/refinement of reporting scripts and figure specifications. AI assistance affected prose throughout the manuscript, supporting software/reporting scripts, project documentation, and figure specifications; it did not independently execute experiments or determine reported results. The authors independently executed and reviewed the experiments, verified reported numerical results against the frozen research artifact, checked cited references and claim boundaries, and reviewed all AI-assisted text, code, and figures before inclusion.
 
 \bibliographystyle{IEEEtran}
 \bibliography{../references}
