@@ -9,11 +9,11 @@ Build StateScout as both:
 
 ## Current phase
 
-**Phase 21 — Research freeze and paper artifact**
+**Phase 21B — ICST 2027 submission hardening (paper/artifact only)**
 
 ## Branch
 
-`feat/phase-21-research-freeze-paper-artifact`
+`paper/icst-hostile-reviewer-hardening`
 
 ## Phase 0 status
 
@@ -3084,6 +3084,42 @@ Passing Phase 21 does not mean the paper is automatically publication-ready. The
 - manuscript drafting;
 - venue selection and formatting;
 - independent review where possible.
+
+## Phase 21B — ICST 2027 submission hardening
+
+This phase begins from the verified portable anonymous artifact branch after the cross-platform ZIP issue was fixed and independently re-extracted successfully.
+
+Scope is deliberately limited to submission-facing work. The frozen `src/`, `benchmarks/`, and `tests/` trees must remain unchanged.
+
+Current hardening changes:
+
+- formalized the run-frozen trust-profile invariant in the ICST manuscript;
+- replaced potentially misleading "learned/held-out" wording with evidence-derived/separately-frozen language where appropriate;
+- demoted Phase 15's hand-weighted scheduler result from a standalone research question to a mechanism-level check;
+- narrowed the public-site result to operational evidence rather than semantic-accuracy validation;
+- aligned the anonymous artifact text with content-digest provenance;
+- strengthened the generative-AI disclosure to identify affected material and extent of use;
+- made the recorded Phase 19 original/replication table a required, self-contained anonymous-artifact file;
+- extended artifact preflight to reject reviewer-facing Markdown references to omitted author-side `docs/` or `paper/` paths.
+
+Required verification before any merge or submission:
+
+```powershell
+npm run paper:submission-gate
+npm run paper:build-anonymous-artifact
+npm run paper:preflight-anonymous-artifact
+npm run paper:zip-anonymous-artifact
+```
+
+Then extract the produced ZIP into a fresh directory and run:
+
+```powershell
+npm ci
+npx playwright install chromium
+npm run artifact:smoke
+```
+
+Also compile the ICST PDF and verify the research-paper body remains within the 10-page limit, with at most two additional reference-only pages.
 
 ## After Phase 21
 
