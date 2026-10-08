@@ -273,6 +273,20 @@ The study therefore observed three materially different behaviors:
 
 Phase 19 also exposed and fixed a real safety defect: the Playwright explorer had not been enforcing the already-defined same-origin boundary before enqueueing discovered links.
 
+### Later temporal replication
+
+A later 2026-10-08 rerun from the frozen artifact remained evaluable with 3/5 targets but produced different stability outcomes:
+
+- TodoMVC changed to stable initial identity and stable graph;
+- W3C APG remained initial-stable but graph-unstable;
+- Selenium remained initial-stable and graph-stable;
+- the same two public targets remained externally unavailable;
+- StateScout run-level errors remained zero.
+
+This replication supplements rather than replaces the original Phase 19 result.
+
+See `docs/REAL_WORLD_REPLICATIONS.md` for both observations.
+
 ## 9. Scalability and recovery
 
 Phase 20 froze synthetic scale points:
