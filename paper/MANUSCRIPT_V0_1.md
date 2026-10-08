@@ -24,7 +24,7 @@ The difficulty is asymmetric. If an abstraction is too strict, equivalent observ
 
 Most state-abstraction techniques focus on the current classification decision: given two page observations, should they be considered the same state? StateScout investigates a different question. Web applications evolve, dynamic fields may change meaning over time, and evidence available in one run may be insufficient to justify permanent abstraction. We therefore ask: **what lifecycle should govern an abstraction assumption after evidence suggests that two observations are equivalent?**
 
-StateScout treats learned abstraction as a defeasible hypothesis. A field that varies is not immediately ignored. Variation first becomes a quarantined candidate scoped to a protected semantic anchor. Candidate evidence is accumulated across sessions, and promotion occurs only between runs after sufficient repeated observations and stable behavior under safe probes. Once trusted, a rule is not permanent: later evidence can challenge it, persistent conflict can revoke it, stable evidence can restore it, and freshness determines whether it remains active. When multiple rules need verification, a transparent scheduler can prioritize a bounded subset. Crucially, StateScout does not discard the raw observations hidden by a trusted abstraction. It preserves an immutable observation/transition archive and derives the current equivalence projection from that history, allowing revocation to reveal historical distinctions without rewriting the original evidence.
+Figure 1 summarizes the lifecycle. StateScout treats learned abstraction as a defeasible hypothesis. A field that varies is not immediately ignored. Variation first becomes a quarantined candidate scoped to a protected semantic anchor. Candidate evidence is accumulated across sessions, and promotion occurs only between runs after sufficient repeated observations and stable behavior under safe probes. Once trusted, a rule is not permanent: later evidence can challenge it, persistent conflict can revoke it, stable evidence can restore it, and freshness determines whether it remains active. When multiple rules need verification, a transparent scheduler can prioritize a bounded subset. Crucially, StateScout does not discard the raw observations hidden by a trusted abstraction. It preserves an immutable observation/transition archive and derives the current equivalence projection from that history, allowing revocation to reveal historical distinctions without rewriting the original evidence.
 
 This design also imposes a reproducibility constraint: evidence collected during a run cannot mutate that run's identity function. The active fingerprinter is frozen at run start. Learned evidence changes only future runs. This prevents the meaning of a graph node from changing halfway through the exploration that created it.
 
@@ -208,7 +208,7 @@ A volatility field is either the title or a named query field. A protected seman
 
 A candidate volatility rule is considered only when repeated observations share the same protected anchor while the candidate field varies.
 
-Phase 10 freezes the default candidate-promotion thresholds:
+Phase 10 freezes the default candidate-promotion thresholds (the promotion/lifecycle sequence is summarized in Figure 1):
 
 - at least 4 observations;
 - at least 2 sessions;
@@ -347,7 +347,7 @@ The frozen label distribution is:
 
 All Phase 18 strategies are evaluated on the exact same browser-observed Phase 17 pairs.
 
-The nine compared strategies are:
+Table 1 and Figure 2 report the resulting comparison. The nine compared strategies are:
 
 1. URL-only;
 2. fingerprint v1;
@@ -399,7 +399,7 @@ Phase 12 writes observation evidence, behavior evidence, and a frozen promoted-p
 
 ### 5.7 Revalidation and lifecycle-drift protocol
 
-Phase 13 starts from a trusted volatility rule and presents two later evidence regimes:
+Figure 3 visualizes the controlled coverage consequence of stale versus revoked trust. Phase 13 starts from a trusted volatility rule and presents two later evidence regimes:
 
 - stable behavior;
 - evolved divergent behavior.
@@ -439,7 +439,7 @@ The study evaluates scheduler behavior, not optimality of the scoring weights.
 
 ### 5.9 Reversible-history protocol
 
-Phase 16 begins with an immutable raw archive containing six observations and seven transitions.
+Figure 4 and Table 3 summarize the reversible-history/lifecycle evidence. Phase 16 begins with an immutable raw archive containing six observations and seven transitions.
 
 The same archive is projected using:
 
@@ -453,7 +453,7 @@ This isolates reversibility of interpretation from mutation of historical eviden
 
 ### 5.10 Real-world repeated-run protocol
 
-Phase 19 is observational because public applications do not provide a complete semantic-state oracle.
+Table 4 keeps the original accepted Phase 19 observation separate from the later temporal replication. Phase 19 is observational because public applications do not provide a complete semantic-state oracle.
 
 The primary cohort contains:
 
@@ -500,7 +500,7 @@ The original accepted Phase 19 result is frozen. A later rerun is reported separ
 
 ### 5.11 Scalability and recovery protocol
 
-Phase 20 uses two controlled layers.
+Table 2 reports the Phase 20 scale and recovery measurements. Phase 20 uses two controlled layers.
 
 #### Synthetic scale
 
@@ -571,3 +571,25 @@ Controlled reproduction and public-site replication are intentionally separate:
 10. Conclusion
 
 Sections 4 and 5 are now drafted from the frozen Phase 21 artifact. The remaining sections should be completed without algorithm changes.
+
+
+## Paper asset mapping
+
+The current manuscript uses the following paper assets:
+
+- **Figure 1:** `paper/figures/fig-lifecycle.svg` — conceptual abstraction lifecycle;
+- **Figure 2:** `paper/figures/fig-phase18-ablation.svg` — generated from Phase 18 raw JSON;
+- **Figure 3:** `paper/figures/fig-phase13-revocation.svg` — generated from Phase 13 raw JSON;
+- **Figure 4:** `paper/figures/fig-phase16-reprojection.svg` — generated from Phase 16 raw JSON;
+- **Table 1:** `paper/tables/table-phase18-ablation.md` — generated from Phase 18 raw JSON;
+- **Table 2:** `paper/tables/table-phase20-recovery.md` — generated from Phase 20 raw JSON;
+- **Table 3:** `paper/tables/table-lifecycle-summary.md` — synthesis of frozen lifecycle experiments;
+- **Table 4:** `paper/tables/table-real-world-replication.md` — original Phase 19 result versus later replication.
+
+Quantitative generated assets are built with:
+
+```powershell
+npm run paper:build-assets
+```
+
+The generator records input/output SHA-256 hashes in `paper/assets-manifest.json`.
