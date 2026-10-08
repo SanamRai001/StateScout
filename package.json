@@ -34,7 +34,9 @@
     "research:reproduce-controlled": "npm run typecheck && npm test && npm run experiment:phase8 && npm run experiment:phase9 && npm run experiment:phase10 && npm run experiment:phase11 && npm run experiment:phase12 && npm run experiment:phase13 && npm run experiment:phase14 && npm run experiment:phase15 && npm run experiment:phase16 && npm run experiment:phase17 && npm run experiment:phase18 && npm run experiment:phase20 && npm run experiment:phase21",
     "research:rerun-real-world": "npm run experiment:phase19",
     "paper:build-assets": "node --experimental-strip-types paper/analysis/build-paper-assets.ts",
-    "paper:check-citations": "node --experimental-strip-types paper/analysis/check-citations.ts"
+    "paper:check-citations": "node --experimental-strip-types paper/analysis/check-citations.ts",
+    "paper:check-anonymity": "node --experimental-strip-types paper/analysis/check-anonymity.ts",
+    "paper:submission-gate": "npm run experiment:phase21 && npm run paper:check-citations && npm run paper:check-anonymity"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",
