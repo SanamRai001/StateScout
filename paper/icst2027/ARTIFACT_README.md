@@ -54,8 +54,16 @@ Expected:
 src: MATCH
 benchmarks: MATCH
 tests: MATCH
-Research freeze intact: true
+Anonymous research snapshot intact: true
 ```
+
+## Fast reviewer smoke test
+
+```powershell
+npm run artifact:smoke
+```
+
+This runs the strict typecheck, the complete 75-test suite, and anonymous freeze verification.
 
 ## Controlled reproduction
 
@@ -79,18 +87,24 @@ Treat this as a temporal replication.
 
 A different public-site result does not replace the original recorded study.
 
-## Paper asset reproduction
+## Included evidence and provenance
 
-```powershell
-npm run paper:build-assets
-npm run paper:check-citations
-```
-
-Generated quantitative assets are tied to their raw JSON inputs through SHA-256 hashes in:
+The anonymous package includes the controlled raw JSON outputs used for the paper's main quantitative claims:
 
 ```text
-paper/assets-manifest.json
+results/raw/phase-13-profile-revalidation.json
+results/raw/phase-16-reversible-equivalence.json
+results/raw/phase-18-baselines-ablations.json
+results/raw/phase-20-scalability-recovery.json
 ```
+
+Their SHA-256 digests and byte counts are recorded in:
+
+```text
+research/artifact-manifest.json
+```
+
+The package intentionally omits the paper-authoring scripts and manuscript source because they are not required to reproduce the research artifact.
 
 ## Expected controlled headline results
 
@@ -163,4 +177,6 @@ Before uploading the artifact for review:
 - remove author-identifying PDF/file metadata;
 - ensure archived paths do not reveal local usernames;
 - keep the AI-use disclosure anonymous;
-- run `npm run paper:check-anonymity`.
+- inspect the final archive itself before upload.
+
+The package builder performs its own identity-leak scan before completing.
