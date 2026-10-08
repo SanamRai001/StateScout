@@ -4,7 +4,7 @@ import {
   readFile,
   writeFile,
 } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 
 const ROOT = process.cwd();
 
@@ -60,6 +60,10 @@ const outputs = {
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function repoRelative(path: string): string {
+  return relative(ROOT, path).replace(/\\/g, "/");
 }
 
 async function readJson<T>(path: string): Promise<{
@@ -454,7 +458,7 @@ const inputRecords = Object.entries({
   phase20,
 }).map(([name, value]) => ({
   name,
-  path: inputs[name as keyof typeof inputs],
+  path: repoRelative(inputs[name as keyof typeof inputs]),
   sha256: sha256(value.raw),
 }));
 
@@ -462,7 +466,7 @@ const outputRecords = await Promise.all(
   Object.keys(generated).map(async (path) => {
     const raw = await readFile(path, "utf8");
     return {
-      path,
+      path: repoRelative(path),
       sha256: sha256(raw),
       bytes: Buffer.byteLength(raw, "utf8"),
     };
