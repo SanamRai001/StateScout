@@ -2,7 +2,7 @@
 
 ## Working title
 
-**StateScout: Semantic State-Space Exploration for Modern Web Interfaces Under Bounded Safe Interaction**
+**StateScout: Defeasible and Reversible Semantic State Abstraction for Web UI Exploration**
 
 Alternative:
 
@@ -23,7 +23,7 @@ False merges are especially dangerous because a merged state can hide an entire 
 
 ## Proposed thesis
 
-A practical web state explorer can reduce both forms of identity error by combining:
+A practical web state explorer can make state abstraction safer over time by treating equivalence as a defeasible cross-run hypothesis rather than a permanent one-shot classifier decision. StateScout combines:
 
 1. semantic browser observations rather than URL identity;
 2. contextual, evidence-backed volatility abstraction;
@@ -88,25 +88,27 @@ Primary evidence:
 
 ## Candidate contributions
 
-### C1. Semantic state graph exploration
+### C1. Run-frozen, evidence-backed abstraction
 
-A browser-independent state graph where identity is semantic rather than URL-only and the BFS frontier stores `(state, interaction)` work.
+Candidate volatility is observed without changing the identity function of the run that collected the evidence. Promotion occurs only between runs and is scoped to a protected semantic anchor.
 
-### C2. Contextual volatility abstraction
+### C2. Defeasible abstraction lifecycle
 
-A learned volatility mechanism scoped to protected semantic anchors rather than global syntax patterns.
+Rules carry provenance and freshness and can move through trusted, challenged, revoked, cooldown, and restored states as later evidence changes.
 
-### C3. Defeasible abstraction lifecycle
+### C3. Reversible historical equivalence
 
-Candidate quarantine, behavior-backed promotion, freshness/challenge/revocation/recovery, and selective revalidation.
+Immutable raw observations/transitions sit beneath derived alias projections so a later trust change can split or recombine historical observations without rewriting the source evidence.
 
-### C4. Reversible equivalence
+### C4. Bounded rule maintenance
 
-Immutable raw observations/transitions underneath derived alias projections so later revocation can reinterpret history.
+A transparent scheduler prioritizes learned abstraction rules for revalidation under a fixed verification budget.
 
-### C5. Safety and recovery
+### C5. Reproducible operational artifact
 
-Same-origin, safe-only exploration plus digest-verified logical checkpoints that resume to the same controlled graph as uninterrupted exploration.
+Same-origin safe exploration, deterministic replay, temporal real-world replication discipline, and digest-verified checkpoint/resume make the lifecycle experiments reproducible and auditable.
+
+The state graph, browser automation, accessibility semantics, and state abstraction problem itself are explicitly treated as prior art rather than claimed as contributions.
 
 ## Methodology section
 
@@ -253,18 +255,15 @@ Major points:
 
 ## Related work
 
-The final related-work pass should compare StateScout carefully against:
+The final related-work review is now captured in:
 
-- model-based web crawling;
-- GUI ripping;
-- state abstraction in model-based testing;
-- DOM/state equivalence heuristics;
-- Playwright/Selenium crawlers;
-- web testing agents;
-- state merging and abstraction refinement;
-- active learning / conformance testing where relevant.
+- `docs/RELATED_WORK_FINAL.md`;
+- `docs/NOVELTY_POSITIONING.md`;
+- `docs/LITERATURE_SEARCH_LOG.md`.
 
-Do not claim novelty until the final literature comparison is complete.
+The strongest direct state-abstraction comparisons are Crawljax/Oracle Comparator Pipelining, FragGen, WebEmbed, Judge, and recent empirical work comparing automated web GUI testing strategies and state abstractions.
+
+The current novelty boundary is therefore narrow: StateScout is positioned around the lifecycle, defeasibility, and reversibility of learned abstraction assumptions rather than the invention of state abstraction or a claim of universal classifier superiority.
 
 ## Artifact section
 
