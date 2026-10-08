@@ -55,6 +55,7 @@ const required = [
   "results/raw/phase-16-reversible-equivalence.json",
   "results/raw/phase-18-baselines-ablations.json",
   "results/raw/phase-20-scalability-recovery.json",
+  "results/recorded/phase19-original-and-replication.md",
 ];
 
 const missing = required.filter(
@@ -157,11 +158,26 @@ const leaks: Array<{
   match: string;
 }> = [];
 
+const danglingAuthorPaths: Array<{
+  file: string;
+  path: string;
+}> = [];
+
 for (const file of listFiles(ROOT)) {
   const ext = file.slice(file.lastIndexOf("."));
   if (!textExtensions.has(ext)) continue;
 
   const content = readFileSync(file, "utf8");
+
+  if (ext === ".md") {
+    for (const match of content.matchAll(/`((?:docs|paper)\/[^`\r\n]+)`/g)) {
+      danglingAuthorPaths.push({
+        file: relative(ROOT, file).split(sep).join("/"),
+        path: match[1],
+      });
+    }
+  }
+
   for (const rule of forbiddenPatterns) {
     rule.re.lastIndex = 0;
     for (const match of content.matchAll(rule.re)) {
@@ -186,7 +202,8 @@ const ok =
   missingScripts.length === 0 &&
   manifestOk &&
   resultErrors.length === 0 &&
-  leaks.length === 0;
+  leaks.length === 0 &&
+  danglingAuthorPaths.length === 0;
 
 console.log("StateScout anonymous artifact preflight");
 console.log(`Root: ${ROOT}`);
@@ -197,6 +214,7 @@ console.log(`Required artifact scripts missing: ${missingScripts.length}`);
 console.log(`Artifact manifest valid: ${manifestOk}`);
 console.log(`Controlled-result integrity errors: ${resultErrors.length}`);
 console.log(`Identity leaks: ${leaks.length}`);
+console.log(`Dangling author-side Markdown paths: ${danglingAuthorPaths.length}`);
 console.log(`Anonymous artifact preflight: ${ok ? "PASS" : "FAIL"}`);
 
 for (const value of missing) console.log(`- missing: ${value}`);
@@ -204,6 +222,11 @@ for (const value of forbiddenPresent) console.log(`- forbidden: ${value}`);
 for (const value of paperScripts) console.log(`- paper script: ${value}`);
 for (const value of missingScripts) console.log(`- missing script: ${value}`);
 for (const value of resultErrors) console.log(`- result: ${value}`);
+for (const dangling of danglingAuthorPaths) {
+  console.log(
+    `- dangling author-side path: ${dangling.file}: ${JSON.stringify(dangling.path)}`,
+  );
+}
 for (const leak of leaks) {
   console.log(
     `- leak: ${leak.label}: ${leak.file}: ${JSON.stringify(leak.match)}`,
