@@ -106,6 +106,14 @@ Their SHA-256 digests and byte counts are recorded in:
 research/artifact-manifest.json
 ```
 
+The package also includes the reviewer-facing record of the original Phase 19 public-site study and its temporal replication:
+
+```text
+results/recorded/phase19-original-and-replication.md
+```
+
+This recorded table is descriptive evidence rather than a semantic-state oracle. Public-site reruns remain optional temporal replications.
+
 The package intentionally omits the paper-authoring scripts and manuscript source because they are not required to reproduce the research artifact.
 
 ## Expected controlled headline results
