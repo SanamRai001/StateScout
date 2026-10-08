@@ -145,13 +145,13 @@ StateScout represents a browser observation as a deliberately compact semantic s
 - accessible dialog identities;
 - interactive controls and selected control state, including properties such as selected, expanded, checked, disabled, and visible form value where observed.
 
-Let an observation be (o), and let a state-identity function (f) map (o) to a canonical representation and cryptographic hash. Two observations are treated as the same explored state when the active run fingerprinter produces the same state hash.
+Let an observation be `o`, and let a state-identity function `f` map `o` to a canonical representation and cryptographic hash. Two observations are treated as the same explored state when the active run fingerprinter produces the same state hash.
 
 StateScout deliberately distinguishes the **observer** from the **fingerprinter**. The observer decides which browser semantics become available to state identity. The fingerprinter decides which observed differences remain semantic after normalization or trusted abstraction. Phase 17 demonstrates why this distinction matters: two meaningful content changes were false-merged because ordinary paragraph/list content was not represented by the production observer at all.
 
 ### 4.2 Directed graph exploration
 
-Exploration produces a directed graph (G=(V,E)), where each state node (v in V) stores its semantic snapshot and fingerprint and each transition records:
+Exploration produces a directed graph `G = (V, E)`, where each state node `v ∈ V` stores its semantic snapshot and fingerprint and each transition records:
 
 - source state;
 - interaction identity;
@@ -163,11 +163,9 @@ The graph is not a tree. Several action paths may converge on one state, and cyc
 
 The BFS frontier stores work items of the form:
 
-[
-(	ext{source state}, 	ext{interaction}, 	ext{replay path})
-]
+`(source state, interaction, replay path)`
 
-and maintains a separate seen set over ((	ext{source state}, 	ext{interaction})). This prevents one interaction from being repeatedly scheduled merely because the same semantic state is reached through multiple paths.
+and maintains a separate seen set over `(source state, interaction)`. This prevents one interaction from being repeatedly scheduled merely because the same semantic state is reached through multiple paths.
 
 ### 4.3 Replay restoration
 
@@ -229,7 +227,7 @@ Behavior evidence associates the candidate field/anchor with a downstream behavi
 
 A candidate whose varying values lead to one stable observed behavior signature can become eligible for promotion. A candidate with divergent behavior remains quarantined.
 
-Promotion is performed offline between runs. The active fingerprinter is frozen at run start, so evidence collected during run (r) cannot change state identity inside run (r). The resulting trusted profile may affect only a later run.
+Promotion is performed offline between runs. The active fingerprinter is frozen at run start, so evidence collected during run `r` cannot change state identity inside run `r`. The resulting trusted profile may affect only a later run.
 
 This run-frozen boundary is a core reproducibility property: the equivalence relation used to construct one graph cannot change halfway through constructing that graph.
 
@@ -241,9 +239,7 @@ Later rule-scoped behavior evidence can retain or revoke the rule. Phase 13 requ
 
 Phase 14 adds a trust lifecycle with states:
 
-[
-	ext{trusted} ightarrow 	ext{challenged} ightarrow 	ext{revoked} ightarrow 	ext{cooldown} ightarrow 	ext{trusted}
-]
+`trusted → challenged → revoked → cooldown → trusted`
 
 with a stable evidence path that can clear a challenge before revocation.
 
@@ -261,16 +257,14 @@ Only fresh, exact-scope, trusted rules are materialized into the active future-r
 
 When multiple rules require maintenance, Phase 15 uses an explicit deterministic priority score:
 
-[
-P = U + F + C + I
-]
+`P = U + F + C + I`
 
 where:
 
-- (U) is trust-state urgency;
-- (F) is freshness risk;
-- (C) is conflict history;
-- (I) is estimated coverage impact.
+- `U` is trust-state urgency;
+- `F` is freshness risk;
+- `C` is conflict history;
+- `I` is estimated coverage impact.
 
 The scoring weights are transparent experimental choices, not claimed optimal. The scheduler ranks all eligible rules deterministically and selects the highest-priority subset under a fixed budget.
 
