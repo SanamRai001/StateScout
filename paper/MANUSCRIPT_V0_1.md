@@ -315,14 +315,14 @@ After Phase 20, the implementation, benchmark, and test trees were frozen before
 
 ### 5.2 Pairwise state-equivalence protocol
 
-For a labeled pair ((o_a,o_b)), a strategy predicts **same** when its state hashes are equal and **different** otherwise.
+For a labeled pair (o_a, o_b), a strategy predicts **same** when its state hashes are equal and **different** otherwise.
 
 Each pair has one frozen expected relation.
 
 We report:
 
 - **correct pairs**;
-- **accuracy** (= 	ext{correct}/N);
+- **accuracy** = correct / N;
 - **false merges (FM)**: expected different, predicted same;
 - **false splits (FS)**: expected same, predicted different.
 
@@ -520,11 +520,11 @@ The 256-state run is also interrupted after 100 attempted transitions, serialize
 
 A Playwright fixture contains a linear depth-32 workflow, producing 33 semantic states and 32 transitions.
 
-The experiment records observation-phase counts. For an uninterrupted linear workflow, restoring source states produces 496 replay-step observations:
+The experiment records observation-phase counts. For an uninterrupted linear workflow, restoring source states produces 496 replay-step observations because the replay depths sum to:
 
-[
-sum_{i=0}^{31} i = 496.
-]
+~~~text
+0 + 1 + 2 + ... + 31 = 496
+~~~
 
 The browser run is also interrupted after 10 attempts and resumed from a logical checkpoint. Resumed and uninterrupted final graph signatures must match.
 
@@ -562,15 +562,346 @@ Controlled reproduction and public-site replication are intentionally separate:
 - `npm run research:rerun-real-world` repeats the external observational study without replacing the frozen Phase 19 result.
 
 
+## 6. Results — draft
+
+This section answers the five research questions using only the frozen Phase 0-20 evidence. Controlled correctness results and real-world observational results are kept separate.
+
+### 6.1 RQ1 — How do URL-only and progressively richer semantic identities trade false merges and false splits?
+
+Table 1 and Figure 2 summarize the main controlled comparison on the 16-pair Phase 17 corpus.
+
+| Strategy | Correct | Accuracy | FM | FS |
+| --- | ---: | ---: | ---: | ---: |
+| URL-only | 5/16 | 0.3125 | 10 | 1 |
+| v1 | 13/16 | 0.8125 | 2 | 1 |
+| v2 | 13/16 | 0.8125 | 3 | 0 |
+| v3 | 13/16 | 0.8125 | 3 | 0 |
+| v4 | 14/16 | 0.8750 | 2 | 0 |
+| v4 without controls | 9/16 | 0.5625 | 7 | 0 |
+| v4 without title | 13/16 | 0.8125 | 3 | 0 |
+| v4 without query | 13/16 | 0.8125 | 3 | 0 |
+| v4 + targeted content | 16/16 | 1.0000 | 0 | 0 |
+
+URL-only identity performed poorly because many meaningful state differences occurred without a URL change. It correctly classified only 5/16 pairs and produced 10 false merges.
+
+The frozen v4 semantic baseline classified 14/16 pairs correctly with two false merges and no false splits. Both remaining errors came from meaningful visible content that the production observer did not represent: plain status text and list content.
+
+The ablations clarify which observed features contributed to the v4 result. Removing controls caused the largest degradation, from 14/16 to 9/16, and increased false merges from 2 to 7. Removing title or query each reduced correctness to 13/16 and introduced one additional false merge.
+
+The evaluation-only targeted-content condition captured visible paragraph, list-item, status-role, and alert-role text and reached 16/16 on this corpus. Importantly, it changed predictions for exactly the two known content-coverage failures and no other frozen pair.
+
+Earlier experiments explain why the final semantic design is not simply "normalize more." v2 removed measured noise but later produced two false merges on semantic ref and meaningful time values. v3 repaired those cases but Phase 8 exposed a meaningful second-resolution title time that v3 still normalized. These counterexamples show that a syntactic category such as "clock-like text" is not sufficient evidence of volatility.
+
+**Answer to RQ1.** On the frozen controlled corpus, semantic state identity substantially reduced false merges relative to URL-only identity, and semantic control state was the strongest measured feature group in the v4 ablation. However, the remaining v4 errors also show that correctness is bounded by observer coverage; the experiment does not establish that the current observer captures every semantically meaningful visible change.
+
+### 6.2 RQ2 — Can repeated scoped evidence distinguish volatile presentation differences from meaningful state differences in the measured cases?
+
+Phase 9 evaluates a case where the same syntactic form can be either noise or semantics.
+
+The held-out benchmark contains six pairs that mix Dashboard title/query values that vary but should be equivalent with Auction, Invoice, ref, and tracking cases that should retain their semantic distinction.
+
+The comparison was:
+
+| Strategy | Correct | FM | FS |
+| --- | ---: | ---: | ---: |
+| v1 | 3/6 | 0 | 3 |
+| v2 | 2/6 | 2 | 2 |
+| v3 | 3/6 | 1 | 2 |
+| v4 + trusted scoped profile | 6/6 | 0 | 0 |
+
+The result is important because v4 does not introduce another global regex for the same values. It removes global title-clock normalization and applies dynamic-field abstraction only when an explicit trusted rule matches both the field and the protected semantic anchor.
+
+Phase 10 then tests whether variation alone is sufficient for trust. The Dashboard candidate met the repeated-observation thresholds and produced one stable downstream behavior signature, so it became eligible for promotion. The Auction candidate had superficially similar value variation but produced divergent downstream behavior and remained ineligible.
+
+Phases 11 and 12 separate evidence collection from identity mutation. Evidence is collected while the run's fingerprinter remains frozen, and promotion occurs offline for a later run.
+
+**Answer to RQ2.** In the controlled ambiguity cases, scoped repeated evidence plus stable safe-probe behavior distinguished the measured volatile Dashboard fields from meaningful Auction, Invoice, and ref differences and eliminated both false merges and false splits in the six-pair held-out benchmark. The result supports contextual evidence over syntax-only normalization, but it does not prove that the current evidence thresholds or safe probes generalize to every application.
+
+### 6.3 RQ3 — Can trusted abstraction be challenged or revoked after behavior changes, and can historical distinctions be recovered without rewriting raw evidence?
+
+Phase 13 introduces behavior drift after a rule has already become trusted.
+
+Using the stale trusted profile on the evolved fixture produced:
+
+~~~text
+controlled meaningful-details coverage: 0.5
+states: 2
+transitions: 3
+attempts: 3
+~~~
+
+After offline revalidation detected divergent behavior and revoked the rule:
+
+~~~text
+controlled meaningful-details coverage: 1.0
+states: 6
+transitions: 6
+attempts: 6
+failed transitions: 0
+~~~
+
+Figure 3 visualizes this result. It demonstrates the exploration consequence of a false merge: stale trust can suppress a meaningful distinction and therefore hide reachable state.
+
+Phase 14 extends revocation into a longer lifecycle. The same frozen experiment reproduces retained trust, challenge, duplicate-window idempotence, challenge clearing, persistent-conflict revocation, cooldown, restoration, stale-evidence rejection, scope mismatch, and trust expiration. A challenged rule is already excluded from the next active profile, making the next run conservative before permanent revocation.
+
+Phase 16 tests whether historical evidence survives these trust changes. The immutable archive contains six raw observations and seven raw transitions. The same archive projects to:
+
+~~~text
+trusted profile:  3 states / 6 transitions
+revoked profile:  6 states / 7 transitions
+restored profile: 3 states / 6 transitions
+~~~
+
+The raw archive digest remains unchanged. Figure 4 shows the 3 -> 6 -> 3 projection while the six raw observations remain fixed.
+
+This does not mean revocation can retroactively discover interactions that were never executed. Reprojection can recover distinctions already present in the archive; a later conservative crawl is still needed to explore descendants that an earlier false merge prevented from being visited.
+
+**Answer to RQ3.** Yes, in the controlled drift experiment, later behavior evidence revoked stale trust and restored full known coverage. The same frozen raw history could also be reprojected from merged to split and back again without modifying the archive. The result supports defeasible and reversible interpretation, not retroactive recovery of unobserved behavior.
+
+### 6.4 RQ4 — Can multiple learned abstraction rules be prioritized for revalidation under a fixed verification budget?
+
+Phase 15 freezes four rules with different lifecycle states, ages, conflict histories, and estimated coverage impacts.
+
+The deterministic priority scores were:
+
+~~~text
+challenged-critical: 150
+trusted-aging:        84
+cooldown-medium:      80
+trusted-fresh-low:    11
+~~~
+
+With a budget of two rules, StateScout selected the challenged high-impact rule and the aging trusted rule.
+
+The selected fraction was 0.5, corresponding to two of four rule-level verification units. Evidence applied to the selected challenged rule cleared its challenge, while unrelated lifecycle entries preserved their previous states.
+
+The scheduler therefore demonstrates that lifecycle maintenance can be explicitly bounded rather than revalidating every learned rule on every cycle.
+
+**Answer to RQ4.** The controlled four-rule benchmark shows that StateScout can deterministically rank and select a bounded subset while preserving unselected rule state. The experiment validates scheduler behavior, not the optimality of the priority formula or its manually chosen weights, and the estimated coverage-impact input is currently external metadata.
+
+### 6.5 RQ5 — Can exploration remain safe and recoverable under public-site variability, deep replay, failed interactions, and interruption?
+
+The accepted Phase 19 study requested 15 runs across five public targets. The combined result was:
+
+~~~text
+successful runs: 9
+unavailable runs: 6
+StateScout run-level errors: 0
+evaluable targets: 3/5
+study evaluable: true
+~~~
+
+The original per-target stability result was:
+
+| Target | Initial stable | Graph stable |
+| --- | --- | --- |
+| TodoMVC React | no | no |
+| W3C APG Automatic Tabs | yes | no |
+| Selenium Web Form | yes | yes |
+
+The Internet Dynamic Controls and UI Testing Playground Visibility were externally unavailable and therefore not used for stability claims.
+
+The study also exposed a safety defect before the final recovery run: the core same-origin helper existed, but the browser explorer was not consulting it before enqueueing discovered links. The correction added browser-level same-origin enforcement and a regression proving that an external link is recorded as blocked-by-policy and never becomes a discovered state.
+
+A later temporal replication remained evaluable with the same 9 successful and 6 unavailable runs, but TodoMVC changed to stable initial identity and a stable graph. W3C remained graph-unstable and Selenium remained stable. This confirms why the public study is observational and timestamped rather than treated as immutable ground truth.
+
+Phase 20's synthetic workload produced the frozen correctness counts:
+
+| States | Transitions | Attempts | Injected failures |
+| ---: | ---: | ---: | ---: |
+| 64 | 67 | 67 | 4 |
+| 128 | 135 | 135 | 8 |
+| 256 | 271 | 271 | 16 |
+
+The 256-state run was interrupted after 100 attempts and resumed from a serialized checkpoint. The resumed run finished with 256 states, 271 transitions, 16 failed probe transitions, and 271 total attempts, and its final canonical graph signature matched the uninterrupted run. A deliberately modified checkpoint failed digest verification.
+
+The depth-32 Playwright benchmark produced 33 states, 32 transitions, 32 attempts, 496 replay-step observations, 32 restored-source observations, and 32 after-interaction observations.
+
+A second browser run was interrupted after 10 attempts, checkpointed, resumed in a fresh page, and completed at 32 attempts with the same final canonical graph signature as the uninterrupted run.
+
+The 496 replay-step count also exposes a scalability limitation. In this linear fixture, replay depth grows with source-state depth, yielding 0 + 1 + ... + 31 = 496 replay-step observations. Checkpointing avoids restarting completed logical work, but it does not eliminate replay cost for the pending source state.
+
+**Answer to RQ5.** The frozen experiments show that StateScout can enforce a conservative same-origin safe-only boundary and can resume controlled interrupted explorations to the same final graph while preserving injected failed transitions. Public-site graph stability is not guaranteed, and deep replay remains a measurable cost.
+
+### 6.6 Summary of RQ answers
+
+The experiments support a narrower conclusion than "StateScout solves state equivalence."
+
+- **RQ1:** semantic state features substantially outperform URL-only identity on the frozen corpus, with controls contributing strongly; observer coverage remains a limitation.
+- **RQ2:** scoped cross-run evidence and behavior checks resolve the measured dynamic-versus-semantic ambiguity more safely than global syntax normalization.
+- **RQ3:** learned abstraction can become stale; explicit revocation restores controlled coverage, and historical raw observations support reversible reprojection.
+- **RQ4:** maintenance of multiple rules can be explicitly budgeted, although the current ranking heuristic is not claimed optimal.
+- **RQ5:** the explorer can enforce safe boundaries and recover logical progress after interruption, but public-site stability and replay cost remain open operational concerns.
+
+---
+
+## 7. Discussion — draft
+
+### 7.1 The main contribution is the lifecycle around an equivalence assumption
+
+The literature already contains strong state-comparison methods based on DOM structure, configurable comparators, fragments, hashing, embeddings, and learned classifiers. The StateScout results therefore do not justify presenting v4 as a universally superior classifier.
+
+The more distinctive design choice is to represent a learned abstraction as an object with a lifecycle.
+
+A conventional pairwise abstraction decision can be summarized as:
+
+~~~text
+observation A + observation B
+        |
+        v
+same / different
+~~~
+
+StateScout instead asks how confidence in such an assumption should evolve:
+
+~~~text
+variation
+  |
+  v
+quarantined candidate
+  |
+  v
+cross-session evidence
+  |
+  v
+behavior evidence
+  |
+  v
+future-run promotion
+  |
+  v
+trusted rule
+  |
+  v
+freshness / challenge / revocation / restoration
+  |
+  v
+current projection over preserved raw history
+~~~
+
+The controlled experiments provide evidence for several individual parts of that lifecycle. They do not establish that this exact lifecycle is uniquely optimal.
+
+### 7.2 False merges deserve special treatment in an explorer
+
+A false split mainly increases work: one meaningful state appears several times.
+
+A false merge can be more damaging because it changes what the explorer believes has already been visited. Phase 13 demonstrates this asymmetry concretely: stale abstraction reduced known meaningful-state coverage from 1.0 to 0.5.
+
+This motivates two conservative choices in StateScout: candidates begin quarantined rather than trusted, and a challenged rule is excluded from the next active profile before permanent revocation is required.
+
+The cost is additional states and exploration work when evidence is uncertain. For a testing and exploration system, the project intentionally prefers that cost over silently hiding reachable behavior.
+
+### 7.3 Observer completeness and abstraction precision are different problems
+
+The Phase 17 and 18 content failures are not failures of v4's canonicalization rule. They occur because the production observer never records the meaningful changed text.
+
+This distinction matters for future work. Improving the comparator cannot recover information that observation discarded.
+
+The targeted-content condition reaches 16/16 on the frozen corpus, but promoting it directly into production would be premature. Arbitrary visible text can contain timestamps, ads, live counters, feeds, personalized content, user-generated text, and transient status messages.
+
+A richer observer may therefore fix false merges while creating new false splits. The result identifies observer coverage as the next identity frontier; it does not justify fingerprinting all body text.
+
+### 7.4 Run-frozen identity reduces self-modifying evaluation
+
+If evidence collected during a crawl immediately changed the fingerprinter, the meaning of "same state" could change within the graph being constructed. Early and late parts of one run would then use different equivalence relations.
+
+StateScout avoids this feedback loop by freezing identity at run start and applying learned evidence only to a future run.
+
+This separation has two advantages: one graph is interpretable under one identity function, and offline promotion or revalidation artifacts can be audited independently of the browser traversal that produced their evidence.
+
+The price is delayed adaptation: a run cannot immediately benefit from volatility it discovers. The experiments deliberately accept that delay for reproducibility.
+
+### 7.5 Reversibility is not the same as retroactive completeness
+
+The Phase 16 archive result can be misunderstood.
+
+When revocation changes a three-state projection back to six states, StateScout has recovered recorded distinctions. It has not reconstructed actions or descendants that the earlier merged exploration never executed.
+
+This is why the reversible archive and the Phase 13 conservative future crawl complement each other: the archive prevents loss of already observed evidence, while future exploration restores opportunities that stale abstraction may previously have suppressed.
+
+A stronger future system could use historical split detection to schedule targeted recrawls of affected regions.
+
+### 7.6 Selective revalidation turns abstraction maintenance into a resource-allocation problem
+
+Once rules are defeasible, a practical system must decide which ones to verify.
+
+Phase 15 is intentionally simple: it combines lifecycle urgency, age, conflict history, and estimated coverage impact into a transparent score.
+
+That transparency is useful for an initial research artifact because every priority can be explained. However, the current score has two important limitations: weights were chosen rather than learned or optimized, and estimated coverage impact is supplied as metadata rather than inferred automatically from the exploration graph or archive.
+
+The next research question is therefore not whether prioritization is possible, but how to estimate expected verification value from observed graph and evidence structure.
+
+### 7.7 Safety policy changes the graph being measured
+
+The Phase 19 public runs show large numbers of blocked interactions, especially on W3C's documentation-heavy example.
+
+This is not merely an implementation detail. A conservative safety classifier defines which part of the application's action space the explorer is allowed to observe.
+
+Consequently, public-site graph size should not be interpreted as the application's full state graph. It is the graph reachable under the observer, safe-only action classifier, same-origin restriction, attempt budget, current site content, and timing/network conditions.
+
+This is why the paper reports public-site stability rather than real-world coverage percentages.
+
+### 7.8 Temporal replication is informative rather than embarrassing
+
+TodoMVC was unstable in the accepted Phase 19 run and stable in the later replication, while W3C remained graph-unstable and Selenium remained stable.
+
+If the later run simply replaced the first, the artifact would hide exactly the kind of temporal variability that real web automation must tolerate.
+
+The separation between frozen original evidence and later replication therefore becomes part of the methodology. It demonstrates that repeated-run graph structure is partly a property of the environment and time of observation, not only the crawler implementation.
+
+### 7.9 Replay provides determinism but has visible depth cost
+
+Replay makes BFS possible on one sequential browser page and provides a deterministic recovery mechanism. It also creates repeated work.
+
+The Phase 20 linear benchmark makes that cost explicit: reaching sources at depths 0 through 31 produces 496 replay-step observations.
+
+The single-run timing measurements are too noisy for an empirical complexity claim; synthetic timings are not monotonic across 64, 128, and 256 states. The structural replay count is stronger evidence because it follows directly from the restoration algorithm and controlled fixture.
+
+Possible future mitigations include browser or session checkpoints closer to deep frontier states, multiple browser contexts, snapshot-aware restoration where supported, replay-prefix caching, and distributed frontier workers. Those are outside the frozen paper artifact.
+
+### 7.10 Relationship to Judge, FragGen, WebEmbed, and Crawljax
+
+StateScout should be interpreted as complementary to strong page-equivalence methods rather than as a demonstrated replacement.
+
+Systems such as Judge and WebEmbed focus primarily on producing a better current equivalence decision. FragGen uses page fragments and learned application dynamism to improve abstraction and testing. Crawljax provides foundational state-flow crawling and configurable comparison mechanisms.
+
+StateScout's candidate contribution is the governance layer around an abstraction assumption: evidence is accumulated without mutating the current run; trust is explicit and scoped; later evidence can challenge or revoke it; maintenance can be budgeted; and raw history survives the current projection.
+
+An important future evaluation would combine the lifecycle architecture with alternative state classifiers and test whether lifecycle management provides value independently of the underlying pairwise representation.
+
+### 7.11 What the results do not establish
+
+The frozen evidence does not establish that:
+
+- v4 is state of the art against Judge, FragGen, WebEmbed, or every modern baseline;
+- the targeted-content observer generalizes beyond the 16-pair corpus;
+- the volatility thresholds are statistically optimal;
+- the Phase 15 scheduling weights are optimal;
+- the real-world graphs represent complete application coverage;
+- checkpointing provides crash-safe durable storage under power loss;
+- the synthetic timing values establish asymptotic runtime behavior;
+- StateScout solves arbitrary authenticated, canvas/WebGL, mobile, or highly personalized applications.
+
+These boundaries are central to the paper's claim discipline rather than footnotes to be minimized.
+
+### 7.12 Practical implication
+
+For practitioners building stateful web explorers, the experiments suggest a design principle:
+
+> Treat state equivalence as evidence-backed and revisable state, not as an irreversible preprocessing decision.
+
+In concrete terms: retain raw observations when feasible, separate evidence collection from activation, scope dynamic-field assumptions to context, monitor assumptions for drift, fail conservatively when trust is uncertain, and make recovery and reproduction artifacts explicit.
+
+Whether StateScout's exact implementation is the best realization of that principle remains an empirical question for larger independent studies.
+
+
 ## Remaining manuscript sections
 
-6. Results  
-7. Discussion  
 8. Threats to validity  
 9. Artifact and reproducibility  
 10. Conclusion
 
-Sections 4 and 5 are now drafted from the frozen Phase 21 artifact. The remaining sections should be completed without algorithm changes.
+Sections 4-7 are now drafted from the frozen Phase 21 artifact. The remaining sections should be completed without algorithm changes.
 
 
 ## Paper asset mapping
