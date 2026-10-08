@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="400" viewBox="0 0 720 400" role="img">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#111}
+.title{font-size:18px;font-weight:700}
+.label{font-size:12px}
+.small{font-size:10px}
+.axis{stroke:#777;stroke-width:1}
+.bar{fill:#555}
+.bar2{fill:#999}
+.line{stroke:#444;stroke-width:2;fill:none}
+</style>
+<text class="title" x="30" y="32">Phase 16: Reversible projection over immutable observations</text>
+<text class="small" x="30" y="51">Raw archive: 6 observations / 7 transitions; digest stable = true.</text>
+<line class="axis" x1="90" y1="90" x2="90" y2="310"/>
+<line class="axis" x1="90" y1="310" x2="660" y2="310"/>
+<line class="line" x1="105" y1="90" x2="650" y2="90" stroke-dasharray="6 5"/>
+<text class="small" x="650" y="84" text-anchor="end">raw observations = 6</text>
+<rect class="bar" x="160" y="200" width="85" height="110"/>
+<text class="label" x="202.5" y="191" text-anchor="middle">3</text>
+<text class="label" x="202.5" y="334" text-anchor="middle">Trusted</text>
+<rect class="bar" x="330" y="90" width="85" height="220"/>
+<text class="label" x="372.5" y="81" text-anchor="middle">6</text>
+<text class="label" x="372.5" y="334" text-anchor="middle">Revoked</text>
+<rect class="bar" x="500" y="200" width="85" height="110"/>
+<text class="label" x="542.5" y="191" text-anchor="middle">3</text>
+<text class="label" x="542.5" y="334" text-anchor="middle">Restored</text>
+</svg>
