@@ -123,6 +123,9 @@ const pkg = JSON.parse(
   readFileSync(packagePath, "utf8"),
 ) as {
   scripts?: Record<string, string>;
+  engines?: {
+    node?: string;
+  };
 };
 
 pkg.scripts ??= {};
