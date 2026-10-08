@@ -1,6 +1,12 @@
 name: Paper PDF
 
 on:
+  push:
+    branches:
+      - "paper/related-work-novelty-v1"
+    paths:
+      - "paper/**"
+      - ".github/workflows/paper-build.yml"
   pull_request:
     paths:
       - "paper/**"
