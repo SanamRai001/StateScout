@@ -76,6 +76,12 @@ for (const path of ["package.json", "tsconfig.json"]) {
   copy(path, path);
 }
 
+const packageLockSource = resolve("package-lock.json");
+const packageLockIncluded = existsSync(packageLockSource);
+if (packageLockIncluded) {
+  copy("package-lock.json", "package-lock.json");
+}
+
 copy(
   "paper/icst2027/ARTIFACT_README.md",
   "README.md",
@@ -124,6 +130,8 @@ pkg.scripts["experiment:phase21"] =
   "node --experimental-strip-types scripts/verify-research-freeze.ts";
 pkg.scripts["artifact:verify-freeze"] =
   pkg.scripts["experiment:phase21"];
+pkg.scripts["artifact:smoke"] =
+  "npm run typecheck && npm test && npm run artifact:verify-freeze";
 
 for (const key of Object.keys(pkg.scripts)) {
   if (key.startsWith("paper:")) {
@@ -144,6 +152,12 @@ const controlledResults = [
   "phase-20-scalability-recovery.json",
 ];
 
+const controlledResultDigests: Array<{
+  file: string;
+  sha256: string;
+  bytes: number;
+}> = [];
+
 for (const name of controlledResults) {
   const source = resolve("results/raw", name);
   if (!existsSync(source)) {
@@ -161,6 +175,13 @@ for (const name of controlledResults) {
     recursive: true,
   });
   cpSync(source, destination);
+
+  const bytes = readFileSync(source);
+  controlledResultDigests.push({
+    file: `results/raw/${name}`,
+    sha256: createHash("sha256").update(bytes).digest("hex"),
+    bytes: bytes.byteLength,
+  });
 }
 
 const recordedRealWorld = resolve(
@@ -176,6 +197,27 @@ if (existsSync(recordedRealWorld)) {
   });
   cpSync(recordedRealWorld, destination);
 }
+
+
+const artifactManifest = {
+  schemaVersion: 1,
+  kind: "statescout-anonymous-artifact",
+  nodeEngine: pkg.engines?.node ?? ">=24",
+  packageLockIncluded,
+  protectedContent,
+  controlledResults: controlledResultDigests,
+  notes: [
+    "The package contains no Git metadata.",
+    "Public Git commit/tree identifiers are replaced by content digests.",
+    "Public-site reruns are optional and are not part of deterministic artifact acceptance.",
+  ],
+};
+
+writeFileSync(
+  resolve(OUT, "research/artifact-manifest.json"),
+  JSON.stringify(artifactManifest, null, 2) + "\n",
+  "utf8",
+);
 
 const forbidden = [
   /Sanam\s+Rai/gi,
@@ -241,6 +283,12 @@ for (const [path, digest] of Object.entries(
 )) {
   console.log(
     `${path}: ${digest.sha256} (${digest.files} files)`,
+  );
+}
+console.log(`package-lock.json included: ${packageLockIncluded}`);
+for (const result of controlledResultDigests) {
+  console.log(
+    `${result.file}: ${result.sha256} (${result.bytes} bytes)`,
   );
 }
 console.log("Identity leaks: 0");
