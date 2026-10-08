@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="620" viewBox="0 0 1180 620" role="img" aria-labelledby="title desc">
+  <title id="title">StateScout abstraction lifecycle</title>
+  <desc id="desc">Candidate volatility is quarantined, verified across sessions and behavior, promoted between runs, then managed through a defeasible trust lifecycle over an immutable raw archive.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif;fill:#111}
+    .title{font-size:24px;font-weight:700}
+    .subtitle{font-size:13px;fill:#444}
+    .box{fill:#f7f7f7;stroke:#333;stroke-width:1.5;rx:10}
+    .trust{fill:#ededed}
+    .raw{fill:#fafafa;stroke:#666;stroke-dasharray:6 4}
+    .label{font-size:14px;font-weight:600}
+    .small{font-size:12px;fill:#444}
+    .arrow{stroke:#333;stroke-width:1.8;fill:none;marker-end:url(#arrow)}
+    .dash{stroke:#666;stroke-width:1.5;fill:none;stroke-dasharray:6 4;marker-end:url(#arrow)}
+  </style>
+
+  <text class="title" x="35" y="38">StateScout: lifecycle of a learned abstraction assumption</text>
+  <text class="subtitle" x="35" y="61">Evidence collected in one run cannot mutate that run's identity; promotion and trust changes affect later runs.</text>
+
+  <rect class="box" x="40" y="115" width="145" height="72"/>
+  <text class="label" x="112.5" y="143" text-anchor="middle">Observed variation</text>
+  <text class="small" x="112.5" y="164" text-anchor="middle">field changes</text>
+
+  <rect class="box" x="220" y="115" width="155" height="72"/>
+  <text class="label" x="297.5" y="143" text-anchor="middle">Candidate quarantine</text>
+  <text class="small" x="297.5" y="164" text-anchor="middle">same protected anchor</text>
+
+  <rect class="box" x="410" y="115" width="160" height="72"/>
+  <text class="label" x="490" y="137" text-anchor="middle">Cross-session</text>
+  <text class="label" x="490" y="155" text-anchor="middle">evidence</text>
+  <text class="small" x="490" y="174" text-anchor="middle">repeat + distinct values</text>
+
+  <rect class="box" x="605" y="115" width="165" height="72"/>
+  <text class="label" x="687.5" y="137" text-anchor="middle">Safe-probe behavior</text>
+  <text class="label" x="687.5" y="155" text-anchor="middle">verification</text>
+  <text class="small" x="687.5" y="174" text-anchor="middle">stable signature required</text>
+
+  <rect class="box" x="805" y="115" width="145" height="72"/>
+  <text class="label" x="877.5" y="143" text-anchor="middle">Offline promotion</text>
+  <text class="small" x="877.5" y="164" text-anchor="middle">future run only</text>
+
+  <rect class="box trust" x="985" y="115" width="150" height="72"/>
+  <text class="label" x="1060" y="143" text-anchor="middle">Trusted rule</text>
+  <text class="small" x="1060" y="164" text-anchor="middle">active if fresh + scoped</text>
+
+  <path class="arrow" d="M185 151 H220"/>
+  <path class="arrow" d="M375 151 H410"/>
+  <path class="arrow" d="M570 151 H605"/>
+  <path class="arrow" d="M770 151 H805"/>
+  <path class="arrow" d="M950 151 H985"/>
+
+  <text class="subtitle" x="40" y="235">Later evidence windows</text>
+
+  <rect class="box trust" x="250" y="265" width="145" height="68"/>
+  <text class="label" x="322.5" y="293" text-anchor="middle">Challenged</text>
+  <text class="small" x="322.5" y="313" text-anchor="middle">inactive next profile</text>
+
+  <rect class="box trust" x="455" y="265" width="145" height="68"/>
+  <text class="label" x="527.5" y="293" text-anchor="middle">Revoked</text>
+  <text class="small" x="527.5" y="313" text-anchor="middle">conflict persists</text>
+
+  <rect class="box trust" x="660" y="265" width="145" height="68"/>
+  <text class="label" x="732.5" y="293" text-anchor="middle">Cooldown</text>
+  <text class="small" x="732.5" y="313" text-anchor="middle">stable recovery begins</text>
+
+  <rect class="box trust" x="865" y="265" width="145" height="68"/>
+  <text class="label" x="937.5" y="293" text-anchor="middle">Restored trust</text>
+  <text class="small" x="937.5" y="313" text-anchor="middle">after stable windows</text>
+
+  <path class="arrow" d="M1060 187 C1060 230 395 220 395 265"/>
+  <path class="arrow" d="M395 299 H455"/>
+  <path class="arrow" d="M600 299 H660"/>
+  <path class="arrow" d="M805 299 H865"/>
+  <path class="arrow" d="M937 265 C937 225 1060 225 1060 187"/>
+  <path class="dash" d="M322 265 C322 215 985 220 985 175"/>
+  <text class="small" x="630" y="215" text-anchor="middle">stable challenge can clear before revocation</text>
+
+  <rect class="raw" x="155" y="415" width="365" height="130"/>
+  <text class="label" x="337.5" y="445" text-anchor="middle">Immutable raw observation + transition archive</text>
+  <text class="small" x="337.5" y="472" text-anchor="middle">preserved even when the active projection aliases observations</text>
+  <text class="small" x="337.5" y="495" text-anchor="middle">raw evidence is never rewritten by trust changes</text>
+  <text class="small" x="337.5" y="518" text-anchor="middle">digest remains stable across reprojection</text>
+
+  <rect class="box" x="660" y="435" width="300" height="92"/>
+  <text class="label" x="810" y="466" text-anchor="middle">Current equivalence projection</text>
+  <text class="small" x="810" y="490" text-anchor="middle">trusted → merge aliases</text>
+  <text class="small" x="810" y="510" text-anchor="middle">revoked → reveal recorded distinctions</text>
+
+  <path class="arrow" d="M520 480 H660"/>
+  <path class="dash" d="M527 333 C527 385 730 385 730 435"/>
+  <text class="small" x="625" y="376" text-anchor="middle">trust lifecycle changes projection, not raw history</text>
+</svg>
