@@ -68,18 +68,18 @@ We make four contributions:
 \draw[arrow] (beh) -- (prom);
 \draw[arrow] (prom) -- (trusted);
 
-\node[font=\scriptsize] at (7.25,-1.05) {Later runs: trust maintenance};
-\node[trust] (chall) at (4.4,-1.75) {Challenged};
-\node[trust] (rev) at (6.3,-1.75) {Revoked};
-\node[trust] (cool) at (8.2,-1.75) {Cooldown};
-\node[trust] (rest) at (10.1,-1.75) {Restored};
+\node[font=\scriptsize] at (7.0,-1.05) {Later runs: trust maintenance};
+\node[trust] (chall) at (10.75,-1.75) {Challenged};
+\node[trust] (rev) at (8.20,-1.75) {Revoked};
+\node[trust] (cool) at (5.65,-1.75) {Cooldown};
+\node[trust] (rest) at (3.10,-1.75) {Restored};
 
-\draw[arrow] (trusted.south) |- (chall.east);
-\draw[arrow] (chall) -- (rev);
-\draw[arrow] (rev) -- (cool);
-\draw[arrow] (cool) -- (rest);
-\draw[arrow] (rest.north) -- ++(0,0.45) -| (trusted.south);
-\draw[arrow, dashed] (chall.north) -- ++(0,0.45) -| (trusted.south);
+\draw[arrow] (trusted.south) -- (chall.north);
+\draw[arrow] (chall.west) -- (rev.east);
+\draw[arrow] (rev.west) -- (cool.east);
+\draw[arrow] (cool.west) -- (rest.east);
+\draw[arrow, dashed] (chall.north west) to[bend left=22] node[above, font=\tiny] {stable evidence clears challenge} (trusted.south west);
+\node[font=\tiny] at (3.10,-2.35) {restored trust is eligible for a future active profile};
 
 \node[raw] (archive) at (2.8,-3.2) {Immutable raw observations\\and transitions};
 \node[raw] (projection) at (7.9,-3.2) {Current equivalence projection\\under active cross-run trust};
