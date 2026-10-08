@@ -80,6 +80,13 @@ The final related-work review explicitly includes the following core works.
 - Mariani et al. — AutoBlackTest, STVR 2014.
 - TESTAR state-model-inference work, RCIS 2022 and JSS 2023.
 
+### Adaptive abstraction refinement
+
+- Gu et al. — *Practical GUI Testing of Android Applications via Model Abstraction and Refinement*, ICSE 2019.
+  - Material overlap discovered during citation chaining.
+  - APE dynamically refines/coarsens GUI abstraction during testing and rebuilds the model from recorded GUI trees/transitions.
+  - This invalidates any StateScout claim that dynamic abstraction refinement or historical model rebuilding is novel by itself.
+
 ### State abstraction / near duplicates
 
 - Ben-Bassat, Rokah — MinHash/LSH state similarity, ICISSP 2019.
@@ -130,7 +137,7 @@ The review did not identify a directly comparable web-GUI state-abstraction syst
 - explicit challenged/revoked/cooldown/restored states;
 - selective revalidation under a fixed budget;
 - immutable raw observations beneath the current alias projection;
-- historical reprojection when abstraction trust changes.
+- historical reprojection when abstraction trust changes, specifically as part of an explicit cross-run trust lifecycle rather than model rebuilding alone.
 
 The paper therefore uses this lifecycle as its candidate novelty.
 
@@ -167,7 +174,7 @@ until a more formal systematic search supports such language.
 
 Before final submission:
 
-1. run backward/forward citation chaining from Judge, FragGen, WebEmbed, Crawljax, WebMate, and the 2026 empirical study;
+1. continue backward/forward citation chaining from Judge, FragGen, WebEmbed, Crawljax, WebMate, APE, and the 2026 empirical study;
 2. search the target venue's digital library;
 3. verify final publication metadata for 2026 papers;
 4. check whether any concurrent paper introduces explicit rule-level abstraction lifecycle/revocation/reversible history;
