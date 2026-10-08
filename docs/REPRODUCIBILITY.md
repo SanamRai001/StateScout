@@ -111,6 +111,8 @@ Possible outcomes include:
 
 The experiment records those outcomes separately.
 
+Recorded temporal reruns are documented in `docs/REAL_WORLD_REPLICATIONS.md`.
+
 ## Result files
 
 Experiment scripts write detailed JSON and compact text summaries under:
