@@ -157,7 +157,7 @@ Table~\ref{tab:rqmap} maps each question to its frozen evidence. \textbf{RQ1---I
 RQ & Question & Frozen evidence \\
 \midrule
 RQ1 & Identity accuracy & 16 labeled browser-observed pairs; URL-only, v1--v4, and three v4 ablations plus targeted-content diagnostic. \\
-RQ2 & Contextual abstraction & Six held-out pairs testing whether anchor-scoped evidence can separate measured volatility from meaningful time/reference values. \\
+RQ2 & Contextual abstraction & Six separately frozen pairs testing whether anchor-scoped evidence can separate measured volatility from meaningful time/reference values. \\
 RQ3 & Defeasibility & Behavior-drift benchmark (stale vs.\ revoked trust) plus one immutable six-observation archive projected under trusted, revoked, and restored profiles. \\
 RQ4 & Operational robustness & Five public targets $\times$ three runs, plus 64/128/256-state synthetic exploration and depth-32 Playwright checkpoint/resume. \\
 \bottomrule
@@ -235,7 +235,7 @@ In Phase~16, one immutable archive contains six raw observations and seven trans
 \end{figure}
 
 \subsection{RQ4: Operational Robustness}
-The accepted Phase~19 combined study requests 15 runs over five targets. Nine succeed, six are externally unavailable, none is a StateScout run-error, and three targets are evaluable. A later replication remains 3/5 evaluable but changes TodoMVC stability. This study is not a semantic-accuracy oracle and does not directly validate the trust lifecycle: it measures reachability, StateScout run failure, and temporal graph stability under the frozen explorer with an empty learned profile.
+The accepted Phase~19 combined study requests 15 runs over five targets. Nine succeed, six are externally unavailable, none is a StateScout run-error, and three targets are evaluable. A later replication remains 3/5 evaluable but changes TodoMVC stability. This study is not a semantic-accuracy oracle and does not directly validate the trust lifecycle: it measures reachability, StateScout run failure, and temporal graph stability under the frozen explorer with an empty trust profile.
 
 Phase~20 produces a 256-state synthetic graph with 271 transitions/attempts and 16 injected failed probes. Interrupting at attempt 100 and resuming reaches the same final canonical graph as uninterrupted exploration; corrupted checkpoints are rejected. The depth-32 Playwright workflow produces 33 states, 32 transitions, and 496 replay-step observations; interrupting at 10 attempts and resuming to 32 also reaches the same final graph.
 
@@ -267,7 +267,7 @@ The frozen artifact exposes strict typecheck/tests, a deterministic controlled r
 For double-anonymous review, the artifact will be distributed through an anonymized repository/archive that does not expose author identity.
 
 \section{Conclusion}
-StateScout does not propose a universally optimal web-state classifier. It studies an explicit cross-run trust lifecycle around a learned abstraction assumption. The frozen experiments show that dynamic-looking syntax can be meaningful in context, stale trust can hide reachable state, later evidence can justify revocation, preserved history can retain recorded distinctions under changing trust, and interrupted exploration can resume to the same controlled graph.
+StateScout does not propose a universally optimal web-state classifier. It studies an explicit cross-run trust lifecycle around an evidence-derived abstraction assumption. The frozen experiments show that dynamic-looking syntax can be meaningful in context, stale trust can hide reachable state, later evidence can justify revocation, preserved history can retain recorded distinctions under changing trust, and interrupted exploration can resume to the same controlled graph.
 
 The resulting design principle is narrow: web UI state equivalence can be represented as evidence-backed, revisable cross-run trust whose history survives the current abstraction.
 
