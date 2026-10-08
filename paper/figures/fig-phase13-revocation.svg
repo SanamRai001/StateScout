@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="390" viewBox="0 0 620 390" role="img">
+<style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#111}
+.title{font-size:18px;font-weight:700}
+.label{font-size:12px}
+.small{font-size:10px}
+.axis{stroke:#777;stroke-width:1}
+.bar{fill:#555}
+.bar2{fill:#999}
+.line{stroke:#444;stroke-width:2;fill:none}
+</style>
+<text class="title" x="30" y="32">Phase 13: Coverage after abstraction drift</text>
+<text class="small" x="30" y="51">Controlled meaningful-details coverage before and after revoking stale trust.</text>
+<line class="axis" x1="80" y1="80" x2="80" y2="300"/>
+<line class="axis" x1="80" y1="300" x2="570" y2="300"/>
+<text class="small" x="68" y="304" text-anchor="end">0.0</text>
+<text class="small" x="68" y="194" text-anchor="end">0.5</text>
+<text class="small" x="68" y="84" text-anchor="end">1.0</text>
+<rect class="bar" x="150" y="190" width="100" height="110"/>
+<text class="label" x="200" y="180" text-anchor="middle">0.5</text>
+<text class="label" x="200" y="324" text-anchor="middle">Stale trusted profile</text>
+<text class="small" x="200" y="342" text-anchor="middle">2 states / 3 transitions</text>
+<rect class="bar" x="410" y="80" width="100" height="220"/>
+<text class="label" x="460" y="70" text-anchor="middle">1.0</text>
+<text class="label" x="460" y="324" text-anchor="middle">After revocation</text>
+<text class="small" x="460" y="342" text-anchor="middle">6 states / 6 transitions</text>
+</svg>
