@@ -193,16 +193,19 @@ for (const name of controlledResults) {
 const recordedRealWorld = resolve(
   "paper/tables/table-real-world-replication.md",
 );
-if (existsSync(recordedRealWorld)) {
-  const destination = resolve(
-    OUT,
-    "results/recorded/phase19-original-and-replication.md",
+if (!existsSync(recordedRealWorld)) {
+  throw new Error(
+    `Missing recorded public-site evidence required for anonymous artifact: ${recordedRealWorld}`,
   );
-  mkdirSync(dirname(destination), {
-    recursive: true,
-  });
-  cpSync(recordedRealWorld, destination);
 }
+const recordedRealWorldDestination = resolve(
+  OUT,
+  "results/recorded/phase19-original-and-replication.md",
+);
+mkdirSync(dirname(recordedRealWorldDestination), {
+  recursive: true,
+});
+cpSync(recordedRealWorld, recordedRealWorldDestination);
 
 
 const artifactManifest = {
