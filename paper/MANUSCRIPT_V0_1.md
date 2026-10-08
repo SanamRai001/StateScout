@@ -18,7 +18,7 @@ The results do not establish a universally optimal state classifier. Instead, th
 
 Modern web applications are not collections of static pages. A single route can expose dialogs, menus, tabs, expanded panels, asynchronous results, client-side forms, and other interaction states without changing the URL. Automated testing and crawling systems therefore need a model of *application state* that is richer than navigation history alone.
 
-This problem has been recognized for years. GUI ripping and event-flow models established automatic reverse engineering of interactive interfaces. AJAX crawlers such as Crawljax showed that dynamic web applications can be explored by incrementally reconstructing a state-flow graph. Later systems addressed the central state-abstraction problem using DOM comparison, configurable noise comparators, hashing, page fragmentation, learned embeddings, and classifiers. Recent work such as FragGen, WebEmbed, and Judge demonstrates that accurately grouping functionally equivalent pages while separating behaviorally distinct pages remains an active and consequential research problem.
+This problem has been recognized for years. GUI ripping and event-flow models established automatic reverse engineering of interactive interfaces [@memon2003guiripping; @memon2007eventflow]. AJAX crawlers such as Crawljax showed that dynamic web applications can be explored by incrementally reconstructing a state-flow graph [@mesbah2008crawling; @mesbah2012crawljax]. Later systems addressed the central state-abstraction problem using configurable noise comparators, hashing, adaptive model refinement, page fragmentation, learned embeddings, and classifiers [@roest2010regression; @benbassat2019minhash; @gu2019ape; @yandrapally2023fraggen; @kanaththage2026webembed; @liu2026judge]. Recent work therefore confirms that accurately grouping functionally equivalent pages while separating behaviorally distinct pages remains an active and consequential research problem [@liu2026understanding].
 
 The difficulty is asymmetric. If an abstraction is too strict, equivalent observations become multiple states. These **false splits** increase graph size and waste exploration effort. If an abstraction is too permissive, distinct observations collapse into one state. These **false merges** are more dangerous for exploration because the crawler can incorrectly mark an area as already explored and fail to visit behavior reachable only from the merged-away distinction.
 
@@ -89,29 +89,35 @@ A learned abstraction is not truth; it is a scoped hypothesis that remains valid
 
 ### 3.1 GUI ripping and event-flow modeling
 
-Memon's GUI-ripping and event-flow work established dynamic extraction of GUI models for automated testing. StateScout inherits the idea that interaction structure can be reverse-engineered from an executable interface; it does not claim graph extraction as novel.
+Memon's GUI-ripping and event-flow work established dynamic extraction of GUI models for automated testing [@memon2003guiripping; @memon2007eventflow]. StateScout inherits the idea that interaction structure can be reverse-engineered from an executable interface; it does not claim graph extraction as novel.
 
 ### 3.2 AJAX/web state-flow crawling
 
-Crawljax established dynamic state-flow graph construction for AJAX applications and demonstrated why URL identity is inadequate for client-side web state. Subsequent Crawljax work introduced configurable comparator pipelines to remove known dynamic differences before state comparison. StateScout differs in when and how such differences become trusted: its volatility rules are learned from scoped cross-run evidence, do not mutate the run that collected them, and can later be revoked.
+Crawljax established dynamic state-flow graph construction for AJAX applications and demonstrated why URL identity is inadequate for client-side web state [@mesbah2008crawling; @mesbah2012crawljax]. Subsequent Crawljax work introduced configurable comparator pipelines to remove known dynamic differences before state comparison [@roest2010regression]. StateScout differs in when and how such differences become trusted: its volatility rules are learned from scoped cross-run evidence, do not mutate the run that collected them, and can later be revoked.
 
 ### 3.3 Feedback-directed and scriptless exploration
 
-ARTEMIS, WebMate, FEEDEx, AutoBlackTest, and TESTAR-related work show a broad design space for automated GUI/web exploration, feedback-guided action selection, replay, and inferred state models. StateScout's BFS exploration and action scheduling are therefore supporting architecture rather than the primary novelty.
+ARTEMIS, WebMate, FEEDEx, AutoBlackTest, and TESTAR-related work show a broad design space for automated GUI/web exploration, feedback-guided action selection, replay, and inferred state models [@artzi2011framework; @dallmeier2012webmate; @fard2013feedback; @mariani2014autoblacktest; @mulders2022statemodel; @pastorricos2023distributed]. StateScout's BFS exploration and action scheduling are therefore supporting architecture rather than the primary novelty.
 
-### 3.4 Near-duplicate and learned state abstraction
+### 3.4 Adaptive abstraction refinement
 
-MinHash-based scanning, FragGen, WebEmbed, and Judge directly address state equivalence for dynamic web pages. FragGen uses structural/visual fragments to avoid threshold-based whole-page comparison. WebEmbed uses neural embeddings and classifiers. Judge combines DOM structure merging with contrastive learning and classification and reports strong state-pair and exploration results. These systems are stronger baselines for state classification than URL or raw equality.
+APE is a particularly important predecessor because it dynamically refines and coarsens a GUI abstraction during Android testing rather than keeping the model fixed [@gu2019ape]. Runtime evidence such as nondeterministic transitions and model-size pressure drives abstraction changes, and APE rebuilds the model from recorded GUI trees and transitions under the updated abstraction.
+
+This invalidates any broad claim that StateScout is novel merely because its abstraction can change or because earlier observations can be reinterpreted under a changed abstraction. The narrower distinction is that StateScout deliberately freezes the active identity function within one exploration run and treats abstraction trust as an explicit **cross-run rule lifecycle** with provenance, delayed promotion, freshness, challenge/revocation/restoration, and selective revalidation.
+
+### 3.5 Near-duplicate and learned state abstraction
+
+MinHash-based scanning, FragGen, WebEmbed, and Judge directly address state equivalence for dynamic web pages [@benbassat2019minhash; @yandrapally2023fraggen; @kanaththage2026webembed; @liu2026judge]. FragGen uses structural/visual fragments to avoid threshold-based whole-page comparison. WebEmbed uses neural embeddings and classifiers. Judge combines DOM structure merging with contrastive learning and classification and reports strong state-pair and exploration results. These systems are stronger baselines for state classification than URL or raw equality.
 
 StateScout does not claim a superior universal classifier. Its contribution is orthogonal: it gives learned abstraction assumptions an explicit lifecycle and preserves the raw evidence needed to revise those assumptions later.
 
-### 3.5 Modern web-agent observation spaces
+### 3.6 Modern web-agent observation spaces
 
-WebArena, WorkArena, and BrowserGym support DOM, screenshot, and accessibility-tree observations. Their use of accessibility semantics confirms that role/name-oriented browser observations are established modern practice. StateScout uses similar user-facing semantics for deterministic state exploration rather than LLM task completion.
+WebArena, WorkArena, and BrowserGym support rich browser observation/action spaces, including accessibility-oriented representations [@zhou2024webarena; @drouin2024workarena; @chezelles2024browsergym]. Their use of accessibility semantics confirms that role/name-oriented browser observations are established modern practice. StateScout uses similar user-facing semantics for deterministic state exploration rather than LLM task completion.
 
-### 3.6 Gap addressed by StateScout
+### 3.7 Gap addressed by StateScout
 
-Across the reviewed literature, state abstraction is typically represented as a comparator, similarity function, clustering method, embedding/classifier, or structural normalization. We did not find a directly comparable web-GUI abstraction architecture that combines:
+Across the reviewed literature, state abstraction is typically represented as a comparator, similarity function, adaptive refinement function, clustering method, embedding/classifier, or structural normalization [@roest2010regression; @gu2019ape; @yandrapally2023fraggen; @kanaththage2026webembed; @liu2026judge]. We did not find a directly comparable architecture that combines the following as an explicit **cross-run rule-trust lifecycle**:
 
 - run-frozen identity;
 - quarantined evidence;
@@ -120,9 +126,9 @@ Across the reviewed literature, state abstraction is typically represented as a 
 - challenge/revocation/restoration;
 - bounded selective revalidation;
 - immutable raw history;
-- reversible historical reprojection.
+- preserved historical evidence whose current projection changes when cross-run rule trust changes.
 
-Accordingly, StateScout is positioned as a **lifecycle architecture for learned state abstraction**, not as the invention of state abstraction itself.
+Accordingly, StateScout is positioned as a **cross-run lifecycle architecture for learned abstraction trust**, not as the invention of state abstraction, dynamic refinement, or model rebuilding itself.
 
 
 ## 4. StateScout design — draft
@@ -863,9 +869,9 @@ Possible future mitigations include browser or session checkpoints closer to dee
 
 StateScout should be interpreted as complementary to strong page-equivalence methods rather than as a demonstrated replacement.
 
-Systems such as Judge and WebEmbed focus primarily on producing a better current equivalence decision. FragGen uses page fragments and learned application dynamism to improve abstraction and testing. Crawljax provides foundational state-flow crawling and configurable comparison mechanisms.
+Systems such as Judge and WebEmbed focus primarily on producing a better current equivalence decision [@liu2026judge; @kanaththage2026webembed]. FragGen uses page fragments and application dynamism to improve abstraction and testing [@yandrapally2023fraggen]. Crawljax provides foundational state-flow crawling and configurable comparison mechanisms [@mesbah2012crawljax; @roest2010regression]. APE goes further by adapting abstraction online through refinement/coarsening and rebuilding its model from recorded GUI histories [@gu2019ape].
 
-StateScout's candidate contribution is the governance layer around an abstraction assumption: evidence is accumulated without mutating the current run; trust is explicit and scoped; later evidence can challenge or revoke it; maintenance can be budgeted; and raw history survives the current projection.
+StateScout's candidate contribution is therefore narrower: the governance layer around an abstraction assumption **across runs**. Evidence is accumulated without mutating the current run; trust is explicit and scoped; later evidence can challenge or revoke it; maintenance can be budgeted; and preserved history survives the current projection.
 
 An important future evaluation would combine the lifecycle architecture with alternative state classifiers and test whether lifecycle management provides value independently of the underlying pairwise representation.
 
@@ -954,7 +960,7 @@ Fingerprint generations were developed sequentially after earlier failures. The 
 
 The frozen paper does not reproduce Judge, FragGen, WebEmbed, or every modern state-abstraction baseline on StateScout's corpus. It must not claim state-of-the-art classifier performance.
 
-The candidate novelty is instead the lifecycle architecture around learned abstraction. The related-work review is broad but not a formal systematic literature review. Novelty language is therefore qualified as "to our knowledge, in the reviewed literature."
+The candidate novelty is instead the explicit **cross-run rule-trust lifecycle** around learned abstraction. The related-work review is broad but not a formal systematic literature review, and APE demonstrates that dynamic abstraction refinement/rebuilding itself is already prior art [@gu2019ape]. Novelty language is therefore qualified as "to our knowledge, in the reviewed literature."
 
 ### 8.6 Safety-policy validity
 
