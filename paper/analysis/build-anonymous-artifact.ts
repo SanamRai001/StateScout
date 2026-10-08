@@ -78,9 +78,12 @@ for (const path of ["package.json", "tsconfig.json"]) {
 
 const packageLockSource = resolve("package-lock.json");
 const packageLockIncluded = existsSync(packageLockSource);
-if (packageLockIncluded) {
-  copy("package-lock.json", "package-lock.json");
+if (!packageLockIncluded) {
+  throw new Error(
+    "package-lock.json is required for the final anonymous replication artifact. Run npm install in the repository root first.",
+  );
 }
+copy("package-lock.json", "package-lock.json");
 
 copy(
   "paper/icst2027/ARTIFACT_README.md",
