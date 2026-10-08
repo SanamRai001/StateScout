@@ -128,7 +128,35 @@ Relevant references:
 
 ---
 
-## 5. Fragment-based and learned web-state abstraction
+## 5. Adaptive abstraction refinement in GUI testing
+
+Gu et al. introduced **APE**, a model-based Android GUI testing technique whose abstraction evolves during testing rather than remaining fixed. APE uses runtime evidence, including nondeterministic transitions and model-size pressure, to refine or coarsen a decision-tree abstraction. It records GUI trees/transitions and can rebuild the inferred model after an abstraction change.
+
+This is important prior art for StateScout because it establishes that:
+
+- dynamic abstraction refinement during GUI testing is not new;
+- a testing model can be rebuilt from previously observed GUI history after the abstraction changes;
+- both over-fine and over-coarse GUI models can be corrected during exploration.
+
+Reference:
+
+- Gu et al. *Practical GUI Testing of Android Applications via Model Abstraction and Refinement*. ICSE 2019, pp. 269-280. DOI: 10.1109/ICSE.2019.00042.
+
+### Implication for StateScout
+
+StateScout must not claim novelty for dynamic abstraction refinement, coarsening, or historical model rebuilding in isolation.
+
+The narrower contrast is temporal and epistemic:
+
+- APE adapts its abstraction **online within the testing run** to improve model precision/size;
+- StateScout deliberately freezes the active identity function for a run and promotes or changes rule trust **between runs**;
+- StateScout makes rule trust explicit through provenance, freshness, challenge, revocation, cooldown/restoration, and bounded selective revalidation.
+
+The candidate contribution is therefore an explicit **cross-run rule-trust lifecycle**, not abstraction refinement itself.
+
+---
+
+## 6. Fragment-based and learned web-state abstraction
 
 This is the strongest prior-work cluster relative to StateScout's state-identity experiments.
 
@@ -186,7 +214,7 @@ Those claims would be too broad.
 
 ---
 
-## 6. The 2026 empirical study on exploration and abstraction
+## 7. The 2026 empirical study on exploration and abstraction
 
 Liu, Yang, Zhang, and Xie published a 2026 preprint studying automated web GUI testing across exploration strategies and six state abstractions.
 
@@ -206,7 +234,7 @@ The StateScout paper is better framed around **governance of learned abstraction
 
 ---
 
-## 7. Accessibility-tree and semantic browser observations
+## 8. Accessibility-tree and semantic browser observations
 
 Modern web-agent environments have normalized the use of accessibility trees as compact semantic observations.
 
@@ -228,7 +256,7 @@ It should not claim that accessibility-tree/role-based observations are themselv
 
 ---
 
-## 8. Where StateScout is actually different
+## 9. Where StateScout is actually different
 
 The reviewed literature contains many strong methods for deciding whether two current pages should be considered equivalent.
 
@@ -258,9 +286,10 @@ The frozen StateScout architecture includes:
 7. **bounded selective revalidation**
    - multiple trusted rules can be prioritized under a verification budget;
 
-8. **reversible historical equivalence**
+8. **preserved history under cross-run trust changes**
    - raw observations and transitions remain immutable;
-   - changing the current abstraction reprojects historical evidence rather than deleting distinctions;
+   - later trust changes reproject historical evidence rather than deleting distinctions;
+   - this is not claimed as model rebuilding novelty by itself, because APE already rebuilds models under changing abstractions;
 
 9. **frozen evidence + temporal replication discipline**
    - external real-world reruns supplement rather than overwrite the accepted result.
@@ -269,7 +298,7 @@ The frozen StateScout architecture includes:
 
 A defensible statement is:
 
-> In the reviewed web-GUI state-abstraction literature, we found extensive work on DOM-, visual-, fragment-, hashing-, and learned-classifier-based equivalence, but did not find a directly comparable architecture that models each learned abstraction rule as an explicit cross-run object with provenance, promotion, freshness, challenge/revocation, selective revalidation, and reversible reprojection over immutable historical observations.
+> In the reviewed web-GUI state-abstraction literature, we found extensive work on DOM-, visual-, fragment-, hashing-, and learned-classifier-based equivalence, but did not find a directly comparable architecture that models each learned abstraction rule as an explicit **cross-run trust object** with provenance, delayed promotion, freshness, challenge/revocation/restoration, selective revalidation, and application to preserved historical observations. APE is an important counterexample to any broader claim because it already performs online abstraction refinement/coarsening and model rebuilding.
 
 This is deliberately narrower than a universal "first" claim.
 
@@ -277,7 +306,7 @@ It should remain phrased as "in the reviewed literature" unless a systematic rev
 
 ---
 
-## 9. StateScout should be positioned as a lifecycle architecture, not a classifier
+## 10. StateScout should be positioned as a lifecycle architecture, not a classifier
 
 A useful conceptual distinction for the paper is:
 
@@ -326,7 +355,7 @@ It is the **lifecycle around equality assumptions**.
 
 ---
 
-## 10. Relation to exploration robustness and checkpointing
+## 11. Relation to exploration robustness and checkpointing
 
 StateScout also includes:
 
@@ -344,7 +373,7 @@ The current paper should present them as **supporting operational contributions*
 
 ---
 
-## 11. Final novelty boundary
+## 12. Final novelty boundary
 
 ### Established prior art — do not claim
 
