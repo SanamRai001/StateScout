@@ -47,17 +47,20 @@ We make four contributions:
 \begin{figure*}[t]
 \centering
 \begin{tikzpicture}[
-  node distance=7mm and 5mm,
-  box/.style={draw, rounded corners, align=center, minimum height=8mm, inner xsep=5pt, font=\scriptsize},
+  >=Latex,
+  box/.style={draw, rounded corners, align=center, minimum width=20mm, minimum height=8mm, font=\scriptsize},
   trust/.style={box, fill=gray!12},
-  arrow/.style={-{Latex[length=2mm]}, thick}
+  raw/.style={draw, rounded corners, align=center, minimum width=36mm, minimum height=9mm, font=\scriptsize},
+  arrow/.style={->, thick}
 ]
-\node[box] (obs) {Observed\\variation};
-\node[box, right=of obs] (cand) {Candidate\\quarantine};
-\node[box, right=of cand] (cross) {Cross-session\\evidence};
-\node[box, right=of cross] (beh) {Safe-probe\\behavior evidence};
-\node[box, right=of beh] (prom) {Offline\\promotion};
-\node[trust, right=of prom] (trusted) {Trusted\\rule};
+\node[font=\scriptsize] at (5.4,0.8) {Run $r$: evidence collection does not mutate the active identity};
+
+\node[box] (obs) at (0,0) {Observed\\variation};
+\node[box] (cand) at (2.15,0) {Candidate\\quarantine};
+\node[box] (cross) at (4.30,0) {Cross-session\\evidence};
+\node[box] (beh) at (6.45,0) {Safe-probe\\behavior};
+\node[box] (prom) at (8.60,0) {Offline\\promotion};
+\node[trust] (trusted) at (10.75,0) {Trusted\\rule};
 
 \draw[arrow] (obs) -- (cand);
 \draw[arrow] (cand) -- (cross);
@@ -65,25 +68,24 @@ We make four contributions:
 \draw[arrow] (beh) -- (prom);
 \draw[arrow] (prom) -- (trusted);
 
-\node[trust, below=12mm of cross] (chall) {Challenged};
-\node[trust, right=of chall] (rev) {Revoked};
-\node[trust, right=of rev] (cool) {Cooldown};
-\node[trust, right=of cool] (rest) {Restored};
+\node[font=\scriptsize] at (7.25,-1.05) {Later runs: trust maintenance};
+\node[trust] (chall) at (4.4,-1.75) {Challenged};
+\node[trust] (rev) at (6.3,-1.75) {Revoked};
+\node[trust] (cool) at (8.2,-1.75) {Cooldown};
+\node[trust] (rest) at (10.1,-1.75) {Restored};
 
 \draw[arrow] (trusted.south) |- (chall.east);
 \draw[arrow] (chall) -- (rev);
 \draw[arrow] (rev) -- (cool);
 \draw[arrow] (cool) -- (rest);
-\draw[arrow] (rest.east) -| (trusted.south);
-\draw[arrow, dashed] (chall.north) |- (trusted.south);
+\draw[arrow] (rest.north) -- ++(0,0.45) -| (trusted.south);
+\draw[arrow, dashed] (chall.north) -- ++(0,0.45) -| (trusted.south);
 
-\node[box, below=13mm of cand, minimum width=40mm] (raw) {Immutable raw observations\\and transitions};
-\node[box, right=20mm of raw, minimum width=42mm] (proj) {Current equivalence projection\\changes with cross-run trust};
-\draw[arrow] (raw) -- (proj);
-\draw[arrow, dashed] (rev.south) |- (proj.north);
+\node[raw] (archive) at (2.8,-3.2) {Immutable raw observations\\and transitions};
+\node[raw] (projection) at (7.9,-3.2) {Current equivalence projection\\under active cross-run trust};
+\draw[arrow] (archive) -- (projection);
+\draw[arrow, dashed] (rev.south) |- (projection.north);
 
-\node[draw=none, fit=(obs)(trusted), inner sep=2mm, label={[font=\scriptsize]above:Run $r$: evidence collection does not mutate active identity}] {};
-\node[draw=none, fit=(chall)(rest), inner sep=2mm, label={[font=\scriptsize]below:Later runs: trust maintenance and reprojection}] {};
 \end{tikzpicture}
 \caption{StateScout treats abstraction as an explicit cross-run trust lifecycle rather than a one-shot equality decision. Promotion occurs only between runs; later evidence can challenge, revoke, or restore trust while raw history remains preserved.}
 \label{fig:lifecycle}
