@@ -26,6 +26,8 @@ Legend:
 | Accessibility semantic observation | PRIOR/ADJACENT | WebArena, BrowserGym, modern automation | Feature choice, not core novelty |
 | Semantic controls in state identity | ADJACENT | accessibility observations; GUI abstraction work | Empirical feature contribution |
 | App-specific dynamic-noise handling | PRIOR/ADJACENT | Crawljax comparators, FragGen dynamism | Narrow distinction needed |
+| Dynamic abstraction refinement/coarsening during GUI testing | PRIOR | APE (ICSE 2019) | Do not claim novelty |
+| Rebuilding a model from recorded GUI history under a changed abstraction | PRIOR/ADJACENT | APE rebuilds models from recorded GUI trees/transitions after refinement/coarsening | StateScout distinction must be cross-run trust governance, not rebuild alone |
 | Protected semantic anchor for a volatility rule | CANDIDATE | No direct counterpart found in reviewed set | Claim as scoped evidence mechanism |
 | Run-frozen identity while collecting evidence | CANDIDATE | Feedback systems exist, but no direct same-run freeze lifecycle found | Strong candidate contribution |
 | Candidate quarantine before trust | CANDIDATE | Learned classifiers generally output decisions directly | Strong candidate mechanism |
@@ -34,8 +36,8 @@ Legend:
 | Offline revalidation of trusted abstraction | CANDIDATE | General model refinement exists; direct rule-level revalidation not found | Claim carefully |
 | Freshness-aware trusted/challenged/revoked/cooldown/restored lifecycle | CANDIDATE | No direct counterpart found in reviewed web-GUI abstraction work | Strongest novelty candidate |
 | Selective revalidation under fixed budget | CANDIDATE | Feedback-guided exploration exists, but rule-verification scheduling differs | Secondary candidate; heuristic not optimal |
-| Immutable raw observations under alias projection | ADJACENT/CANDIDATE | Raw traces/models are common; reversible abstraction layer is narrower | Claim as architecture, not raw logging itself |
-| Historical reprojection after rule revocation | CANDIDATE | No direct counterpart found in reviewed web-GUI abstraction work | Strong novelty candidate |
+| Immutable raw observations under alias projection | ADJACENT | Raw traces/models are common; APE records GUI trees/transitions for model rebuilding | Claim only as part of the cross-run lifecycle architecture |
+| Historical reprojection after rule revocation | ADJACENT/CANDIDATE | APE already rebuilds model state under changed abstractions; StateScout differs in explicit cross-run trust revocation over preserved history | Do not claim reprojection alone as novel |
 | Safe-only interaction policy | SUPPORTING | Safety constraints common in crawlers/agents | Artifact safety contribution |
 | Same-origin enforcement | SUPPORTING | Standard crawler boundary | Correctness/safety requirement |
 | Checkpoint/resume | SUPPORTING | Persistence/distributed crawling is established broadly | Robustness contribution, not main novelty |
@@ -163,7 +165,7 @@ This is a robustness claim, not the central state-abstraction novelty.
 
 ### Slightly stronger version
 
-> To our knowledge, the reviewed web-GUI state-abstraction literature does not provide an end-to-end rule lifecycle combining run-frozen evidence collection, behavior-backed cross-run promotion, freshness-aware challenge/revocation, bounded selective revalidation, and reversible reprojection over immutable historical observations. StateScout implements and evaluates that lifecycle.
+> To our knowledge, the reviewed GUI/web state-abstraction literature does not provide an end-to-end **cross-run rule-trust lifecycle** combining run-frozen evidence collection, behavior-backed delayed promotion, freshness-aware challenge/revocation/restoration, bounded selective revalidation, and preserved historical evidence. Prior work such as APE already performs dynamic abstraction refinement/coarsening and model rebuilding within a testing run; StateScout's candidate contribution is therefore the explicit cross-run trust governance layered around abstraction assumptions.
 
 Use the stronger version only with the qualifier **"to our knowledge, in the reviewed literature"**.
 
@@ -222,7 +224,7 @@ The paper should use the Phase 21 RQs instead:
 - rule-level lifecycle of learned web state abstraction;
 - run-frozen evidence with future-run promotion;
 - explicit challenged/revoked/cooldown restoration lifecycle;
-- reversible historical alias projection after trust change.
+- explicit cross-run rule trust lifecycle applied to preserved history after trust change.
 
 ### Lower confidence / do not lead with
 
