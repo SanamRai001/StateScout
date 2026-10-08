@@ -895,13 +895,205 @@ In concrete terms: retain raw observations when feasible, separate evidence coll
 Whether StateScout's exact implementation is the best realization of that principle remains an empirical question for larger independent studies.
 
 
-## Remaining manuscript sections
+## 8. Threats to validity — draft
 
-8. Threats to validity  
-9. Artifact and reproducibility  
-10. Conclusion
+### 8.1 Internal validity
 
-Sections 4-7 are now drafted from the frozen Phase 21 artifact. The remaining sections should be completed without algorithm changes.
+Most controlled fixtures and labels were designed by the same researcher who implemented StateScout. This creates a risk that the benchmark distribution reflects assumptions already present in the system.
+
+The project uses several safeguards against this risk. Ground truth was repeatedly frozen before the corresponding implementation change; earlier fingerprint versions remain executable; negative results were retained; v2 and v3 counterexamples were preserved instead of removed; the Phase 17 corpus intentionally included observer-blind failures; and the Phase 21 freeze prevents post-hoc changes to source, benchmarks, or tests during paper writing.
+
+These practices reduce but do not eliminate researcher bias. Independent benchmark construction remains important future work.
+
+The research process was also iterative rather than fully preregistered from Phase 0. Some later questions were motivated by failures observed in earlier phases. The paper therefore distinguishes exploratory observations that motivated a later frozen benchmark from confirmatory results measured after that benchmark was fixed.
+
+Several harness or engineering defects were discovered during the study, including same-document fixture reset behavior, replay reset behavior, missing browser-level same-origin enforcement, and a readonly-array TypeScript issue in checkpoint serialization. These were corrected as implementation defects rather than used to alter semantic labels. The chronological project record preserves those corrections.
+
+### 8.2 Construct validity
+
+StateScout's notion of semantic state is operational rather than universal. The production observer contains route/query information, title, headings, landmarks, dialogs, and semantic controls with selected control state. It does not represent every visible or behaviorally meaningful page feature.
+
+The Phase 17 content-coverage failures demonstrate this limitation directly. A pair can be meaningfully different to a user while appearing identical to the frozen observer.
+
+Behavior signatures used for candidate promotion are also bounded evidence rather than proof of semantic equivalence. A safe-probe set may miss differences that require longer workflows, special data, authentication, timing conditions, or mutating/destructive actions that the safety policy intentionally refuses to execute.
+
+Controlled coverage can be computed only where the benchmark defines the reachable meaningful states. Public applications do not provide a complete oracle, so Phase 19 reports repeated-run stability and bounded graph observations rather than claiming real-world coverage percentages.
+
+### 8.3 External validity
+
+The controlled benchmark corpus is deliberately small and diagnostic. It covers representative state families but does not approximate the full diversity of modern web applications.
+
+The final public study used five named targets, of which three were evaluable. Two targets remained unavailable from the measurement environment. This supports feasibility and variability claims, not universal generalization.
+
+The current study is weak or absent for:
+
+- authenticated enterprise applications;
+- large form-input spaces;
+- canvas or WebGL-heavy interfaces;
+- rich-text editors;
+- highly personalized feeds;
+- multi-user real-time collaboration;
+- native/mobile interfaces;
+- payment or commerce workflows that require unsafe mutating actions.
+
+Public-site drift further limits external reproducibility. The later Phase 19 replication already changed TodoMVC's stability outcome while preserving the same frozen StateScout implementation.
+
+### 8.4 Statistical conclusion validity
+
+The pairwise controlled experiments are deterministic and report exact counts rather than sampled estimates. Several benchmarks are small, so the paper should not imply population-level accuracy from their percentages.
+
+No confidence intervals are reported for public-site stability or performance measurements.
+
+Phase 20 timing values are single-run observations from one machine/runtime environment. The 64/128/256-state synthetic timings are non-monotonic, consistent with startup, JIT, garbage-collection, and scheduling noise. We therefore do not fit a runtime complexity curve from those measurements.
+
+The structural deep-replay count is stronger evidence than the wall-clock timing because the 496 replay-step observations are determined by the controlled depth-32 workflow and restoration algorithm.
+
+### 8.5 Baseline and novelty validity
+
+Fingerprint generations were developed sequentially after earlier failures. The comparison therefore illustrates failure-driven evolution, not a blind contest among independently designed algorithms.
+
+The frozen paper does not reproduce Judge, FragGen, WebEmbed, or every modern state-abstraction baseline on StateScout's corpus. It must not claim state-of-the-art classifier performance.
+
+The candidate novelty is instead the lifecycle architecture around learned abstraction. The related-work review is broad but not a formal systematic literature review. Novelty language is therefore qualified as "to our knowledge, in the reviewed literature."
+
+### 8.6 Safety-policy validity
+
+The default safe-only policy is intentionally conservative. It may block harmless controls whose text resembles mutating or destructive concepts. Those blocks reduce the observable action space and therefore affect public graph size.
+
+This is a design trade-off, not neutral measurement. The paper consequently treats the public graphs as graphs reachable under StateScout's safety policy rather than complete application models.
+
+### 8.7 Reproducibility validity
+
+The deterministic/local research suite is the primary reproducible artifact.
+
+The Phase 19 public-site experiment depends on external services, certificates, content, latency, and network routing. A reproduction should therefore not be declared failed solely because one public target becomes unavailable.
+
+The Phase 21 freeze protects the exact source, benchmark, and test trees used for the paper while allowing prose and reporting assets to evolve.
+
+---
+
+## 9. Artifact and reproducibility — draft
+
+### 9.1 Frozen artifact
+
+The research implementation is frozen at Phase 20 commit:
+
+~~~text
+d4aa27d4e2516555a30741f9829785b0db12316e
+~~~
+
+The Phase 21 manifest stores the Git tree identities of:
+
+- src/;
+- benchmarks/;
+- tests/.
+
+The verifier requires all three trees to match the freeze baseline before the checkout is treated as the frozen paper artifact.
+
+The final verified correctness suite contains 75 tests and passes strict TypeScript checking in the reference environment.
+
+### 9.2 Reference environment
+
+The final freeze gate was reproduced with:
+
+- Node.js v24.19.0;
+- Windows x64;
+- Chromium installed through Playwright.
+
+StateScout is implemented in TypeScript/Node and is not intentionally Windows-specific; the above configuration is the disclosed reference environment.
+
+### 9.3 Controlled reproduction
+
+The fast artifact gate is:
+
+~~~text
+npm run typecheck
+npm test
+npm run experiment:phase21
+~~~
+
+The full deterministic/local research reproduction is:
+
+~~~text
+npm run research:reproduce-controlled
+~~~
+
+This reruns the frozen controlled experiments and freeze verification without depending on public websites.
+
+### 9.4 Real-world replication
+
+The external study is intentionally separate:
+
+~~~text
+npm run research:rerun-real-world
+~~~
+
+Later results are stored as temporal replications rather than replacements for the original accepted Phase 19 result.
+
+This separation ensures that public-site drift or temporary unavailability does not make the deterministic artifact appear irreproducible.
+
+### 9.5 Paper assets and provenance
+
+Quantitative paper figures and tables are generated from raw experiment JSON using:
+
+~~~text
+npm run paper:build-assets
+~~~
+
+The builder records SHA-256 hashes of every quantitative source file and generated output in paper/assets-manifest.json.
+
+The main quantitative assets are:
+
+- Phase 18 baseline/ablation table and figure;
+- Phase 13 stale-trust versus revocation figure;
+- Phase 16 reversible-projection figure;
+- Phase 20 scale/recovery table.
+
+Narrative synthesis tables identify their underlying frozen experiments explicitly.
+
+### 9.6 Freeze policy
+
+After Phase 21, algorithm, benchmark, and test changes are forbidden by default.
+
+A protected-tree change is permitted only for a documented correctness or ground-truth defect. Such a change requires:
+
+1. preserving the previous result and defect explanation;
+2. creating a new freeze baseline;
+3. rerunning all materially affected experiments;
+4. revising the paper and threats-to-validity record.
+
+This policy is intended to prevent post-hoc tuning after the paper's results are known.
+
+---
+
+## 10. Conclusion — draft
+
+State abstraction is necessary for exploring modern web interfaces, but the experiments in this paper show why it should not be treated as an irreversible equality decision.
+
+URL-only identity produced substantial false merging on the frozen controlled corpus. Richer semantic observations improved the result, but early attempts to normalize dynamic-looking syntax demonstrated the opposite risk: values that resemble noise can be meaningful in another context. The final StateScout design therefore treats abstraction as a scoped, evidence-backed hypothesis rather than a global normalization rule.
+
+The central contribution is the lifecycle around that hypothesis. Candidate volatility is quarantined; evidence is collected without mutating the current run's identity; promotion occurs only between runs after repeated scoped observations and stable safe-probe behavior; trusted rules have freshness and can be challenged, revoked, cooled down, and restored; and multiple rules can be scheduled for bounded revalidation. Beneath those decisions, StateScout retains immutable raw observations so a later trust change can reproject historical equivalence without rewriting evidence.
+
+The controlled experiments demonstrate why those properties matter. Stale trusted abstraction reduced known meaningful-state coverage, while revocation restored it. The same raw archive could project from three states to six and back to three as trust changed without changing its digest. Controlled interrupted explorations resumed to the same final graphs as uninterrupted runs, while the public-site study and later replication showed that real-world graph stability is itself time-dependent.
+
+These results do not establish a universally optimal web-state classifier or a complete crawler for arbitrary applications. They instead support a narrower design principle:
+
+> Web UI state equivalence should be represented as evidence-backed, revisable state whose history survives the current abstraction.
+
+A larger independent evaluation is needed to determine how well this lifecycle generalizes, how it interacts with stronger modern classifiers such as fragment- or embedding-based abstraction, and how revalidation should be prioritized at scale. The frozen StateScout artifact provides a reproducible starting point for that investigation.
+
+
+## Manuscript status
+
+Sections 1-10 now have a complete v0.1 draft based on the frozen Phase 21 artifact. Remaining paper work is editorial and scholarly rather than algorithmic:
+
+- citation insertion and bibliography audit;
+- venue/template formatting;
+- figure typography/layout polish;
+- independent review;
+- final literature citation chaining;
+- final controlled reproduction/archive release.
+
 
 
 ## Paper asset mapping
