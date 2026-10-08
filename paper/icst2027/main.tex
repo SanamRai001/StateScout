@@ -1,6 +1,8 @@
 \documentclass[conference]{IEEEtran}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit}
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
 
@@ -28,7 +30,7 @@ This problem has extensive prior art. GUI ripping and event-flow models establis
 
 The abstraction error is asymmetric. A \emph{false split} represents one meaningful state as several states, inflating the graph and wasting exploration. A \emph{false merge} collapses meaningfully different states. For exploration, false merges are especially dangerous because the system may mark an area as already explored and suppress descendants reachable only from the collapsed distinction.
 
-Most abstraction techniques focus primarily on the current equivalence decision. StateScout asks a different question: \emph{what lifecycle should govern an abstraction assumption after evidence suggests that it is valid?}
+Most abstraction techniques focus primarily on the current equivalence decision. Figure~\ref{fig:lifecycle} summarizes StateScout's alternative framing. StateScout asks a different question: \emph{what lifecycle should govern an abstraction assumption after evidence suggests that it is valid?}
 
 APE already demonstrates online GUI abstraction refinement/coarsening and model rebuilding from recorded GUI histories~\cite{gu2019ape}. StateScout therefore does not claim novelty for changing an abstraction or rebuilding a model by itself. Its candidate contribution is an explicit \emph{cross-run rule-trust lifecycle}: identity is frozen within a run; candidate rules are quarantined; promotion happens only between runs after scoped and behavioral evidence; later evidence can challenge, revoke, cool down, or restore trust; maintenance can be scheduled under a budget; and preserved raw evidence remains available as trust changes.
 
@@ -39,6 +41,53 @@ We make four contributions:
   \item \textbf{Preserved historical evidence.} Raw semantic observations and transitions remain immutable beneath the active projection, so later trust changes can reinterpret recorded distinctions without rewriting evidence.
   \item \textbf{A frozen reproducible evaluation artifact.} The artifact includes controlled counterexamples and ablations, lifecycle/drift experiments, a public-site repeated-run study with temporal replication, same-origin safe exploration, and checkpoint/resume.
 \end{enumerate}
+
+
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=7mm and 5mm,
+  box/.style={draw, rounded corners, align=center, minimum height=8mm, inner xsep=5pt, font=\scriptsize},
+  trust/.style={box, fill=gray!12},
+  arrow/.style={-{Latex[length=2mm]}, thick}
+]
+\node[box] (obs) {Observed\\variation};
+\node[box, right=of obs] (cand) {Candidate\\quarantine};
+\node[box, right=of cand] (cross) {Cross-session\\evidence};
+\node[box, right=of cross] (beh) {Safe-probe\\behavior evidence};
+\node[box, right=of beh] (prom) {Offline\\promotion};
+\node[trust, right=of prom] (trusted) {Trusted\\rule};
+
+\draw[arrow] (obs) -- (cand);
+\draw[arrow] (cand) -- (cross);
+\draw[arrow] (cross) -- (beh);
+\draw[arrow] (beh) -- (prom);
+\draw[arrow] (prom) -- (trusted);
+
+\node[trust, below=12mm of cross] (chall) {Challenged};
+\node[trust, right=of chall] (rev) {Revoked};
+\node[trust, right=of rev] (cool) {Cooldown};
+\node[trust, right=of cool] (rest) {Restored};
+
+\draw[arrow] (trusted.south) |- (chall.east);
+\draw[arrow] (chall) -- (rev);
+\draw[arrow] (rev) -- (cool);
+\draw[arrow] (cool) -- (rest);
+\draw[arrow] (rest.east) -| (trusted.south);
+\draw[arrow, dashed] (chall.north) |- (trusted.south);
+
+\node[box, below=13mm of cand, minimum width=40mm] (raw) {Immutable raw observations\\and transitions};
+\node[box, right=20mm of raw, minimum width=42mm] (proj) {Current equivalence projection\\changes with cross-run trust};
+\draw[arrow] (raw) -- (proj);
+\draw[arrow, dashed] (rev.south) |- (proj.north);
+
+\node[draw=none, fit=(obs)(trusted), inner sep=2mm, label={[font=\scriptsize]above:Run $r$: evidence collection does not mutate active identity}] {};
+\node[draw=none, fit=(chall)(rest), inner sep=2mm, label={[font=\scriptsize]below:Later runs: trust maintenance and reprojection}] {};
+\end{tikzpicture}
+\caption{StateScout treats abstraction as an explicit cross-run trust lifecycle rather than a one-shot equality decision. Promotion occurs only between runs; later evidence can challenge, revoke, or restore trust while raw history remains preserved.}
+\label{fig:lifecycle}
+\end{figure*}
 
 \section{Background and Related Work}
 \subsection{GUI and Web State Models}
@@ -84,7 +133,7 @@ A logical checkpoint stores the graph, pending BFS queue, complete seen-work set
 
 \section{Methodology}
 \subsection{Research Questions}
-\textbf{RQ1---Identity:} How do URL-only and progressively richer semantic identities trade false merges and false splits?
+Table~\ref{tab:rqmap} maps each question to its frozen evidence. \textbf{RQ1---Identity:} How do URL-only and progressively richer semantic identities trade false merges and false splits?
 
 \textbf{RQ2---Contextual abstraction:} Can scoped repeated evidence distinguish measured volatile presentation differences from meaningful state differences?
 
@@ -93,6 +142,26 @@ A logical checkpoint stores the graph, pending BFS queue, complete seen-work set
 \textbf{RQ4---Bounded maintenance:} Can multiple learned rules be prioritized for revalidation under a fixed budget?
 
 \textbf{RQ5---Operational robustness:} Can safe bounded exploration operate on public targets and resume interrupted controlled exploration without changing the final graph?
+
+
+
+\begin{table*}[t]
+\caption{Research questions and the frozen evidence used to answer them.}
+\label{tab:rqmap}
+\centering
+\small
+\begin{tabular}{p{0.055\textwidth}p{0.30\textwidth}p{0.56\textwidth}}
+\toprule
+RQ & Question & Frozen evidence \\
+\midrule
+RQ1 & Identity accuracy & 16 labeled browser-observed pairs; URL-only, v1--v4, and three v4 ablations plus targeted-content diagnostic. \\
+RQ2 & Contextual abstraction & Six held-out pairs testing whether anchor-scoped evidence can separate measured volatility from meaningful time/reference values. \\
+RQ3 & Defeasibility & Behavior-drift benchmark (stale vs.\ revoked trust) plus one immutable six-observation archive projected under trusted, revoked, and restored profiles. \\
+RQ4 & Bounded maintenance & Four independent rules with fixed priority metadata and a verification budget of two. \\
+RQ5 & Operational robustness & Five public targets $\times$ three runs, plus 64/128/256-state synthetic exploration and depth-32 Playwright checkpoint/resume. \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
 \subsection{Controlled Identity and Lifecycle Experiments}
 For a labeled pair, a strategy predicts \emph{same} when state hashes match. We report exact correct pairs, false merges (expected different/predicted same), and false splits (expected same/predicted different). The frozen corpus contains 16 pairs across seven state families. Phase~18 evaluates nine identity conditions on the same observations.
@@ -139,9 +208,30 @@ URL-only identity produces ten false merges. v4 reaches 14/16 with two false mer
 The Phase~9 held-out experiment gives v4 with trusted scoped evidence 6/6 correct (FM=0, FS=0), while earlier global/syntactic normalizations produce measured false merges or false splits. This supports only the measured contextual-ambiguity claim, not universal correctness.
 
 \subsection{RQ3: Defeasibility and Preserved History}
-In Phase~13, stale trust yields meaningful-details coverage 0.5; revocation restores coverage to 1.0 with six states, six transitions, six attempts, and no failed transitions.
+Figure~\ref{fig:defeasible} summarizes the RQ3 result. In Phase~13, stale trust yields meaningful-details coverage 0.5; revocation restores coverage to 1.0 with six states, six transitions, six attempts, and no failed transitions.
 
 In Phase~16, one immutable archive contains six raw observations and seven transitions. The trusted projection has three states, the revoked projection six, and the restored projection three; the raw archive digest is unchanged.
+
+
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[x=0.8cm,y=2.3cm]
+  \draw[->] (0,0) -- (0,1.15) node[above, font=\scriptsize] {coverage};
+  \draw[->] (0,0) -- (6.3,0);
+  \fill[gray!55] (0.7,0) rectangle (2.1,0.5);
+  \fill[gray!25] (3.4,0) rectangle (4.8,1.0);
+  \node[font=\scriptsize] at (1.4,-0.10) {stale};
+  \node[font=\scriptsize] at (4.1,-0.10) {revoked};
+  \node[font=\scriptsize] at (1.4,0.56) {0.5};
+  \node[font=\scriptsize] at (4.1,1.06) {1.0};
+\end{tikzpicture}
+
+\vspace{1mm}
+{\scriptsize Historical projection over the same six raw observations: \textbf{3 states $\rightarrow$ 6 states $\rightarrow$ 3 states} (trusted $\rightarrow$ revoked $\rightarrow$ restored); raw digest unchanged.}
+\caption{RQ3: stale trust hides controlled meaningful state; revocation restores coverage, while trust changes reinterpret preserved history without rewriting the raw archive.}
+\label{fig:defeasible}
+\end{figure}
 
 \subsection{RQ4: Bounded Maintenance}
 Phase~15 freezes four rules with priority scores 150, 84, 80, and 11 and budget two. The scheduler selects two rules and preserves unrelated lifecycle states. This demonstrates deterministic bounded selection, not an optimal scoring policy.
