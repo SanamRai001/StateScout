@@ -4,3 +4,5 @@ dist/
 runs/
 .DS_Store
 *.log
+results/
+paper-generated-backup/

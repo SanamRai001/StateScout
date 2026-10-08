@@ -37,7 +37,8 @@
     "paper:check-citations": "node --experimental-strip-types paper/analysis/check-citations.ts",
     "paper:check-anonymity": "node --experimental-strip-types paper/analysis/check-anonymity.ts",
     "paper:submission-gate": "npm run typecheck && npm run experiment:phase21 && npm run paper:check-citations && npm run paper:check-anonymity",
-    "paper:build-anonymous-artifact": "node --experimental-strip-types paper/analysis/build-anonymous-artifact.ts"
+    "paper:build-anonymous-artifact": "node --experimental-strip-types paper/analysis/build-anonymous-artifact.ts",
+    "paper:preflight-anonymous-artifact": "node --experimental-strip-types paper/analysis/check-anonymous-artifact.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",
