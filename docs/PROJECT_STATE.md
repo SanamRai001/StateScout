@@ -3050,6 +3050,32 @@ This gate intentionally does not rerun public websites.
 
 A Phase 21 pass means StateScout has transitioned from active algorithm development into a frozen research artifact suitable for paper drafting and reproducible review.
 
+Whole-phase verification passed on 2026-10-08.
+
+Observed Phase 21 gate:
+
+- TypeScript typecheck: passed;
+- tests: 75/75 passed, 0 failed;
+- frozen `src/` tree: MATCH;
+- frozen `benchmarks/` tree: MATCH;
+- frozen `tests/` tree: MATCH;
+- frozen verified suite: 75/75 passed;
+- research freeze intact: true.
+
+A separate public-site replication was also run after the freeze.
+
+That replication remained evaluable with 3/5 targets, but stability changed relative to the original accepted Phase 19 run:
+
+- TodoMVC changed from unstable initial/graph behavior to stable initial/graph behavior;
+- W3C APG remained initial-stable but graph-unstable;
+- Selenium remained initial-stable and graph-stable;
+- The Internet and UI Testing Playground remained externally unavailable;
+- StateScout run-level errors remained zero.
+
+The replication is recorded in `docs/REAL_WORLD_REPLICATIONS.md` and does not replace the original Phase 19 evidence.
+
+Phase 21 verification gate is complete.
+
 Passing Phase 21 does not mean the paper is automatically publication-ready. The remaining scholarly work includes:
 
 - final literature review and novelty positioning;
@@ -3069,4 +3095,4 @@ Future product features may continue on a separate post-paper roadmap without be
 
 ## Merge status
 
-Phases 1A through 20 are merged. Phase 21 research-freeze and paper-artifact packaging is complete on `feat/phase-21-research-freeze-paper-artifact` and awaits its whole-phase verification gate.
+Phases 1A through 20 are merged. Phase 21 research-freeze and paper-artifact packaging is verified on `feat/phase-21-research-freeze-paper-artifact`; PR #23 is ready for merge.
