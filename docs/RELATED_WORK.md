@@ -1,5 +1,7 @@
 # Related Work
 
+> This initial engineering-oriented map is superseded by the final paper-facing review in `docs/RELATED_WORK_FINAL.md` and the auditable search record in `docs/LITERATURE_SEARCH_LOG.md`.
+
 ## Status
 
 This is an **initial engineering-oriented related-work map**, not yet a systematic literature review.
