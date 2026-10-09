@@ -7,6 +7,7 @@ on:
       - "paper/icst-hostile-reviewer-hardening"
     paths:
       - "paper/**"
+      - "package-lock.json"
       - ".github/workflows/paper-build.yml"
   pull_request:
     paths:
