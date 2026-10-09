@@ -63,7 +63,7 @@ This gate passed locally with 75/75 tests and all anonymous protected-content di
 
 ## Artifact gate
 
-Fresh-extraction verification of the current anonymous ZIP passed locally after Phase 21B hardening:
+Fresh-extraction verification of the Phase 21B anonymous ZIP passed locally before the final reviewer-text/manifest-integrity tightening:
 
 - [x] anonymized reviewer archive generated and extracted successfully.
 - [x] README quick start.
@@ -78,7 +78,9 @@ Fresh-extraction verification of the current anonymous ZIP passed locally after 
 - [x] fresh extraction: 75/75 tests passed, 0 failed.
 - [x] fresh extraction: `src/`, `benchmarks/`, and `tests/` all MATCH.
 - [x] fresh extraction: `Anonymous research snapshot intact: true`.
-- [ ] record SHA-256 of the final ZIP after all packaging-text changes are frozen.
+- [ ] rebuild and preflight the exact final ZIP after the recorded-evidence manifest tightening.
+- [ ] run `artifact:smoke` from a fresh extraction of that exact final ZIP.
+- [ ] record SHA-256, byte count, and entry count of that exact final ZIP.
 - [ ] anonymous reviewer hosting/venue supplementary upload.
 - [ ] license decision for archival/public release.
 - [ ] archival DOI if practical.
