@@ -3152,10 +3152,18 @@ The six-page result is safely below the ICST research-paper body ceiling, so the
 
 A final reviewer-facing artifact hardening pass subsequently clarified which raw JSON results are pre-populated, aligned "learned" wording with the evidence-derived manuscript terminology, and added SHA-256/byte-count integrity checking for the recorded Phase 19 evidence. These changes do not touch `src/`, `benchmarks/`, or `tests/`, but they change the exact reviewer ZIP bytes.
 
-The remaining release gates are submission logistics rather than algorithm validation:
+The exact final reviewer ZIP was subsequently rebuilt from hardening commit `62fbb9c3d47f1908da12f7a01bfa78f39363f192`, preflighted, extracted fresh, and smoke-tested successfully:
 
-- rebuild, preflight, and fresh-smoke the exact final reviewer ZIP once after this manifest/README hardening;
-- record that final ZIP SHA-256, byte count, and entry count;
+- anonymous preflight: PASS, including recorded-evidence integrity;
+- fresh extraction: `npm ci` passed with 0 reported vulnerabilities;
+- fresh extraction: 75/75 tests passed;
+- anonymous protected-content digests: all MATCH;
+- anonymous research snapshot intact: true;
+- final ZIP SHA-256: `BACACA7AC2B874F64E111E0A755E8341EBFB732AEB15968C60755EC2ED8EC50E`;
+- final ZIP size: 155070 bytes;
+- final ZIP entries: 147.
+
+The remaining release gates are submission logistics rather than algorithm validation:
 - preserve the verified hardened manuscript/PDF inputs unless a deliberate editorial change is made;
 - decide the public/archive license before archival release;
 - create reviewer-accessible anonymous artifact hosting or use the venue's anonymous supplementary upload;
