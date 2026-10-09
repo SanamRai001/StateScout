@@ -78,9 +78,9 @@ Fresh-extraction verification of the Phase 21B anonymous ZIP passed locally befo
 - [x] fresh extraction: 75/75 tests passed, 0 failed.
 - [x] fresh extraction: `src/`, `benchmarks/`, and `tests/` all MATCH.
 - [x] fresh extraction: `Anonymous research snapshot intact: true`.
-- [ ] rebuild and preflight the exact final ZIP after the recorded-evidence manifest tightening.
-- [ ] run `artifact:smoke` from a fresh extraction of that exact final ZIP.
-- [ ] record SHA-256, byte count, and entry count of that exact final ZIP.
+- [x] rebuilt and preflighted the exact final ZIP after the recorded-evidence manifest tightening.
+- [x] ran `artifact:smoke` from a fresh extraction of that exact final ZIP: 75/75 tests passed.
+- [x] final ZIP recorded: SHA-256 `BACACA7AC2B874F64E111E0A755E8341EBFB732AEB15968C60755EC2ED8EC50E`, 155070 bytes, 147 entries.
 - [ ] anonymous reviewer hosting/venue supplementary upload.
 - [ ] license decision for archival/public release.
 - [ ] archival DOI if practical.
