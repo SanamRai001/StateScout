@@ -41,7 +41,11 @@ Must report:
 Missing bibliography keys: none
 ```
 
-Before submission, manually verify each bibliography record against publisher/DOI/DBLP or another primary bibliographic source.
+Manual bibliography verification completed during Phase 21B for all 20 cited records using publisher/proceedings, DOI, DBLP, OpenReview/PMLR, or equivalent primary/curated sources. The pass checked existence, core bibliographic metadata, and whether each source supports the role for which it is cited.
+
+One upgrade was made: BrowserGym now cites its peer-reviewed 2025 Transactions on Machine Learning Research publication instead of only the earlier arXiv record.
+
+Re-run the local citation-key audit after this bibliography update before freezing the final PDF.
 
 ## Reproduction gate
 
