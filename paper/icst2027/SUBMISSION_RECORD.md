@@ -48,9 +48,10 @@ Any later change to `paper/icst2027/main.tex` or `paper/references.bib` invalida
 ### Final artifact
 
 - filename: `statescout-icst2027-anonymous.zip`
-- final SHA-256: **PENDING — record from the locally rebuilt and smoke-tested Phase 21B ZIP**
-- final bytes: **PENDING**
-- final entry count: **PENDING**
+- artifact source commit: `62fbb9c3d47f1908da12f7a01bfa78f39363f192`
+- final SHA-256: `BACACA7AC2B874F64E111E0A755E8341EBFB732AEB15968C60755EC2ED8EC50E`
+- final bytes: 155070
+- final entry count: 147
 - anonymous reviewer URL / venue attachment: **PENDING**
 
 Fresh-extraction verification of the earlier Phase 21B ZIP passed locally:
@@ -64,7 +65,7 @@ Fresh-extraction verification of the earlier Phase 21B ZIP passed locally:
 - `tests/`: MATCH
 - anonymous research snapshot intact: true
 
-After that smoke pass, reviewer-facing artifact-only changes clarified the raw-evidence wording and added manifest integrity for the recorded Phase 19 evidence. Therefore the exact final ZIP must be rebuilt, preflighted, fresh-smoked once, and then hashed before upload. The protected research implementation is unchanged.
+After that smoke pass, reviewer-facing artifact-only changes clarified the raw-evidence wording and added manifest integrity for the recorded Phase 19 evidence. The exact final ZIP was then rebuilt from commit `62fbb9c3d47f1908da12f7a01bfa78f39363f192`, preflighted, extracted into a fresh directory, and smoke-tested successfully. The protected research implementation remained unchanged.
 
 A later local attempt produced SHA-256 `82F6E9FB0B7E5EEA073CB144A7D61621406E98315585ED0EA1A731D0B1A4716A`, 154868 bytes, and 147 entries, and its fresh extraction passed 75/75 tests. **Reject this archive for submission.** The preceding `git pull --ff-only` had aborted because an untracked local `package-lock.json` would have been overwritten, so the packaging commands ran from stale local commit `8dc4f7a` rather than the final hardening branch. Its preflight also lacked the required `Recorded-evidence integrity errors: 0` check.
 
@@ -99,7 +100,7 @@ Any later bibliography edit requires rerunning the citation audit and rebuilding
 
 Complete only when the exact files are ready for upload:
 
-- [ ] record final anonymous ZIP SHA-256, bytes, and entry count;
+- [x] record final anonymous ZIP SHA-256, bytes, and entry count;
 - [ ] decide the archival/public artifact license;
 - [ ] create anonymous reviewer artifact access or use the venue-provided anonymous supplementary mechanism;
 - [ ] record the exact reviewer artifact URL/location;
