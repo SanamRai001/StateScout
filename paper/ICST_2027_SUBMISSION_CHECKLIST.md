@@ -6,12 +6,14 @@ Full paper: **2026-11-02 AoE**.
 
 ## Format gate
 
-Automated/rendered verification on 2026-10-08 (paper branch head `e5cced4`):
+Strict clean-checkout verification on 2026-10-09 (hardened paper CI source `0b2ad8f5a33c5a2a6e874854ea4ab18fa9da654c`):
 
 - [x] IEEE two-column conference template compiles in CI.
-- [x] Current draft is 5 total US-Letter pages, safely below the 10-body + 2-reference venue ceiling.
+- [x] Current draft is 6 total US-Letter pages, safely below the 10-body + 2-reference venue ceiling.
 - [x] double-anonymous manuscript header.
-- [x] PDF metadata has a blank `/Author` field and submission-facing PDF text contains no known author name/handle/domain/local-path leak.
+- [x] PDF `/Author` metadata is blank.
+- [x] rendered PDF contains no known author name/handle/domain/local-path leak.
+- [x] Type 3 font scan passes.
 - [ ] anonymized artifact hosting/URL created for actual reviewer access.
 
 ## Scientific gate
@@ -45,24 +47,19 @@ Manual bibliography verification completed during Phase 21B for all 20 cited rec
 
 One upgrade was made: BrowserGym now cites its peer-reviewed 2025 Transactions on Machine Learning Research publication instead of only the earlier arXiv record.
 
-Re-run the local citation-key audit after this bibliography update before freezing the final PDF.
+The citation-key audit was rerun after this bibliography update in clean hosted CI and remained 20/20 with no missing or uncited entries.
 
 ## Reproduction gate
 
-From a clean checkout of the frozen artifact:
+Fast reviewer-shaped artifact gate from a fresh extraction:
 
 ```powershell
-npm install
+npm ci
 npx playwright install chromium
-npm run typecheck
-npm test
-npm run experiment:phase21
-npm run research:reproduce-controlled
-npm run paper:build-assets
-npm run paper:check-citations
+npm run artifact:smoke
 ```
 
-Do not require the external Phase 19 rerun for deterministic artifact reproducibility.
+This gate passed locally with 75/75 tests and all anonymous protected-content digests matching. The complete controlled reproduction remains available through `npm run research:reproduce-controlled`; do not require the external Phase 19 rerun for deterministic artifact reproducibility.
 
 ## Artifact gate
 
@@ -102,13 +99,16 @@ This wording must be adjusted to accurately reflect the final submission and IEE
 
 ## Final manuscript rebuild gate
 
-The earlier 2026-10-08 PDF build was 5 pages and passed metadata/visual preflight, but Phase 21B changed the manuscript afterward. Rebuild the exact hardened source before submission and re-check:
+The exact hardened manuscript was rebuilt in clean hosted CI on 2026-10-09.
 
-- [ ] body remains at or below 10 pages;
-- [ ] any pages 11-12 contain references only;
-- [ ] PDF `/Author` metadata remains blank;
-- [ ] rendered text contains no author name, handle, domain, or local path;
-- [ ] figures/tables remain readable with no clipping or overlap.
+- [x] 6 total pages, below the 10-page body ceiling.
+- [x] no reference-only overflow is needed.
+- [x] PDF `/Author` metadata is blank.
+- [x] rendered text contains no known author name, handle, domain, or local path.
+- [x] no Type 3 fonts.
+- [x] rendered six-page inspection shows no clipping or overlap; figures and tables remain readable.
+
+Exact CI-produced PDF SHA-256: `3bf7676eaef2ea14f32fddcddbca28a2fa443d2fae2ea3bda684ef30f5c84174` (157911 bytes).
 
 ## Final human review
 
@@ -125,19 +125,21 @@ Before uploading:
 - [ ] inspect PDF metadata for identity leakage where required by double-blind review.
 
 
-## Current automated submission status (2026-10-08)
+## Current automated submission status (2026-10-09)
 
-Latest CI paper build on the current manuscript revision:
+Latest strict clean-checkout paper build on the hardened manuscript:
 
+- `npm ci`: PASS;
 - submission audit gate: PASS;
 - research freeze: PASS;
-- citation audit: PASS;
+- frozen verified suite recorded: 75/75;
+- citation audit: PASS (20/20; no missing/uncited entries);
 - anonymity text audit: PASS;
 - LaTeX build: PASS;
-- PDF pages: 5;
+- PDF pages: 6;
 - rendered visual inspection: PASS for clipping/overlap/readability;
-- PDF preflight: PASS;
-- embedded fonts: PASS;
+- compiled-PDF identity scan: PASS;
+- Type 3 font scan: PASS;
 - PDF `/Author` metadata: blank;
 - protected research trees changed by paper branch: 0.
 
