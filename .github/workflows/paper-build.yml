@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "paper/related-work-novelty-v1"
+      - "paper/icst-hostile-reviewer-hardening"
     paths:
       - "paper/**"
       - ".github/workflows/paper-build.yml"
