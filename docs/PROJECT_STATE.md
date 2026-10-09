@@ -3119,7 +3119,29 @@ npx playwright install chromium
 npm run artifact:smoke
 ```
 
-Also compile the ICST PDF and verify the research-paper body remains within the 10-page limit, with at most two additional reference-only pages.
+Fresh-extraction reviewer-artifact verification was completed locally on Windows after the Phase 21B hardening changes:
+
+- `npm ci`: passed, 6 packages installed, 0 reported vulnerabilities;
+- Playwright Chromium install command completed;
+- strict TypeScript check: passed;
+- complete artifact suite: 75/75 tests passed, 0 failed;
+- artifact smoke duration: approximately 137.8 seconds;
+- `src/`: MATCH — `a05c0840f96f289616d0a4c45882d153b8c9d3d708aad1cb7e0de316fe6fd90c` (24 files);
+- `benchmarks/`: MATCH — `d5d1d1bdb204deaf95b7600a997dd2f324962bf5fec98fe25a5f9669ac71a0c5` (60 files);
+- `tests/`: MATCH — `a377a99a2db84f4b3e777e6d797cf9740971f7dec0aa640d8954b7b5f68fe8da` (32 files);
+- `Anonymous research snapshot intact: true`.
+
+This closes the reviewer-shaped ZIP smoke gate. The remaining release gates are submission logistics rather than algorithm validation:
+
+- record the final ZIP SHA-256 after all packaging-text changes are frozen;
+- rebuild the ICST PDF from the hardened manuscript;
+- verify the new PDF page count and reference-only overflow rule;
+- re-run PDF metadata/anonymity inspection on that exact PDF;
+- decide the public/archive license before archival release;
+- create reviewer-accessible anonymous artifact hosting or use the venue's anonymous supplementary upload;
+- complete final human read-through and independent novelty challenge.
+
+Do not reuse the earlier PDF page-count result as proof for the hardened manuscript: the manuscript changed after that build.
 
 ## After Phase 21
 
