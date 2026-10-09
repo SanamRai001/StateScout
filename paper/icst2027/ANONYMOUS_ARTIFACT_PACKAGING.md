@@ -41,6 +41,7 @@ paper:* scripts present: 0
 Required artifact scripts missing: 0
 Artifact manifest valid: true
 Controlled-result integrity errors: 0
+Recorded-evidence integrity errors: 0
 Identity leaks: 0
 Dangling author-side Markdown paths: 0
 Anonymous artifact preflight: PASS
