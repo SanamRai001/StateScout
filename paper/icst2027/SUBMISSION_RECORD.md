@@ -53,7 +53,7 @@ Any later change to `paper/icst2027/main.tex` or `paper/references.bib` invalida
 - final entry count: **PENDING**
 - anonymous reviewer URL / venue attachment: **PENDING**
 
-Fresh-extraction verification of the Phase 21B ZIP already passed locally:
+Fresh-extraction verification of the earlier Phase 21B ZIP passed locally:
 
 - `npm ci`: PASS
 - Playwright Chromium installation: completed
@@ -63,6 +63,8 @@ Fresh-extraction verification of the Phase 21B ZIP already passed locally:
 - `benchmarks/`: MATCH
 - `tests/`: MATCH
 - anonymous research snapshot intact: true
+
+After that smoke pass, reviewer-facing artifact-only changes clarified the raw-evidence wording and added manifest integrity for the recorded Phase 19 evidence. Therefore the exact final ZIP must be rebuilt, preflighted, fresh-smoked once, and then hashed before upload. The protected research implementation is unchanged.
 
 ### Obsolete archive — do not submit
 
