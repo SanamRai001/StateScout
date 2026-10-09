@@ -108,6 +108,11 @@ const manifest = JSON.parse(
     sha256: string;
     bytes: number;
   }>;
+  recordedEvidence?: Array<{
+    file: string;
+    sha256: string;
+    bytes: number;
+  }>;
 };
 
 const resultErrors: string[] = [];
@@ -126,6 +131,29 @@ for (const record of manifest.controlledResults ?? []) {
   }
   if (actualBytes !== record.bytes) {
     resultErrors.push(`byte-count mismatch: ${record.file}`);
+  }
+}
+
+const recordedEvidenceErrors: string[] = [];
+for (const record of manifest.recordedEvidence ?? []) {
+  const path = resolve(ROOT, record.file);
+  if (!existsSync(path)) {
+    recordedEvidenceErrors.push(`missing: ${record.file}`);
+    continue;
+  }
+
+  const actualBytes = readFileSync(path).byteLength;
+  const actualHash = sha256(path);
+
+  if (actualHash !== record.sha256) {
+    recordedEvidenceErrors.push(
+      `sha256 mismatch: ${record.file}`,
+    );
+  }
+  if (actualBytes !== record.bytes) {
+    recordedEvidenceErrors.push(
+      `byte-count mismatch: ${record.file}`,
+    );
   }
 }
 
@@ -193,7 +221,8 @@ for (const file of listFiles(ROOT)) {
 const manifestOk =
   manifest.schemaVersion === 1 &&
   manifest.kind === "statescout-anonymous-artifact" &&
-  manifest.packageLockIncluded === true;
+  manifest.packageLockIncluded === true &&
+  (manifest.recordedEvidence?.length ?? 0) === 1;
 
 const ok =
   missing.length === 0 &&
@@ -202,6 +231,7 @@ const ok =
   missingScripts.length === 0 &&
   manifestOk &&
   resultErrors.length === 0 &&
+  recordedEvidenceErrors.length === 0 &&
   leaks.length === 0 &&
   danglingAuthorPaths.length === 0;
 
@@ -213,6 +243,9 @@ console.log(`paper:* scripts present: ${paperScripts.length}`);
 console.log(`Required artifact scripts missing: ${missingScripts.length}`);
 console.log(`Artifact manifest valid: ${manifestOk}`);
 console.log(`Controlled-result integrity errors: ${resultErrors.length}`);
+console.log(
+  `Recorded-evidence integrity errors: ${recordedEvidenceErrors.length}`,
+);
 console.log(`Identity leaks: ${leaks.length}`);
 console.log(`Dangling author-side Markdown paths: ${danglingAuthorPaths.length}`);
 console.log(`Anonymous artifact preflight: ${ok ? "PASS" : "FAIL"}`);
@@ -222,6 +255,9 @@ for (const value of forbiddenPresent) console.log(`- forbidden: ${value}`);
 for (const value of paperScripts) console.log(`- paper script: ${value}`);
 for (const value of missingScripts) console.log(`- missing script: ${value}`);
 for (const value of resultErrors) console.log(`- result: ${value}`);
+for (const value of recordedEvidenceErrors) {
+  console.log(`- recorded evidence: ${value}`);
+}
 for (const dangling of danglingAuthorPaths) {
   console.log(
     `- dangling author-side path: ${dangling.file}: ${JSON.stringify(dangling.path)}`,
