@@ -62,17 +62,27 @@ Do not require the external Phase 19 rerun for deterministic artifact reproducib
 
 ## Artifact gate
 
-- [ ] anonymized repository or archive.
-- [ ] no author-revealing GitHub username in paper/artifact URL.
-- [ ] README quick start.
-- [ ] exact Node version.
-- [ ] Chromium install step.
-- [ ] expected command outputs.
-- [ ] freeze commit/tree identities.
-- [ ] raw controlled JSON outputs.
-- [ ] generated tables/figures and asset manifest.
-- [ ] license.
+Fresh-extraction verification of the current anonymous ZIP passed locally after Phase 21B hardening:
+
+- [x] anonymized reviewer archive generated and extracted successfully.
+- [x] README quick start.
+- [x] exact Node reference version.
+- [x] Chromium install step.
+- [x] expected command outputs.
+- [x] protected-source content-digest identities.
+- [x] raw controlled JSON outputs.
+- [x] self-contained recorded Phase 19 original/replication evidence.
+- [x] fresh extraction: `npm ci` passed with 0 reported vulnerabilities.
+- [x] fresh extraction: strict typecheck passed.
+- [x] fresh extraction: 75/75 tests passed, 0 failed.
+- [x] fresh extraction: `src/`, `benchmarks/`, and `tests/` all MATCH.
+- [x] fresh extraction: `Anonymous research snapshot intact: true`.
+- [ ] record SHA-256 of the final ZIP after all packaging-text changes are frozen.
+- [ ] anonymous reviewer hosting/venue supplementary upload.
+- [ ] license decision for archival/public release.
 - [ ] archival DOI if practical.
+
+The anonymous archive intentionally uses protected content digests instead of author-owned Git commit/tree identifiers.
 
 ## AI-use disclosure gate
 
@@ -85,6 +95,16 @@ Prepare an anonymized acknowledgment such as:
 > Generative AI tools were used during development and manuscript preparation for interactive coding assistance, language drafting/editing, and generation/refinement of reporting scripts and figure specifications. All research claims, experimental designs, benchmark labels, source code changes, references, numerical results, and final manuscript content were reviewed and verified by the author. The frozen research artifact and raw experiment outputs are provided for independent verification.
 
 This wording must be adjusted to accurately reflect the final submission and IEEE/ICST policy at submission time.
+
+## Final manuscript rebuild gate
+
+The earlier 2026-10-08 PDF build was 5 pages and passed metadata/visual preflight, but Phase 21B changed the manuscript afterward. Rebuild the exact hardened source before submission and re-check:
+
+- [ ] body remains at or below 10 pages;
+- [ ] any pages 11-12 contain references only;
+- [ ] PDF `/Author` metadata remains blank;
+- [ ] rendered text contains no author name, handle, domain, or local path;
+- [ ] figures/tables remain readable with no clipping or overlap.
 
 ## Final human review
 
