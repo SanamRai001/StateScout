@@ -11,6 +11,22 @@ StateScout is being developed as both:
 1. a practical developer/QA tool for automatically mapping reachable UI workflows and detecting regressions; and
 2. a reproducible research artifact for studying semantic web state abstraction and automated GUI exploration.
 
+## Try StateScout from the terminal
+
+A post-freeze CLI is available on `feat/statescout-cli-v1` so the explorer can be used directly without changing the frozen research algorithms.
+
+```powershell
+npm ci
+npx playwright install chromium
+npm link
+
+statescout https://example.com --headed
+```
+
+StateScout stays same-origin and safe-only by default. Each run writes a semantic graph, checkpoint, observations, and summary under `statescout-runs/`.
+
+See `docs/CLI_USAGE.md` for options and examples.
+
 ## Research direction
 
 StateScout studies how a web explorer can identify meaningful UI states without relying on URL identity alone and without over-splitting equivalent states because of dynamic noise.
