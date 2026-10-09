@@ -82,6 +82,9 @@ Fresh-extraction verification of the Phase 21B anonymous ZIP passed locally befo
 - [x] ran `artifact:smoke` from a fresh extraction of that exact final ZIP: 75/75 tests passed.
 - [x] final ZIP recorded: SHA-256 `BACACA7AC2B874F64E111E0A755E8341EBFB732AEB15968C60755EC2ED8EC50E`, 155070 bytes, 147 entries.
 - [ ] anonymous reviewer hosting/venue supplementary upload.
+
+Post-acceptance / archival follow-up rather than an initial-submission blocker:
+
 - [ ] license decision for archival/public release.
 - [ ] archival DOI if practical.
 
