@@ -3131,12 +3131,29 @@ Fresh-extraction reviewer-artifact verification was completed locally on Windows
 - `tests/`: MATCH — `a377a99a2db84f4b3e777e6d797cf9740971f7dec0aa640d8954b7b5f68fe8da` (32 files);
 - `Anonymous research snapshot intact: true`.
 
-This closes the reviewer-shaped ZIP smoke gate. The remaining release gates are submission logistics rather than algorithm validation:
+This closes the reviewer-shaped ZIP smoke gate.
+
+A later clean-checkout hosted paper gate also exposed and closed one repository-side reproducibility defect: the lockfile used by the verified anonymous ZIP existed locally but had not been committed. The exact `package-lock.json` bytes from the already-tested anonymous ZIP were committed to this branch; their SHA-256 is `e65f1e4859daae8ae158f0de63b5566976ec954363ee72a7f3fa27ac6bd6e1b5`, and the committed Git blob SHA matches the tested file's Git blob SHA `dc04e3f2cbe9a3004a93be63b5defb6b0c37384f`.
+
+Hosted Paper PDF CI on the hardened branch then passed from a clean Ubuntu checkout:
+
+- `npm ci`: passed, 6 packages installed, 0 reported vulnerabilities;
+- protected research freeze: intact, frozen suite recorded as 75/75 passed;
+- citation-key audit: 20 cited keys / 20 bibliography entries, no missing or uncited entries;
+- source anonymity audit: 0 identity leaks;
+- LaTeX compilation: passed;
+- final PDF: 6 pages;
+- PDF Author metadata: blank;
+- rendered-PDF identity leak scan: passed;
+- Type 3 font scan: passed;
+- compiled PDF anonymity/font preflight: PASS.
+
+The six-page result is safely below the ICST research-paper body ceiling, so the additional reference-only page allowance is not needed for the current manuscript.
+
+The remaining release gates are submission logistics rather than algorithm validation:
 
 - record the final ZIP SHA-256 after all packaging-text changes are frozen;
-- rebuild the ICST PDF from the hardened manuscript;
-- verify the new PDF page count and reference-only overflow rule;
-- re-run PDF metadata/anonymity inspection on that exact PDF;
+- preserve the verified hardened manuscript/PDF inputs unless a deliberate editorial change is made;
 - decide the public/archive license before archival release;
 - create reviewer-accessible anonymous artifact hosting or use the venue's anonymous supplementary upload;
 - complete final human read-through and independent novelty challenge.
