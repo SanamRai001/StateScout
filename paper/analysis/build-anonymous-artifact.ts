@@ -207,6 +207,16 @@ mkdirSync(dirname(recordedRealWorldDestination), {
 });
 cpSync(recordedRealWorld, recordedRealWorldDestination);
 
+const recordedRealWorldBytes = readFileSync(recordedRealWorld);
+const recordedEvidence = [
+  {
+    file: "results/recorded/phase19-original-and-replication.md",
+    sha256: createHash("sha256")
+      .update(recordedRealWorldBytes)
+      .digest("hex"),
+    bytes: recordedRealWorldBytes.byteLength,
+  },
+];
 
 const artifactManifest = {
   schemaVersion: 1,
@@ -215,6 +225,7 @@ const artifactManifest = {
   packageLockIncluded,
   protectedContent,
   controlledResults: controlledResultDigests,
+  recordedEvidence,
   notes: [
     "The package contains no Git metadata.",
     "Public Git commit/tree identifiers are replaced by content digests.",
@@ -298,6 +309,11 @@ console.log(`package-lock.json included: ${packageLockIncluded}`);
 for (const result of controlledResultDigests) {
   console.log(
     `${result.file}: ${result.sha256} (${result.bytes} bytes)`,
+  );
+}
+for (const record of recordedEvidence) {
+  console.log(
+    `${record.file}: ${record.sha256} (${record.bytes} bytes)`,
   );
 }
 console.log("Identity leaks: 0");
