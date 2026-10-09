@@ -66,6 +66,8 @@ Fresh-extraction verification of the earlier Phase 21B ZIP passed locally:
 
 After that smoke pass, reviewer-facing artifact-only changes clarified the raw-evidence wording and added manifest integrity for the recorded Phase 19 evidence. Therefore the exact final ZIP must be rebuilt, preflighted, fresh-smoked once, and then hashed before upload. The protected research implementation is unchanged.
 
+A later local attempt produced SHA-256 `82F6E9FB0B7E5EEA073CB144A7D61621406E98315585ED0EA1A731D0B1A4716A`, 154868 bytes, and 147 entries, and its fresh extraction passed 75/75 tests. **Reject this archive for submission.** The preceding `git pull --ff-only` had aborted because an untracked local `package-lock.json` would have been overwritten, so the packaging commands ran from stale local commit `8dc4f7a` rather than the final hardening branch. Its preflight also lacked the required `Recorded-evidence integrity errors: 0` check.
+
 ### Obsolete archive — do not submit
 
 The earlier uploaded archive is not the final Phase 21B package:
