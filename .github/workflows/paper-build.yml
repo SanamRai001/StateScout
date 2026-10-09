@@ -32,7 +32,7 @@ jobs:
           node-version: "24"
 
       - name: Install Node dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run paper submission audits
         run: npm run paper:submission-gate
@@ -40,13 +40,45 @@ jobs:
       - name: Install LaTeX
         run: |
           sudo apt-get update
-          sudo apt-get install -y latexmk texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-pictures texlive-publishers
+          sudo apt-get install -y latexmk poppler-utils texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-pictures texlive-publishers
 
       - name: Compile ICST draft
         working-directory: paper/icst2027
         run: |
           latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
-          pdfinfo main.pdf | grep '^Pages:'
+
+      - name: Preflight compiled PDF
+        working-directory: paper/icst2027
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pages="$(pdfinfo main.pdf | awk -F: '/^Pages:/ {gsub(/[[:space:]]/, "", $2); print $2}')"
+          echo "Pages: $pages"
+          if [ -z "$pages" ] || [ "$pages" -gt 12 ]; then
+            echo "PDF exceeds the ICST 10-page body + 2-page reference ceiling."
+            exit 1
+          fi
+
+          author="$(pdfinfo main.pdf | sed -n 's/^Author:[[:space:]]*//p')"
+          echo "PDF Author metadata: ${author:-<blank>}"
+          if [ -n "$author" ]; then
+            echo "PDF Author metadata must be blank for double-anonymous review."
+            exit 1
+          fi
+
+          pdftotext main.pdf /tmp/statescout-paper.txt
+          if grep -Eiq 'Sanam[[:space:]]+Rai|SanamRai001|sanam-rai\.com\.np|D:\\Projects\\StateScout|C:\\Users\\DELL' /tmp/statescout-paper.txt; then
+            echo "Author-identifying text found in rendered PDF."
+            exit 1
+          fi
+
+          if pdffonts main.pdf | grep -Fq "Type 3"; then
+            echo "Type 3 font found in compiled PDF."
+            exit 1
+          fi
+
+          echo "Compiled PDF anonymity/font preflight: PASS"
 
       - name: Upload PDF
         uses: actions/upload-artifact@v4
