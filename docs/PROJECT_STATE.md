@@ -3150,9 +3150,12 @@ Hosted Paper PDF CI on the hardened branch then passed from a clean Ubuntu check
 
 The six-page result is safely below the ICST research-paper body ceiling, so the additional reference-only page allowance is not needed for the current manuscript.
 
+A final reviewer-facing artifact hardening pass subsequently clarified which raw JSON results are pre-populated, aligned "learned" wording with the evidence-derived manuscript terminology, and added SHA-256/byte-count integrity checking for the recorded Phase 19 evidence. These changes do not touch `src/`, `benchmarks/`, or `tests/`, but they change the exact reviewer ZIP bytes.
+
 The remaining release gates are submission logistics rather than algorithm validation:
 
-- record the final ZIP SHA-256 after all packaging-text changes are frozen;
+- rebuild, preflight, and fresh-smoke the exact final reviewer ZIP once after this manifest/README hardening;
+- record that final ZIP SHA-256, byte count, and entry count;
 - preserve the verified hardened manuscript/PDF inputs unless a deliberate editorial change is made;
 - decide the public/archive license before archival release;
 - create reviewer-accessible anonymous artifact hosting or use the venue's anonymous supplementary upload;
