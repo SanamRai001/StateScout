@@ -3158,7 +3158,7 @@ The remaining release gates are submission logistics rather than algorithm valid
 - create reviewer-accessible anonymous artifact hosting or use the venue's anonymous supplementary upload;
 - complete final human read-through and independent novelty challenge.
 
-Do not reuse the earlier PDF page-count result as proof for the hardened manuscript: the manuscript changed after that build.
+The exact hardened manuscript has now been rebuilt and preflighted; use the recorded 2026-10-09 six-page PDF result unless the manuscript or bibliography changes again.
 
 ## After Phase 21
 
@@ -3170,4 +3170,6 @@ Future product features may continue on a separate post-paper roadmap without be
 
 ## Merge status
 
-Phases 1A through 20 are merged. Phase 21 research-freeze and paper-artifact packaging is verified on `feat/phase-21-research-freeze-paper-artifact`; PR #23 is ready for merge.
+Phases 1A through 21 research freeze are merged to `main`. PR #23 was merged on 2026-10-08 as `c053a1f0be4bc5ca2c51919b12624e72e9d6b4fd`.
+
+The current submission-hardening branch `paper/icst-hostile-reviewer-hardening` is based on the current `main`, is ahead of it, and has not been merged. Keep this branch separate until the final anonymous PDF/artifact submission package is frozen and reviewed.
