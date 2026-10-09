@@ -1,0 +1,36 @@
+name: CLI Smoke
+
+on:
+  push:
+    branches:
+      - feat/statescout-cli-v1
+    paths:
+      - "cli/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "docs/CLI_USAGE.md"
+      - ".github/workflows/cli-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  cli-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: CLI help smoke
+        run: node cli/statescout.ts --help
