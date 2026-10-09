@@ -101,8 +101,8 @@ Any later bibliography edit requires rerunning the citation audit and rebuilding
 Complete only when the exact files are ready for upload:
 
 - [x] record final anonymous ZIP SHA-256, bytes, and entry count;
-- [ ] decide the archival/public artifact license;
 - [ ] create anonymous reviewer artifact access or use the venue-provided anonymous supplementary mechanism;
+- [ ] decide the archival/public artifact license after review/acceptance unless needed earlier by the chosen artifact host;
 - [ ] record the exact reviewer artifact URL/location;
 - [ ] perform final end-to-end human read of the exact PDF;
 - [ ] independently challenge the novelty paragraph and APE boundary;
@@ -116,4 +116,4 @@ Complete only when the exact files are ready for upload:
 - HotCRP submission ID: **PENDING**
 - submission timestamp: **PENDING**
 - artifact location/URL: **PENDING**
-- chosen artifact license: **PENDING**
+- chosen artifact license: **PENDING — archival/post-acceptance unless hosting requires it earlier**
