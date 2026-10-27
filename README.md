@@ -78,4 +78,4 @@ The public-site Phase 19 study is intentionally rerun separately because externa
 
 ## License
 
-License selection is intentionally deferred until the dependency and reuse strategy is finalized.
+StateScout is licensed under the [MIT License](LICENSE). Third-party dependencies remain subject to their respective licenses.
