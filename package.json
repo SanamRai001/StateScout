@@ -38,7 +38,8 @@
     "paper:check-anonymity": "node --experimental-strip-types paper/analysis/check-anonymity.ts",
     "paper:submission-gate": "npm run typecheck && npm run experiment:phase21 && npm run paper:check-citations && npm run paper:check-anonymity",
     "paper:build-anonymous-artifact": "node --experimental-strip-types paper/analysis/build-anonymous-artifact.ts",
-    "paper:preflight-anonymous-artifact": "node --experimental-strip-types paper/analysis/check-anonymous-artifact.ts"
+    "paper:preflight-anonymous-artifact": "node --experimental-strip-types paper/analysis/check-anonymous-artifact.ts",
+    "paper:zip-anonymous-artifact": "powershell -NoProfile -ExecutionPolicy Bypass -File paper/analysis/build-portable-artifact-zip.ps1"
   },
   "devDependencies": {
     "@types/node": "^24.19.1",

@@ -45,16 +45,41 @@ Identity leaks: 0
 Anonymous artifact preflight: PASS
 ```
 
-## 4. Create the ZIP
+## 4. Create the portable ZIP
+
+Do **not** use PowerShell `Compress-Archive` for the submission artifact. On Windows it can write nested ZIP entry names with backslashes, which extract incorrectly on Linux/macOS.
+
+Use the repository's portable ZIP builder:
 
 ```powershell
-Remove-Item .\dist\statescout-icst2027-anonymous.zip -Force -ErrorAction SilentlyContinue
-Compress-Archive -Path .\dist\statescout-icst2027-anonymous\* -DestinationPath .\dist\statescout-icst2027-anonymous.zip -CompressionLevel Optimal
+npm run paper:zip-anonymous-artifact
 ```
 
-Compress the staged directory before installing dependencies inside it. The submitted ZIP must not contain `node_modules/`.
+The command:
 
-## 5. Hash the exact ZIP
+- writes ZIP entry names with forward slashes;
+- sorts input files;
+- uses a fixed ZIP timestamp for reproducibility;
+- rejects absolute, parent-traversal, or backslash entry names;
+- checks the required archive roots;
+- prints the final byte count and SHA-256.
+
+Expected high-level output:
+
+```text
+StateScout portable anonymous artifact ZIP built
+Entries: ...
+Path separators: portable forward slashes only
+SHA256: ...
+```
+
+Create the ZIP before installing dependencies inside the staged directory. The submitted ZIP must not contain `node_modules/`.
+
+## 5. Record the exact ZIP hash
+
+Use the SHA-256 printed by `paper:zip-anonymous-artifact`.
+
+You may independently confirm it with:
 
 ```powershell
 Get-FileHash .\dist\statescout-icst2027-anonymous.zip -Algorithm SHA256
@@ -88,7 +113,7 @@ Do not make the external Phase 19 public-site rerun a required acceptance gate.
 
 ## 8. Final archive inspection
 
-Confirm that the archive contains no `.git/`, `.github/`, `paper/`, or `node_modules/`; contains no author name, personal GitHub handle/domain, local project path, or public freeze/merge commit identifiers; and contains `README.md`, `package-lock.json`, both research manifests, and the four controlled result JSON files.
+Confirm that the archive uses forward-slash ZIP entry names and contains no `.git/`, `.github/`, `paper/`, or `node_modules/`; contains no author name, personal GitHub handle/domain, local project path, or public freeze/merge commit identifiers; and contains `README.md`, `package-lock.json`, both research manifests, and the four controlled result JSON files.
 
 ## 9. Submission hosting
 
